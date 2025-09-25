@@ -1,0 +1,2546 @@
+{
+  "metadata": {
+    "generated_date": "2025-08-28",
+    "valid_period": "2024-08-01 to 2024-10-31",
+    "data_source": "manufacturer_financing_programs_enhanced",
+    "note": "Complex financing scenarios with multiple overlapping offers"
+  },
+  "financing_offers": [
+    {
+      "financing_id": "FIN_TOY_001",
+      "type": "manufacturer_financing",
+      "provider": "Toyota Financial Services",
+      "applicable_makes": [
+        "Toyota"
+      ],
+      "applicable_models": [
+        "Camry",
+        "Corolla",
+        "RAV4",
+        "Prius",
+        "Highlander",
+        "4Runner",
+        "Sienna",
+        "Venza"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 780,
+          "apr": 1.9,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 720,
+          "apr": 2.49,
+          "term_months": [
+            36,
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 650,
+          "apr": 3.99,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 580,
+          "apr": 7.49,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.08,
+      "cash_back_alternative": 1500,
+      "special_incentives": [
+        {
+          "name": "college_graduate_bonus",
+          "amount": 750,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "military_appreciation",
+          "amount": 750,
+          "requirements": [
+            "active_military",
+            "veteran"
+          ]
+        },
+        {
+          "name": "loyalty_bonus",
+          "amount": 1000,
+          "requirements": [
+            "current_toyota_owner"
+          ]
+        },
+        {
+          "name": "conquest_cash",
+          "amount": 1500,
+          "requirements": [
+            "non_toyota_trade_in"
+          ]
+        },
+        {
+          "name": "hybrid_bonus",
+          "amount": 500,
+          "requirements": [
+            "hybrid_model"
+          ]
+        },
+        {
+          "name": "first_responder",
+          "amount": 750,
+          "requirements": [
+            "police",
+            "fire",
+            "ems",
+            "nurse"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 500,
+        "expires": "2024-09-30"
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.02
+    },
+    {
+      "financing_id": "FIN_BMW_001",
+      "type": "manufacturer_financing",
+      "provider": "BMW Financial Services",
+      "applicable_makes": [
+        "BMW"
+      ],
+      "applicable_models": [
+        "3 Series",
+        "X3",
+        "5 Series",
+        "X5",
+        "iX"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 800,
+          "apr": 2.99,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 750,
+          "apr": 3.49,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 700,
+          "apr": 4.99,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 650,
+          "apr": 8.99,
+          "term_months": [
+            60,
+            72
+          ]
+        }
+      ],
+      "down_payment_required": 0.15,
+      "cash_back_alternative": 0,
+      "special_incentives": [
+        {
+          "name": "bmw_loyalty",
+          "amount": 2000,
+          "requirements": [
+            "current_bmw_owner"
+          ]
+        },
+        {
+          "name": "executive_program",
+          "amount": 1500,
+          "requirements": [
+            "corporate_partner"
+          ]
+        },
+        {
+          "name": "grad_program",
+          "amount": 1000,
+          "requirements": [
+            "recent_graduate_masters"
+          ]
+        },
+        {
+          "name": "electric_incentive",
+          "amount": 2500,
+          "requirements": [
+            "electric_model"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 0,
+        "expires": null
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.03
+    },
+    {
+      "financing_id": "FIN_TESLA_001",
+      "type": "manufacturer_financing",
+      "provider": "Tesla Financing",
+      "applicable_makes": [
+        "Tesla"
+      ],
+      "applicable_models": [
+        "Model 3",
+        "Model Y",
+        "Model S"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 780,
+          "apr": 2.49,
+          "term_months": [
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 720,
+          "apr": 3.24,
+          "term_months": [
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 680,
+          "apr": 4.74,
+          "term_months": [
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 640,
+          "apr": 6.99,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.1,
+      "cash_back_alternative": 0,
+      "special_incentives": [
+        {
+          "name": "referral_program",
+          "amount": 1000,
+          "requirements": [
+            "existing_owner_referral"
+          ]
+        },
+        {
+          "name": "trade_in_bonus",
+          "amount": 1500,
+          "requirements": [
+            "qualifying_trade_in"
+          ]
+        },
+        {
+          "name": "solar_bundle",
+          "amount": 2500,
+          "requirements": [
+            "solar_roof_purchase"
+          ]
+        },
+        {
+          "name": "tech_employee",
+          "amount": 1000,
+          "requirements": [
+            "tech_company_employee"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 0,
+        "expires": null
+      },
+      "lease_alternative": false,
+      "early_termination_penalty": 0.015,
+      "federal_tax_credit": 7500,
+      "state_rebates_applicable": true
+    },
+    {
+      "financing_id": "FIN_FORD_001",
+      "type": "manufacturer_financing",
+      "provider": "Ford Credit",
+      "applicable_makes": [
+        "Ford"
+      ],
+      "applicable_models": [
+        "F-150",
+        "Escape",
+        "Mustang",
+        "Explorer",
+        "Bronco",
+        "Lightning",
+        "Maverick"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 760,
+          "apr": 1.9,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 700,
+          "apr": 2.9,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 650,
+          "apr": 4.9,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 580,
+          "apr": 8.9,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.05,
+      "cash_back_alternative": 2000,
+      "special_incentives": [
+        {
+          "name": "first_responder_bonus",
+          "amount": 750,
+          "requirements": [
+            "police",
+            "fire",
+            "ems",
+            "nurse"
+          ]
+        },
+        {
+          "name": "military_pricing",
+          "amount": 750,
+          "requirements": [
+            "active_military"
+          ]
+        },
+        {
+          "name": "farm_bureau_member",
+          "amount": 500,
+          "requirements": [
+            "farm_bureau_membership"
+          ]
+        },
+        {
+          "name": "ford_owner_loyalty",
+          "amount": 1250,
+          "requirements": [
+            "current_ford_owner"
+          ]
+        },
+        {
+          "name": "truck_conquest",
+          "amount": 1500,
+          "requirements": [
+            "competitive_truck_trade"
+          ]
+        },
+        {
+          "name": "electric_bonus",
+          "amount": 2000,
+          "requirements": [
+            "lightning_model"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 1000,
+        "expires": "2024-09-15"
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.025,
+      "zero_percent_offer": {
+        "models": [
+          "F-150"
+        ],
+        "term_months": 60,
+        "credit_score_min": 780
+      }
+    },
+    {
+      "financing_id": "FIN_HONDA_001",
+      "type": "manufacturer_financing",
+      "provider": "American Honda Finance",
+      "applicable_makes": [
+        "Honda"
+      ],
+      "applicable_models": [
+        "Accord",
+        "Civic",
+        "CR-V",
+        "Pilot",
+        "Passport",
+        "Odyssey"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 760,
+          "apr": 1.99,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 700,
+          "apr": 2.49,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 650,
+          "apr": 3.99,
+          "term_months": [
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 600,
+          "apr": 6.99,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.1,
+      "cash_back_alternative": 1000,
+      "special_incentives": [
+        {
+          "name": "college_graduate",
+          "amount": 500,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "honda_loyalty",
+          "amount": 750,
+          "requirements": [
+            "current_honda_owner"
+          ]
+        },
+        {
+          "name": "conquest_incentive",
+          "amount": 1000,
+          "requirements": [
+            "competitive_trade_in"
+          ]
+        },
+        {
+          "name": "safety_award_bonus",
+          "amount": 500,
+          "requirements": [
+            "iihs_top_safety_pick"
+          ]
+        },
+        {
+          "name": "family_bonus",
+          "amount": 750,
+          "requirements": [
+            "pilot_odyssey_models"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 750,
+        "expires": "2024-10-31"
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.02
+    },
+    {
+      "financing_id": "FIN_CHEV_001",
+      "type": "manufacturer_financing",
+      "provider": "GM Financial",
+      "applicable_makes": [
+        "Chevrolet"
+      ],
+      "applicable_models": [
+        "Silverado",
+        "Tahoe"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 750,
+          "apr": 2.49,
+          "term_months": [
+            36,
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 700,
+          "apr": 3.49,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 650,
+          "apr": 5.49,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 580,
+          "apr": 9.49,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.08,
+      "cash_back_alternative": 2500,
+      "special_incentives": [
+        {
+          "name": "gm_employee_discount",
+          "amount": 3000,
+          "requirements": [
+            "gm_employee"
+          ]
+        },
+        {
+          "name": "supplier_discount",
+          "amount": 2000,
+          "requirements": [
+            "gm_supplier"
+          ]
+        },
+        {
+          "name": "military_discount",
+          "amount": 500,
+          "requirements": [
+            "military"
+          ]
+        },
+        {
+          "name": "conquest_cash",
+          "amount": 1500,
+          "requirements": [
+            "non_gm_trade"
+          ]
+        },
+        {
+          "name": "commercial_bonus",
+          "amount": 2000,
+          "requirements": [
+            "commercial_use"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 1500,
+        "expires": "2024-09-30"
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.025
+    },
+    {
+      "financing_id": "FIN_AUDI_001",
+      "type": "manufacturer_financing",
+      "provider": "Audi Financial Services",
+      "applicable_makes": [
+        "Audi"
+      ],
+      "applicable_models": [
+        "Q5"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 780,
+          "apr": 3.49,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 720,
+          "apr": 4.49,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 680,
+          "apr": 6.49,
+          "term_months": [
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 650,
+          "apr": 8.99,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.15,
+      "cash_back_alternative": 1000,
+      "special_incentives": [
+        {
+          "name": "audi_loyalty",
+          "amount": 1500,
+          "requirements": [
+            "current_audi_owner"
+          ]
+        },
+        {
+          "name": "luxury_conquest",
+          "amount": 2000,
+          "requirements": [
+            "luxury_brand_trade"
+          ]
+        },
+        {
+          "name": "graduate_program",
+          "amount": 1000,
+          "requirements": [
+            "recent_graduate"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 0,
+        "expires": null
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.03
+    },
+    {
+      "financing_id": "FIN_HYUN_001",
+      "type": "manufacturer_financing",
+      "provider": "Hyundai Motor Finance",
+      "applicable_makes": [
+        "Hyundai"
+      ],
+      "applicable_models": [
+        "Tucson",
+        "Palisade",
+        "Santa Cruz"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 750,
+          "apr": 2.49,
+          "term_months": [
+            36,
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 700,
+          "apr": 3.49,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 650,
+          "apr": 4.99,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 580,
+          "apr": 8.49,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.05,
+      "cash_back_alternative": 1500,
+      "special_incentives": [
+        {
+          "name": "college_grad",
+          "amount": 400,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "military_appreciation",
+          "amount": 500,
+          "requirements": [
+            "military"
+          ]
+        },
+        {
+          "name": "loyalty_discount",
+          "amount": 750,
+          "requirements": [
+            "current_hyundai_owner"
+          ]
+        },
+        {
+          "name": "conquest_bonus",
+          "amount": 1000,
+          "requirements": [
+            "competitive_trade"
+          ]
+        },
+        {
+          "name": "first_time_buyer",
+          "amount": 500,
+          "requirements": [
+            "first_car_purchase"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 750,
+        "expires": "2024-10-15"
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.02
+    },
+    {
+      "financing_id": "FIN_NISSAN_001",
+      "type": "manufacturer_financing",
+      "provider": "Nissan Motor Acceptance Corp",
+      "applicable_makes": [
+        "Nissan"
+      ],
+      "applicable_models": [
+        "Altima",
+        "Armada"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 740,
+          "apr": 2.99,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 680,
+          "apr": 4.49,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 620,
+          "apr": 6.99,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 580,
+          "apr": 9.99,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.1,
+      "cash_back_alternative": 2000,
+      "special_incentives": [
+        {
+          "name": "nissan_loyalty",
+          "amount": 500,
+          "requirements": [
+            "current_nissan_owner"
+          ]
+        },
+        {
+          "name": "college_grad",
+          "amount": 500,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "military_rebate",
+          "amount": 750,
+          "requirements": [
+            "military"
+          ]
+        },
+        {
+          "name": "conquest_cash",
+          "amount": 1000,
+          "requirements": [
+            "competitive_trade"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 1000,
+        "expires": "2024-09-30"
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.025
+    },
+    {
+      "financing_id": "FIN_LUXURY_001",
+      "type": "manufacturer_financing",
+      "provider": "Luxury Auto Financial",
+      "applicable_makes": [
+        "Mercedes-Benz",
+        "Lexus",
+        "Genesis",
+        "Volvo",
+        "Acura",
+        "Infiniti",
+        "Cadillac",
+        "Lincoln"
+      ],
+      "applicable_models": [
+        "all_luxury_models"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 800,
+          "apr": 3.24,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 750,
+          "apr": 4.24,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 700,
+          "apr": 5.99,
+          "term_months": [
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 650,
+          "apr": 8.49,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.2,
+      "cash_back_alternative": 0,
+      "special_incentives": [
+        {
+          "name": "luxury_loyalty",
+          "amount": 2500,
+          "requirements": [
+            "current_luxury_owner"
+          ]
+        },
+        {
+          "name": "executive_program",
+          "amount": 2000,
+          "requirements": [
+            "fortune_500_employee"
+          ]
+        },
+        {
+          "name": "professional_discount",
+          "amount": 1500,
+          "requirements": [
+            "doctor",
+            "lawyer",
+            "cpa"
+          ]
+        },
+        {
+          "name": "conquest_luxury",
+          "amount": 3000,
+          "requirements": [
+            "competitive_luxury_trade"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 0,
+        "expires": null
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.04
+    },
+    {
+      "financing_id": "FIN_ALFA ROMEO_184",
+      "type": "manufacturer_financing",
+      "provider": "Alfa Romeo Financial Services",
+      "applicable_makes": [
+        "Alfa Romeo"
+      ],
+      "applicable_models": [
+        "Stelvio"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 780,
+          "apr": 2.29,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 720,
+          "apr": 2.99,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 660,
+          "apr": 4.49,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 600,
+          "apr": 7.49,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.08,
+      "cash_back_alternative": 1000,
+      "special_incentives": [
+        {
+          "name": "loyalty_bonus",
+          "amount": 1000,
+          "requirements": [
+            "current_alfa romeo_owner"
+          ]
+        },
+        {
+          "name": "college_graduate",
+          "amount": 500,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "military_appreciation",
+          "amount": 750,
+          "requirements": [
+            "active_military",
+            "veteran"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 0,
+        "expires": null
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.02
+    },
+    {
+      "financing_id": "FIN_BUICK_129",
+      "type": "manufacturer_financing",
+      "provider": "Buick Financial Services",
+      "applicable_makes": [
+        "Buick"
+      ],
+      "applicable_models": [
+        "Enclave"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 780,
+          "apr": 2.29,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 720,
+          "apr": 2.99,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 660,
+          "apr": 4.49,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 600,
+          "apr": 7.49,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.08,
+      "cash_back_alternative": 1000,
+      "special_incentives": [
+        {
+          "name": "loyalty_bonus",
+          "amount": 1000,
+          "requirements": [
+            "current_buick_owner"
+          ]
+        },
+        {
+          "name": "college_graduate",
+          "amount": 500,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "military_appreciation",
+          "amount": 750,
+          "requirements": [
+            "active_military",
+            "veteran"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 0,
+        "expires": null
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.02
+    },
+    {
+      "financing_id": "FIN_CHRYSLER_960",
+      "type": "manufacturer_financing",
+      "provider": "Chrysler Financial Services",
+      "applicable_makes": [
+        "Chrysler"
+      ],
+      "applicable_models": [
+        "Pacifica"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 780,
+          "apr": 2.29,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 720,
+          "apr": 2.99,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 660,
+          "apr": 4.49,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 600,
+          "apr": 7.49,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.08,
+      "cash_back_alternative": 1500,
+      "special_incentives": [
+        {
+          "name": "loyalty_bonus",
+          "amount": 1000,
+          "requirements": [
+            "current_chrysler_owner"
+          ]
+        },
+        {
+          "name": "college_graduate",
+          "amount": 500,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "military_appreciation",
+          "amount": 750,
+          "requirements": [
+            "active_military",
+            "veteran"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 750,
+        "expires": null
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.02
+    },
+    {
+      "financing_id": "FIN_GMC_444",
+      "type": "manufacturer_financing",
+      "provider": "GMC Financial Services",
+      "applicable_makes": [
+        "GMC"
+      ],
+      "applicable_models": [
+        "Sierra"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 780,
+          "apr": 2.29,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 720,
+          "apr": 2.99,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 660,
+          "apr": 4.49,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 600,
+          "apr": 7.49,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.08,
+      "cash_back_alternative": 500,
+      "special_incentives": [
+        {
+          "name": "loyalty_bonus",
+          "amount": 1000,
+          "requirements": [
+            "current_gmc_owner"
+          ]
+        },
+        {
+          "name": "college_graduate",
+          "amount": 500,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "military_appreciation",
+          "amount": 750,
+          "requirements": [
+            "active_military",
+            "veteran"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 0,
+        "expires": null
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.02
+    },
+    {
+      "financing_id": "FIN_JAGUAR_140",
+      "type": "manufacturer_financing",
+      "provider": "Jaguar Financial Services",
+      "applicable_makes": [
+        "Jaguar"
+      ],
+      "applicable_models": [
+        "F-PACE"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 780,
+          "apr": 2.29,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 720,
+          "apr": 2.99,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 660,
+          "apr": 4.49,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 600,
+          "apr": 7.49,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.08,
+      "cash_back_alternative": 1000,
+      "special_incentives": [
+        {
+          "name": "loyalty_bonus",
+          "amount": 1000,
+          "requirements": [
+            "current_jaguar_owner"
+          ]
+        },
+        {
+          "name": "college_graduate",
+          "amount": 500,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "military_appreciation",
+          "amount": 750,
+          "requirements": [
+            "active_military",
+            "veteran"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 500,
+        "expires": null
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.02
+    },
+    {
+      "financing_id": "FIN_JEEP_813",
+      "type": "manufacturer_financing",
+      "provider": "Jeep Financial Services",
+      "applicable_makes": [
+        "Jeep"
+      ],
+      "applicable_models": [
+        "Wrangler"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 780,
+          "apr": 2.29,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 720,
+          "apr": 2.99,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 660,
+          "apr": 4.49,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 600,
+          "apr": 7.49,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.08,
+      "cash_back_alternative": 500,
+      "special_incentives": [
+        {
+          "name": "loyalty_bonus",
+          "amount": 1000,
+          "requirements": [
+            "current_jeep_owner"
+          ]
+        },
+        {
+          "name": "college_graduate",
+          "amount": 500,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "military_appreciation",
+          "amount": 750,
+          "requirements": [
+            "active_military",
+            "veteran"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 750,
+        "expires": null
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.02
+    },
+    {
+      "financing_id": "FIN_KIA_581",
+      "type": "manufacturer_financing",
+      "provider": "Kia Financial Services",
+      "applicable_makes": [
+        "Kia"
+      ],
+      "applicable_models": [
+        "Forte",
+        "Sportage",
+        "Telluride"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 780,
+          "apr": 2.29,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 720,
+          "apr": 2.99,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 660,
+          "apr": 4.49,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 600,
+          "apr": 7.49,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.08,
+      "cash_back_alternative": 1000,
+      "special_incentives": [
+        {
+          "name": "loyalty_bonus",
+          "amount": 1000,
+          "requirements": [
+            "current_kia_owner"
+          ]
+        },
+        {
+          "name": "college_graduate",
+          "amount": 500,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "military_appreciation",
+          "amount": 750,
+          "requirements": [
+            "active_military",
+            "veteran"
+          ]
+        },
+        {
+          "name": "electric_incentive",
+          "amount": 2500,
+          "requirements": [
+            "electric_model"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 750,
+        "expires": null
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.02
+    },
+    {
+      "financing_id": "FIN_LAND ROVER_106",
+      "type": "manufacturer_financing",
+      "provider": "Land Rover Financial Services",
+      "applicable_makes": [
+        "Land Rover"
+      ],
+      "applicable_models": [
+        "Range Rover Sport"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 780,
+          "apr": 2.29,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 720,
+          "apr": 2.99,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 660,
+          "apr": 4.49,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 600,
+          "apr": 7.49,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.08,
+      "cash_back_alternative": 500,
+      "special_incentives": [
+        {
+          "name": "loyalty_bonus",
+          "amount": 1000,
+          "requirements": [
+            "current_land rover_owner"
+          ]
+        },
+        {
+          "name": "college_graduate",
+          "amount": 500,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "military_appreciation",
+          "amount": 750,
+          "requirements": [
+            "active_military",
+            "veteran"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 0,
+        "expires": null
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.02
+    },
+    {
+      "financing_id": "FIN_LUCID_363",
+      "type": "manufacturer_financing",
+      "provider": "Lucid Financial Services",
+      "applicable_makes": [
+        "Lucid"
+      ],
+      "applicable_models": [
+        "Air"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 780,
+          "apr": 2.29,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 720,
+          "apr": 2.99,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 660,
+          "apr": 4.49,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 600,
+          "apr": 7.49,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.08,
+      "cash_back_alternative": 500,
+      "special_incentives": [
+        {
+          "name": "loyalty_bonus",
+          "amount": 1000,
+          "requirements": [
+            "current_lucid_owner"
+          ]
+        },
+        {
+          "name": "college_graduate",
+          "amount": 500,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "military_appreciation",
+          "amount": 750,
+          "requirements": [
+            "active_military",
+            "veteran"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 0,
+        "expires": null
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.02
+    },
+    {
+      "financing_id": "FIN_MASERATI_662",
+      "type": "manufacturer_financing",
+      "provider": "Maserati Financial Services",
+      "applicable_makes": [
+        "Maserati"
+      ],
+      "applicable_models": [
+        "Levante"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 780,
+          "apr": 2.29,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 720,
+          "apr": 2.99,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 660,
+          "apr": 4.49,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 600,
+          "apr": 7.49,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.08,
+      "cash_back_alternative": 1500,
+      "special_incentives": [
+        {
+          "name": "loyalty_bonus",
+          "amount": 1000,
+          "requirements": [
+            "current_maserati_owner"
+          ]
+        },
+        {
+          "name": "college_graduate",
+          "amount": 500,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "military_appreciation",
+          "amount": 750,
+          "requirements": [
+            "active_military",
+            "veteran"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 750,
+        "expires": null
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.02
+    },
+    {
+      "financing_id": "FIN_MAZDA_641",
+      "type": "manufacturer_financing",
+      "provider": "Mazda Financial Services",
+      "applicable_makes": [
+        "Mazda"
+      ],
+      "applicable_models": [
+        "CX-30",
+        "CX-5",
+        "CX-90"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 780,
+          "apr": 2.29,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 720,
+          "apr": 2.99,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 660,
+          "apr": 4.49,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 600,
+          "apr": 7.49,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.08,
+      "cash_back_alternative": 1000,
+      "special_incentives": [
+        {
+          "name": "loyalty_bonus",
+          "amount": 1000,
+          "requirements": [
+            "current_mazda_owner"
+          ]
+        },
+        {
+          "name": "college_graduate",
+          "amount": 500,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "military_appreciation",
+          "amount": 750,
+          "requirements": [
+            "active_military",
+            "veteran"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 0,
+        "expires": null
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.02
+    },
+    {
+      "financing_id": "FIN_MITSUBISHI_895",
+      "type": "manufacturer_financing",
+      "provider": "Mitsubishi Financial Services",
+      "applicable_makes": [
+        "Mitsubishi"
+      ],
+      "applicable_models": [
+        "Outlander"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 780,
+          "apr": 2.29,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 720,
+          "apr": 2.99,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 660,
+          "apr": 4.49,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 600,
+          "apr": 7.49,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.08,
+      "cash_back_alternative": 1000,
+      "special_incentives": [
+        {
+          "name": "loyalty_bonus",
+          "amount": 1000,
+          "requirements": [
+            "current_mitsubishi_owner"
+          ]
+        },
+        {
+          "name": "college_graduate",
+          "amount": 500,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "military_appreciation",
+          "amount": 750,
+          "requirements": [
+            "active_military",
+            "veteran"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 0,
+        "expires": null
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.02
+    },
+    {
+      "financing_id": "FIN_POLESTAR_409",
+      "type": "manufacturer_financing",
+      "provider": "Polestar Financial Services",
+      "applicable_makes": [
+        "Polestar"
+      ],
+      "applicable_models": [
+        "3"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 780,
+          "apr": 2.29,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 720,
+          "apr": 2.99,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 660,
+          "apr": 4.49,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 600,
+          "apr": 7.49,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.08,
+      "cash_back_alternative": 500,
+      "special_incentives": [
+        {
+          "name": "loyalty_bonus",
+          "amount": 1000,
+          "requirements": [
+            "current_polestar_owner"
+          ]
+        },
+        {
+          "name": "college_graduate",
+          "amount": 500,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "military_appreciation",
+          "amount": 750,
+          "requirements": [
+            "active_military",
+            "veteran"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 0,
+        "expires": null
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.02
+    },
+    {
+      "financing_id": "FIN_PORSCHE_345",
+      "type": "manufacturer_financing",
+      "provider": "Porsche Financial Services",
+      "applicable_makes": [
+        "Porsche"
+      ],
+      "applicable_models": [
+        "Cayenne"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 780,
+          "apr": 2.29,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 720,
+          "apr": 2.99,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 660,
+          "apr": 4.49,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 600,
+          "apr": 7.49,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.08,
+      "cash_back_alternative": 1000,
+      "special_incentives": [
+        {
+          "name": "loyalty_bonus",
+          "amount": 1000,
+          "requirements": [
+            "current_porsche_owner"
+          ]
+        },
+        {
+          "name": "college_graduate",
+          "amount": 500,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "military_appreciation",
+          "amount": 750,
+          "requirements": [
+            "active_military",
+            "veteran"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 750,
+        "expires": null
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.02
+    },
+    {
+      "financing_id": "FIN_RAM_913",
+      "type": "manufacturer_financing",
+      "provider": "Ram Financial Services",
+      "applicable_makes": [
+        "Ram"
+      ],
+      "applicable_models": [
+        "1500"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 780,
+          "apr": 2.29,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 720,
+          "apr": 2.99,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 660,
+          "apr": 4.49,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 600,
+          "apr": 7.49,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.08,
+      "cash_back_alternative": 1500,
+      "special_incentives": [
+        {
+          "name": "loyalty_bonus",
+          "amount": 1000,
+          "requirements": [
+            "current_ram_owner"
+          ]
+        },
+        {
+          "name": "college_graduate",
+          "amount": 500,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "military_appreciation",
+          "amount": 750,
+          "requirements": [
+            "active_military",
+            "veteran"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 500,
+        "expires": null
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.02
+    },
+    {
+      "financing_id": "FIN_RIVIAN_165",
+      "type": "manufacturer_financing",
+      "provider": "Rivian Financial Services",
+      "applicable_makes": [
+        "Rivian"
+      ],
+      "applicable_models": [
+        "R1T"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 780,
+          "apr": 2.29,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 720,
+          "apr": 2.99,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 660,
+          "apr": 4.49,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 600,
+          "apr": 7.49,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.08,
+      "cash_back_alternative": 500,
+      "special_incentives": [
+        {
+          "name": "loyalty_bonus",
+          "amount": 1000,
+          "requirements": [
+            "current_rivian_owner"
+          ]
+        },
+        {
+          "name": "college_graduate",
+          "amount": 500,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "military_appreciation",
+          "amount": 750,
+          "requirements": [
+            "active_military",
+            "veteran"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 500,
+        "expires": null
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.02
+    },
+    {
+      "financing_id": "FIN_SUBARU_712",
+      "type": "manufacturer_financing",
+      "provider": "Subaru Financial Services",
+      "applicable_makes": [
+        "Subaru"
+      ],
+      "applicable_models": [
+        "Ascent",
+        "Outback"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 780,
+          "apr": 2.29,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 720,
+          "apr": 2.99,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 660,
+          "apr": 4.49,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 600,
+          "apr": 7.49,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.08,
+      "cash_back_alternative": 1500,
+      "special_incentives": [
+        {
+          "name": "loyalty_bonus",
+          "amount": 1000,
+          "requirements": [
+            "current_subaru_owner"
+          ]
+        },
+        {
+          "name": "college_graduate",
+          "amount": 500,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "military_appreciation",
+          "amount": 750,
+          "requirements": [
+            "active_military",
+            "veteran"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 0,
+        "expires": null
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.02
+    },
+    {
+      "financing_id": "FIN_VOLKSWAGEN_748",
+      "type": "manufacturer_financing",
+      "provider": "Volkswagen Financial Services",
+      "applicable_makes": [
+        "Volkswagen"
+      ],
+      "applicable_models": [
+        "Atlas",
+        "Tiguan"
+      ],
+      "apr_tiers": [
+        {
+          "credit_score_min": 780,
+          "apr": 2.29,
+          "term_months": [
+            36,
+            48,
+            60
+          ]
+        },
+        {
+          "credit_score_min": 720,
+          "apr": 2.99,
+          "term_months": [
+            48,
+            60,
+            72
+          ]
+        },
+        {
+          "credit_score_min": 660,
+          "apr": 4.49,
+          "term_months": [
+            60,
+            72,
+            84
+          ]
+        },
+        {
+          "credit_score_min": 600,
+          "apr": 7.49,
+          "term_months": [
+            72,
+            84
+          ]
+        }
+      ],
+      "down_payment_required": 0.08,
+      "cash_back_alternative": 1500,
+      "special_incentives": [
+        {
+          "name": "loyalty_bonus",
+          "amount": 1000,
+          "requirements": [
+            "current_volkswagen_owner"
+          ]
+        },
+        {
+          "name": "college_graduate",
+          "amount": 500,
+          "requirements": [
+            "recent_graduate"
+          ]
+        },
+        {
+          "name": "military_appreciation",
+          "amount": 750,
+          "requirements": [
+            "active_military",
+            "veteran"
+          ]
+        },
+        {
+          "name": "electric_incentive",
+          "amount": 2500,
+          "requirements": [
+            "electric_model"
+          ]
+        }
+      ],
+      "seasonal_bonus": {
+        "amount": 750,
+        "expires": null
+      },
+      "lease_alternative": true,
+      "early_termination_penalty": 0.02
+    }
+  ],
+  "third_party_lenders": [
+    {
+      "lender_id": "TPL_001",
+      "name": "Chase Auto Finance",
+      "type": "bank",
+      "apr_range": {
+        "min": 3.49,
+        "max": 18.99
+      },
+      "credit_score_minimum": 580,
+      "loan_amount_range": {
+        "min": 4000,
+        "max": 500000
+      },
+      "term_months_available": [
+        36,
+        48,
+        60,
+        72,
+        84
+      ],
+      "down_payment_required": 0.0,
+      "processing_time_days": 1,
+      "pre_approval_available": true,
+      "specializes_in": [
+        "used_vehicles",
+        "refinancing"
+      ]
+    },
+    {
+      "lender_id": "TPL_002",
+      "name": "Credit Union Auto Loans",
+      "type": "credit_union",
+      "apr_range": {
+        "min": 2.74,
+        "max": 12.99
+      },
+      "credit_score_minimum": 650,
+      "loan_amount_range": {
+        "min": 5000,
+        "max": 200000
+      },
+      "term_months_available": [
+        36,
+        48,
+        60,
+        72
+      ],
+      "down_payment_required": 0.1,
+      "processing_time_days": 3,
+      "pre_approval_available": true,
+      "member_benefits": {
+        "rate_discount": 0.25,
+        "extended_warranty_discount": 0.15
+      },
+      "specializes_in": [
+        "member_rates",
+        "new_vehicles"
+      ]
+    },
+    {
+      "lender_id": "TPL_003",
+      "name": "SubPrime Auto Solutions",
+      "type": "specialty_lender",
+      "apr_range": {
+        "min": 9.99,
+        "max": 24.99
+      },
+      "credit_score_minimum": 500,
+      "loan_amount_range": {
+        "min": 3000,
+        "max": 75000
+      },
+      "term_months_available": [
+        60,
+        72,
+        84,
+        96
+      ],
+      "down_payment_required": 0.2,
+      "processing_time_days": 2,
+      "pre_approval_available": true,
+      "specializes_in": [
+        "credit_rebuilding",
+        "guaranteed_approval"
+      ],
+      "additional_fees": {
+        "origination": 299,
+        "extended_warranty_required": true
+      }
+    },
+    {
+      "lender_id": "TPL_004",
+      "name": "Premium Auto Lending",
+      "type": "luxury_specialist",
+      "apr_range": {
+        "min": 2.99,
+        "max": 8.99
+      },
+      "credit_score_minimum": 720,
+      "loan_amount_range": {
+        "min": 25000,
+        "max": 1000000
+      },
+      "term_months_available": [
+        36,
+        48,
+        60,
+        72
+      ],
+      "down_payment_required": 0.15,
+      "processing_time_days": 1,
+      "pre_approval_available": true,
+      "specializes_in": [
+        "luxury_vehicles",
+        "high_net_worth"
+      ],
+      "additional_services": [
+        "concierge_delivery",
+        "custom_terms"
+      ]
+    }
+  ]
+}

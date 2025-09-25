@@ -1,0 +1,90 @@
+prompt: |
+  ## Cross-Regional Financing Risk Assessment Optimizer
+
+  **PRIMARY GOAL: FIND EXACTLY 5 VEHICLE MODELS WITH LOWEST TOTAL FINANCING RISK SCORES**
+
+  ### Step-by-Step Instructions:
+
+  1. **Load and Parse Data**
+     - Read `data/cars.json`
+     - Read `data/dealers.json` 
+     - Read `data/financing_incentives.json`
+
+  2. **Risk Assessment Requirements**
+     - Calculate depreciation risk factor based on depreciation_rate and market_segment
+     - Compute financing exposure based on dealer APR spreads and credit requirements
+     - Apply regional market volatility multiplier based on dealer concentration
+     - Factor in inventory liquidity risk from dealer stock levels
+     - **PRICE MUST BE >= $40,000**
+     - **MUST BE AVAILABLE AT MINIMUM 3 DIFFERENT DEALERS**
+     - **SAFETY RATING MUST BE >= 4**
+     - **COMBINED MPG MUST BE >= 25**
+
+  3. **Algorithm Approach**
+     - Score each vehicle model using multi-dimensional risk formula
+     - Aggregate dealer-specific risk factors by model availability
+     - Apply financing program risk penalties
+     - FIND top 5 models with LOWEST total risk scores
+
+  **Output Requirements**
+  ```csv
+  make,model,year,avg_price,depreciation_risk,financing_exposure,market_volatility,inventory_liquidity_risk,total_risk_score,rank
+  Toyota,Highlander,2023,48200.00,0.125,2.45,1.08,0.67,4.322,1
+  Honda,Pilot,2022,42300.00,0.138,2.68,1.12,0.71,4.708,2
+  ```
+
+  **Total Risk Score Formula**:
+  ```
+  Depreciation_Risk = depreciation_rate * market_segment_multiplier
+  Market_Segment_Multipliers: luxury=1.5, premium=1.3, mainstream=1.0, economy=0.8, specialty=1.2
+  
+  Financing_Exposure = avg_dealer_apr_max - federal_rate_baseline(3.5)
+  
+  Market_Volatility = dealer_count_variance / avg_dealer_inventory_per_model
+  
+  Inventory_Liquidity_Risk = (sum_inventory_turnover_days / dealer_count) / 45
+  
+  Total_Risk_Score = (Depreciation_Risk * 2.0) + (Financing_Exposure * 0.8) + 
+                     (Market_Volatility * 1.5) + Inventory_Liquidity_Risk
+  ```
+
+  **CRITICAL CONSTRAINTS**:
+  - **DON'T TAKE TOO MUCH TIME OPTIMIZING, PROVIDE THE FIRST SOLUTION THAT YOU FIND**
+  - **PRICE >= $40,000**
+  - **AVAILABLE AT >= 3 DIFFERENT DEALERS**
+  - **SAFETY RATING >= 4**
+  - **COMBINED MPG >= 25**
+  - **EXACTLY 5 models in final output**
+  - Use max APR from financing offers for each applicable make/model combination
+  - Only count dealers that actually have inventory (qty_in_stock + qty_in_transit > 0)
+  - Market volatility calculated from dealer inventory variance within same model
+
+  **Edge Case Handling**:
+  - IF no financing offers for make, use dealer financing_apr_range.max
+  - IF inventory_turnover_days is 0, use 30 as default
+  - IF only 1 dealer has model, set market_volatility to 2.0 (high risk)
+  - Multi-Brand dealers: use their specific financing offers if available
+  - EXCLUDE models available at dealers with customer_satisfaction < 0.75
+
+  **Success Criteria**:
+  - Correct risk score calculations using exact formula
+  - Proper constraint filtering (price, dealer count, safety, mpg)
+  - Accurate financing exposure calculation from APR spreads
+  - Correct market volatility calculation from dealer variance
+  - Results ranked by total_risk_score in ASCENDING order (lowest risk first)
+  - Results saved to `/workdir/sol.csv`
+
+  **Libraries**: pandas, numpy, json, math
+
+metadata:
+  difficulty: ultra_hard
+  category: multi_constraint_optimization
+  required_tools:
+    - str_replace_editor
+  tags:
+    - risk_assessment
+    - financial_analysis
+    - market_volatility
+    - multi_constraint_filtering
+  time_limit: 1500
+  memory_limit: 1024
