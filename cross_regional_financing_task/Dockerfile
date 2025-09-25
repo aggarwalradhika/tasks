@@ -50,7 +50,7 @@ FROM apex_arena:base
 
 # ---- DO NOT CHANGE ORDER BELOW THIS LINE ----
 # Copy grader, reference solution, test answers, and data
-COPY ./grader.py /tests/
+# COPY ./grader.py /tests/
 COPY ./solution.sh /tests/
 COPY ./tests/answers.csv /tests/
 COPY --chown=model:model ./data /workdir/data
