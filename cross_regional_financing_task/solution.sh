@@ -7,165 +7,138 @@ set -euo pipefail
 
 python3 - << 'PY'
 from pathlib import Path
-import json, csv, os
-import statistics as stats
+import json, csv
+from collections import defaultdict
 
 DATA = Path('/workdir/data')
 OUT  = Path('/workdir/sol.csv')
 
 def load_json(name):
-    with open(DATA / name, 'r') as f:
-        return json.load(f)
+    return json.loads((DATA / name).read_text())
 
-cars_data       = load_json('cars.json')
-dealers_data    = load_json('dealers.json')
-financing_data  = load_json('financing_incentives.json')
+cars            = load_json('cars.json')["cars"]
+dealers         = load_json('dealers.json')["dealers"]
+financing_offers= load_json('financing_incentives.json')["financing_offers"]
 
-cars            = cars_data['cars']
-dealers         = dealers_data['dealers']
-financing_offers= financing_data['financing_offers']
+SAT_THRESHOLD = 0.75
+MIN_PRICE, MIN_SAFETY, MIN_MPG, MIN_DEALERS = 40000, 4, 25, 3
+FED_BASELINE, DEFAULT_MAX_APR = 3.5, 8.5
 
-# --- Functions that replicate the user's code ---
+SEG_MULT = {
+  'luxury':1.5,'ultra_luxury':1.5,'premium':1.3,'mainstream':1.0,
+  'economy':0.8,'specialty':1.2,'value':0.9,'performance':1.4,'family':0.95
+}
 
-def calculate_depreciation_risk(depreciation_rate, market_segment):
-    multipliers = {
-        'luxury': 1.5, 'ultra_luxury': 1.5, 'premium': 1.3, 'mainstream': 1.0,
-        'economy': 0.8, 'specialty': 1.2, 'value': 0.9, 'performance': 1.4, 'family': 0.95
-    }
-    return float(depreciation_rate) * multipliers.get((market_segment or '').lower(), 1.0)
+def dep_risk(rate, seg):
+    return float(rate) * SEG_MULT.get((seg or '').lower(), 1.0)
 
-def get_max_financing_apr(make, model, offers):
-    max_apr = 0.0
-    for offer in offers:
-        if make in offer.get('applicable_makes', []):
-            models = offer.get('applicable_models', [])
+def max_apr(make, model, offers):
+    mx = None
+    for o in offers:
+        if make in o.get('applicable_makes', []):
+            models = o.get('applicable_models', [])
             if (model in models) or ('all_luxury_models' in models):
-                tiers = offer.get('apr_tiers', [])
-                if tiers:
-                    offer_max = max(t['apr'] for t in tiers if 'apr' in t)
-                    if offer_max is not None:
-                        max_apr = max(max_apr, float(offer_max))
-    return max_apr
+                for t in o.get('apr_tiers', []):
+                    a = t.get('apr')
+                    if a is not None:
+                        mx = float(a) if mx is None else max(mx, float(a))
+    return mx if mx is not None else DEFAULT_MAX_APR
 
-def calculate_financing_exposure(max_apr):
-    federal_baseline = 3.5
-    return max(0.0, float(max_apr) - federal_baseline)
+def fin_exposure(mx): return max(0.0, float(mx) - FED_BASELINE)
 
-def calculate_market_volatility(dealer_inventories):
-    # NOTE: mirrors the user's code (<=1 dealer -> 2.0). The "== 0" branch in their code
-    # is unreachable and thus not replicated intentionally.
-    n = len(dealer_inventories)
-    if n <= 1:
-        return 2.0
-    mean_inv = sum(dealer_inventories) / n
-    if mean_inv == 0:
-        return 2.5
-    # population variance / mean
-    variance = sum((x - mean_inv)**2 for x in dealer_inventories) / n
-    return variance / mean_inv
+def pop_var(vals):
+    n = len(vals)
+    if n == 0: return 0.0
+    m = sum(vals)/n
+    return sum((v-m)**2 for v in vals)/n
 
-def calculate_inventory_liquidity_risk(turnover_days_list, dealer_count):
-    if dealer_count == 0 or not turnover_days_list:
-        return 2.0
-    cleaned = [(30 if d == 0 else d) for d in turnover_days_list]
-    avg_turnover = sum(cleaned) / len(cleaned)
-    return avg_turnover / 45.0
+def market_vol(inv_counts):
+    if len(inv_counts) <= 1: return 2.0
+    mean = sum(inv_counts)/len(inv_counts)
+    if mean == 0: return 2.5
+    return pop_var(inv_counts)/mean
 
-# Aggregate per (make, model, year)
-from collections import defaultdict
-model_data = defaultdict(lambda: {
-    'make':'', 'model':'', 'year':0,
-    'prices':[], 'depreciation_rate':0.0, 'market_segment':'',
-    'safety_rating':0.0, 'mpg_combined':0.0,
-    'dealer_count':0, 'dealer_inventories':[], 'dealer_turnover_days':[],
-    'satisfactory_dealers':0
-})
+def inv_liq(turnover_days_list):
+    if not turnover_days_list: return 2.0
+    cleaned = [30.0 if d == 0 else float(d) for d in turnover_days_list]
+    return (sum(cleaned)/len(cleaned))/45.0
 
-for car in cars:
-    key = (car['make'], car['model'], car['year'])
-    md = model_data[key]
-    md['make'] = car['make']
-    md['model'] = car['model']
-    md['year'] = car['year']
-    md['prices'].append(float(car['price']))
-    md['depreciation_rate'] = float(car['depreciation_rate'])
-    md['market_segment'] = car['market_segment']
-    md['safety_rating'] = float(car['safety_rating'])
-    md['mpg_combined'] = float(car['mpg_combined'])
-
-# count satisfactory dealers with positive inventory (by car_id)
+# Index cars by (make,model,year) and by id
 cars_by_id = {c['id']: c for c in cars}
-for dealer in dealers:
-    if float(dealer.get('customer_satisfaction', 0.0)) < 0.75:
-        continue
-    inv = dealer.get('inventory', [])
-    for item in inv:
-        car = cars_by_id.get(item.get('car_id'))
-        if not car:
-            continue
-        total_inv = float(item.get('qty_in_stock',0)) + float(item.get('qty_in_transit',0))
-        if total_inv <= 0:
-            continue
-        key = (car['make'], car['model'], car['year'])
-        md = model_data[key]
-        md['dealer_count'] += 1
-        md['dealer_inventories'].append(total_inv)
-        # note: user's code uses dealer-level turnover, appended per item encounter
-        md['dealer_turnover_days'].append(float(dealer.get('inventory_turnover_days', 0)))
-        md['satisfactory_dealers'] += 1
+keys = {(c['make'], c['model'], int(c['year'])) for c in cars}
 
-# compute results
 results = []
-for key, md in model_data.items():
-    if not md['prices']:
-        continue
-    avg_price = sum(md['prices']) / len(md['prices'])
-    # constraints (mirror user's code)
-    if (avg_price < 40000 or
-        md['satisfactory_dealers'] < 3 or
-        md['safety_rating'] < 4 or
-        md['mpg_combined'] < 25):
+for mk, md, yr in keys:
+    rows = [c for c in cars if c['make']==mk and c['model']==md and int(c['year'])==yr]
+    prices = [float(c['price']) for c in rows]
+    if not prices: continue
+    avg_price = sum(prices)/len(prices)
+
+    c0 = rows[0]
+    safety = float(c0['safety_rating'])
+    mpg    = float(c0['mpg_combined'])
+    car_ids = {c['id'] for c in rows}
+
+    # ---- UNIQUE DEALERS PER MODEL ----
+    unique_dealer_ids = set()
+    inv_counts = []
+    turnover_days = []
+    for d in dealers:
+        if float(d.get('customer_satisfaction', 0.0)) < SAT_THRESHOLD:
+            continue
+        # If any inventory item for any car_id of this model has positive qty, count this dealer once
+        has_model_inventory = False
+        for it in d.get('inventory', []):
+            if it.get('car_id') in car_ids:
+                qty = float(it.get('qty_in_stock',0)) + float(it.get('qty_in_transit',0))
+                if qty > 0:
+                    has_model_inventory = True
+                    break
+        if has_model_inventory:
+            dealer_id = d.get('id') or id(d)  # fall back to object id if no id field in data
+            if dealer_id not in unique_dealer_ids:
+                unique_dealer_ids.add(dealer_id)
+                # Representative inventory count for volatility: sum of positive quantities for this model at this dealer
+                qty_sum = 0.0
+                for it in d.get('inventory', []):
+                    if it.get('car_id') in car_ids:
+                        qty_sum += max(0.0, float(it.get('qty_in_stock',0)) + float(it.get('qty_in_transit',0)))
+                inv_counts.append(qty_sum if qty_sum>0 else 0.0)
+                turnover_days.append(float(d.get('inventory_turnover_days', 0)))
+
+    # ---- Eligibility with UNIQUE dealers ----
+    if not (avg_price >= MIN_PRICE and safety >= MIN_SAFETY and mpg >= MIN_MPG and len(unique_dealer_ids) >= MIN_DEALERS):
         continue
 
-    dep_risk = calculate_depreciation_risk(md['depreciation_rate'], md['market_segment'])
-    max_apr  = get_max_financing_apr(md['make'], md['model'], financing_offers)
-    if max_apr == 0:
-        max_apr = 8.5  # conservative default from user's code
-    fin_exp  = calculate_financing_exposure(max_apr)
-    mvol     = calculate_market_volatility(md['dealer_inventories'])
-    inv_liq  = calculate_inventory_liquidity_risk(md['dealer_turnover_days'], md['dealer_count'])
-
-    total = (dep_risk * 2.0) + (fin_exp * 0.8) + (mvol * 1.5) + inv_liq
+    dep = dep_risk(float(c0['depreciation_rate']), c0.get('market_segment'))
+    mx  = max_apr(mk, md, financing_offers)
+    fin = fin_exposure(mx)
+    vol = market_vol(inv_counts)
+    liq = inv_liq(turnover_days)
+    total = 2.0*dep + 0.8*fin + 1.5*vol + liq
 
     results.append({
-        'make': md['make'],
-        'model': md['model'],
-        'year': int(md['year']),
-        'avg_price': round(avg_price, 2),
-        'depreciation_risk': round(dep_risk, 3),
-        'financing_exposure': round(fin_exp, 2),
-        'market_volatility': round(mvol, 2),
-        'inventory_liquidity_risk': round(inv_liq, 2),
-        'total_risk_score': round(total, 3)
+        'make': mk, 'model': md, 'year': yr,
+        'avg_price': float(f'{avg_price:.2f}'),
+        'depreciation_risk': float(f'{dep:.3f}'),
+        'financing_exposure': float(f'{fin:.2f}'),
+        'market_volatility': float(f'{vol:.2f}'),
+        'inventory_liquidity_risk': float(f'{liq:.2f}'),
+        'total_risk_score': float(f'{total:.3f}')
     })
 
-# sort ascending by total risk and take top-5
-results.sort(key=lambda r: r['total_risk_score'])
+# sort asc by total risk, tie-break by make/model/year, take 5
+results.sort(key=lambda r: (r['total_risk_score'], r['make'], r['model'], r['year']))
 top5 = results[:5]
-for i, r in enumerate(top5, start=1):
+for i, r in enumerate(top5, 1):
     r['rank'] = i
 
-# write /workdir/sol.csv in the exact column order
-cols = [
-    'make','model','year','avg_price','depreciation_risk',
-    'financing_exposure','market_volatility','inventory_liquidity_risk',
-    'total_risk_score','rank'
-]
-with open(OUT, 'w', newline='') as f:
+cols = ["make","model","year","avg_price","depreciation_risk","financing_exposure",
+        "market_volatility","inventory_liquidity_risk","total_risk_score","rank"]
+with OUT.open("w", newline="") as f:
     w = csv.DictWriter(f, fieldnames=cols)
     w.writeheader()
     for r in top5:
-        w.writerow({c: r[c] for c in cols})
-
+        w.writerow({k: r[k] for k in cols})
 print(f"Wrote {len(top5)} rows to {OUT}")
 PY
