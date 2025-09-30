@@ -1,0 +1,34 @@
+prompt: |
+  You are inside a Linux container without internet.
+  Goal: Produce /workdir/sol.csv with the **exact** header and rows below:
+    Columns: user_id,p95_ms,error_rate
+    - user_id: string (sorted ascending)
+    - p95_ms: integer (95th percentile latency in milliseconds; round **half up** to nearest int)
+    - error_rate: decimal in [0,1] with exactly 4 digits after the decimal (round **half up**)
+  
+  Input logs are under /workdir/data/logs/ and may be:
+    - JSONL (possibly .gz)
+    - CSV (possibly .bz2)
+  They mix fields and timezones. You must:
+    1) Parse only requests where path == "/api/v2/order".
+    2) Use request_id to **deduplicate across files** (keep one copy of each request_id).
+    3) Normalize timestamps to UTC; then filter **UTC window** inclusive:
+         start = 2023-03-26T01:00:00Z
+         end   = 2023-03-26T02:30:00Z
+    4) Compute per-user metrics:
+         - p95_ms: 95th percentile of latency_ms; round half up to int.
+         - error_rate: (# status >=500) / (# total), rounded half up to 4 decimals.
+    5) Output **exactly** one CSV at /workdir/sol.csv with header and rows sorted by user_id asc.
+  
+  Notes:
+    - Skip malformed lines silently.
+    - CSV inputs may include header row; JSONL always one JSON object per line.
+    - For CSV, columns are: ts,request_id,user_id,path,status,latency_ms
+    - For JSONL, keys match the CSV column names.
+    - Compressed files use standard gzip (.gz) or bzip2 (.bz2).
+    - Do NOT hardcode answers. Your approach should work for any similar dataset in this format.
+metadata:
+  difficulty: hard
+  category: short
+  tags: [devops, data-engineering, log-parsing, unix, analytics]
+  references: ["N/A"]
