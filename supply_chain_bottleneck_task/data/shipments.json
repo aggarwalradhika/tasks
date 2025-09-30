@@ -1,0 +1,4041 @@
+[
+  {
+    "shipment_id": "S1",
+    "source": "SupplierG",
+    "destination": "Warehouseb",
+    "hops": [
+      " Hub1 "
+    ],
+    "quantity": 105,
+    "expected_days": 7,
+    "actual_days": 10
+  },
+  {
+    "shipment_id": "S2",
+    "source": "SupplierD",
+    "destination": "warehousea",
+    "hops": [
+      "HUB3"
+    ],
+    "quantity": 153,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S3",
+    "source": "SupplierD",
+    "destination": "Warehoused",
+    "hops": [
+      "Hub3",
+      " Hub1 ",
+      "Hub5"
+    ],
+    "quantity": 163,
+    "expected_days": 7,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S4",
+    "source": "SupplierB",
+    "destination": "WarehouseC",
+    "hops": [
+      "hub6",
+      "HUB5"
+    ],
+    "quantity": 144,
+    "expected_days": 7,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S5",
+    "source": "SupplierD",
+    "destination": "warehoused",
+    "hops": [
+      "Hub4",
+      " Hub3 "
+    ],
+    "quantity": 74,
+    "expected_days": 5,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S6",
+    "source": "SupplierI",
+    "destination": "warehoused",
+    "hops": [
+      "HUB2",
+      "Hub4"
+    ],
+    "quantity": 71,
+    "expected_days": 5,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S7",
+    "source": "SupplierA",
+    "destination": "warehousea",
+    "hops": [
+      "Hub4",
+      "Hub3"
+    ],
+    "quantity": 123,
+    "expected_days": 8,
+    "actual_days": 11
+  },
+  {
+    "shipment_id": "S8",
+    "source": "SupplierE",
+    "destination": "Warehousee",
+    "hops": [
+      " Hub6 "
+    ],
+    "quantity": 192,
+    "expected_days": 7,
+    "actual_days": 10
+  },
+  {
+    "shipment_id": "S9",
+    "source": "SupplierF",
+    "destination": " WarehouseE ",
+    "hops": [
+      "Hub2"
+    ],
+    "quantity": 32,
+    "expected_days": 3,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S10",
+    "source": "SupplierB",
+    "destination": "WarehouseD",
+    "hops": [
+      "Hub5"
+    ],
+    "quantity": 102,
+    "expected_days": 7,
+    "actual_days": 10
+  },
+  {
+    "shipment_id": "S11",
+    "source": "SupplierK",
+    "destination": " WarehouseA ",
+    "hops": [
+      " Hub3 ",
+      "hub6"
+    ],
+    "quantity": 93,
+    "expected_days": 3,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S12",
+    "source": "SupplierB",
+    "destination": "WarehouseE",
+    "hops": [
+      " Hub3 ",
+      " Hub5 "
+    ],
+    "quantity": 122,
+    "expected_days": 4,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S13",
+    "source": "SupplierJ",
+    "destination": "WarehouseA",
+    "hops": [
+      " Hub1 "
+    ],
+    "quantity": 174,
+    "expected_days": 5,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S14",
+    "source": "SupplierB",
+    "destination": " WarehouseB ",
+    "hops": [
+      "HUB1",
+      " Hub5 "
+    ],
+    "quantity": 64,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S15",
+    "source": "SupplierG",
+    "destination": "WarehouseD",
+    "hops": [
+      "Hub5",
+      "hub2",
+      "hub3"
+    ],
+    "quantity": 157,
+    "expected_days": 6,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S16",
+    "source": "SupplierF",
+    "destination": "warehouseb",
+    "hops": [
+      "Hub5"
+    ],
+    "quantity": 98,
+    "expected_days": 7,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S17",
+    "source": "SupplierB",
+    "destination": "warehousec",
+    "hops": [
+      "hub3",
+      "Hub1",
+      "Hub2"
+    ],
+    "quantity": 86,
+    "expected_days": 4,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S18",
+    "source": "SupplierB",
+    "destination": "WarehouseC",
+    "hops": [
+      "Hub4"
+    ],
+    "quantity": 75,
+    "expected_days": 6,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S19",
+    "source": "SupplierG",
+    "destination": " WarehouseB ",
+    "hops": [
+      "Hub1",
+      "Hub2"
+    ],
+    "quantity": 116,
+    "expected_days": 6,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S20",
+    "source": "SupplierB",
+    "destination": "Warehousea",
+    "hops": [
+      "hub5"
+    ],
+    "quantity": 140,
+    "expected_days": 3,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S21",
+    "source": "SupplierH",
+    "destination": "WAREHOUSEA",
+    "hops": [
+      "Hub4"
+    ],
+    "quantity": 101,
+    "expected_days": 6,
+    "actual_days": 10
+  },
+  {
+    "shipment_id": "S22",
+    "source": "SupplierG",
+    "destination": "WarehouseF",
+    "hops": [
+      "HUB6",
+      "hub5"
+    ],
+    "quantity": 102,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S23",
+    "source": "SupplierJ",
+    "destination": "WarehouseA",
+    "hops": [
+      "Hub1",
+      "hub3"
+    ],
+    "quantity": 143,
+    "expected_days": 7,
+    "actual_days": 13
+  },
+  {
+    "shipment_id": "S24",
+    "source": "SupplierJ",
+    "destination": " WarehouseD ",
+    "hops": [
+      " Hub2 "
+    ],
+    "quantity": 114,
+    "expected_days": 3,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S25",
+    "source": "SupplierA",
+    "destination": "Warehousee",
+    "hops": [
+      "hub4",
+      "HUB5"
+    ],
+    "quantity": 10,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S26",
+    "source": "SupplierC",
+    "destination": "WarehouseC",
+    "hops": [
+      " Hub3 ",
+      "Hub4"
+    ],
+    "quantity": 86,
+    "expected_days": 3,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S27",
+    "source": "SupplierI",
+    "destination": "WAREHOUSEB",
+    "hops": [
+      " Hub3 "
+    ],
+    "quantity": 175,
+    "expected_days": 4,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S28",
+    "source": "SupplierJ",
+    "destination": "WarehouseF",
+    "hops": [
+      "hub6",
+      "HUB5",
+      "Hub1"
+    ],
+    "quantity": 66,
+    "expected_days": 7,
+    "actual_days": 10
+  },
+  {
+    "shipment_id": "S29",
+    "source": "SupplierL",
+    "destination": "WAREHOUSEE",
+    "hops": [
+      " Hub3 ",
+      "Hub6"
+    ],
+    "quantity": 108,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S30",
+    "source": "SupplierA",
+    "destination": "warehousec",
+    "hops": [
+      "HUB4"
+    ],
+    "quantity": 135,
+    "expected_days": 3,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S31",
+    "source": "SupplierL",
+    "destination": " WarehouseD ",
+    "hops": [
+      "HUB6"
+    ],
+    "quantity": 81,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S32",
+    "source": "SupplierI",
+    "destination": "WAREHOUSEA",
+    "hops": [
+      "Hub2"
+    ],
+    "quantity": 92,
+    "expected_days": 5,
+    "actual_days": 10
+  },
+  {
+    "shipment_id": "S33",
+    "source": "SupplierD",
+    "destination": "warehousec",
+    "hops": [
+      "hub6",
+      "hub1"
+    ],
+    "quantity": 115,
+    "expected_days": 6,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S34",
+    "source": "SupplierG",
+    "destination": "warehousec",
+    "hops": [
+      "HUB6"
+    ],
+    "quantity": 18,
+    "expected_days": 6,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S35",
+    "source": "SupplierL",
+    "destination": "warehoused",
+    "hops": [
+      "hub1"
+    ],
+    "quantity": 112,
+    "expected_days": 6,
+    "actual_days": 10
+  },
+  {
+    "shipment_id": "S36",
+    "source": "SupplierA",
+    "destination": "Warehousec",
+    "hops": [
+      "HUB4",
+      " Hub3 "
+    ],
+    "quantity": 172,
+    "expected_days": 3,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S37",
+    "source": "SupplierK",
+    "destination": "Warehousea",
+    "hops": [
+      "Hub5",
+      "Hub3",
+      " Hub1 "
+    ],
+    "quantity": 122,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S38",
+    "source": "SupplierF",
+    "destination": "WarehouseE",
+    "hops": [
+      "hub3",
+      "HUB4"
+    ],
+    "quantity": 78,
+    "expected_days": 7,
+    "actual_days": 12
+  },
+  {
+    "shipment_id": "S39",
+    "source": "SupplierL",
+    "destination": "WarehouseE",
+    "hops": [
+      "Hub5"
+    ],
+    "quantity": 63,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S40",
+    "source": "SupplierK",
+    "destination": " WarehouseF ",
+    "hops": [
+      "HUB5",
+      "Hub3",
+      "HUB1"
+    ],
+    "quantity": 12,
+    "expected_days": 5,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S41",
+    "source": "SupplierC",
+    "destination": "WarehouseD",
+    "hops": [
+      " Hub6 "
+    ],
+    "quantity": 61,
+    "expected_days": 7,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S42",
+    "source": "SupplierE",
+    "destination": "Warehousee",
+    "hops": [
+      "Hub4"
+    ],
+    "quantity": 22,
+    "expected_days": 7,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S43",
+    "source": "SupplierK",
+    "destination": "warehousef",
+    "hops": [
+      "Hub4"
+    ],
+    "quantity": 108,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S44",
+    "source": "SupplierK",
+    "destination": "WarehouseB",
+    "hops": [
+      " Hub2 "
+    ],
+    "quantity": 114,
+    "expected_days": 3,
+    "actual_days": 9
+  },
+  {
+    "shipment_id": "S45",
+    "source": "SupplierH",
+    "destination": "WarehouseE",
+    "hops": [
+      "Hub6"
+    ],
+    "quantity": 121,
+    "expected_days": 6,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S46",
+    "source": "SupplierG",
+    "destination": "Warehousee",
+    "hops": [
+      "Hub6"
+    ],
+    "quantity": 158,
+    "expected_days": 6,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S47",
+    "source": "SupplierC",
+    "destination": "warehousee",
+    "hops": [
+      " Hub6 ",
+      "Hub5"
+    ],
+    "quantity": 19,
+    "expected_days": 6,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S48",
+    "source": "SupplierL",
+    "destination": "WAREHOUSEB",
+    "hops": [
+      "Hub4",
+      "hub3"
+    ],
+    "quantity": 44,
+    "expected_days": 8,
+    "actual_days": 12
+  },
+  {
+    "shipment_id": "S49",
+    "source": "SupplierH",
+    "destination": "warehouseb",
+    "hops": [
+      "Hub3"
+    ],
+    "quantity": 95,
+    "expected_days": 7,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S50",
+    "source": "SupplierL",
+    "destination": "warehoused",
+    "hops": [
+      "Hub4"
+    ],
+    "quantity": 134,
+    "expected_days": 5,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S51",
+    "source": "SupplierG",
+    "destination": "WAREHOUSEF",
+    "hops": [
+      "HUB5"
+    ],
+    "quantity": 181,
+    "expected_days": 7,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S52",
+    "source": "SupplierG",
+    "destination": "WAREHOUSEF",
+    "hops": [
+      "Hub4",
+      "hub5"
+    ],
+    "quantity": 110,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S53",
+    "source": "SupplierG",
+    "destination": " WarehouseC ",
+    "hops": [
+      "hub4"
+    ],
+    "quantity": 65,
+    "expected_days": 8,
+    "actual_days": 10
+  },
+  {
+    "shipment_id": "S54",
+    "source": "SupplierI",
+    "destination": "warehousee",
+    "hops": [
+      "Hub4"
+    ],
+    "quantity": 37,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S55",
+    "source": "SupplierH",
+    "destination": "Warehoused",
+    "hops": [
+      "HUB3"
+    ],
+    "quantity": 79,
+    "expected_days": 5,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S56",
+    "source": "SupplierE",
+    "destination": "WarehouseF",
+    "hops": [
+      "hub4",
+      "Hub1"
+    ],
+    "quantity": 138,
+    "expected_days": 7,
+    "actual_days": 12
+  },
+  {
+    "shipment_id": "S57",
+    "source": "SupplierA",
+    "destination": " WarehouseB ",
+    "hops": [
+      "HUB2",
+      "HUB1",
+      "hub6"
+    ],
+    "quantity": 141,
+    "expected_days": 7,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S58",
+    "source": "SupplierJ",
+    "destination": "warehousec",
+    "hops": [
+      " Hub6 ",
+      "Hub1",
+      "Hub2"
+    ],
+    "quantity": 142,
+    "expected_days": 3,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S59",
+    "source": "SupplierB",
+    "destination": "WAREHOUSEA",
+    "hops": [
+      " Hub6 ",
+      "Hub2"
+    ],
+    "quantity": 88,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S60",
+    "source": "SupplierI",
+    "destination": "Warehousea",
+    "hops": [
+      "Hub3"
+    ],
+    "quantity": 67,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S61",
+    "source": "SupplierB",
+    "destination": " WarehouseF ",
+    "hops": [
+      " Hub3 "
+    ],
+    "quantity": 134,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S62",
+    "source": "SupplierH",
+    "destination": "WAREHOUSEE",
+    "hops": [
+      "Hub6"
+    ],
+    "quantity": 72,
+    "expected_days": 5,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S63",
+    "source": "SupplierH",
+    "destination": "Warehousee",
+    "hops": [
+      "hub4"
+    ],
+    "quantity": 69,
+    "expected_days": 3,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S64",
+    "source": "SupplierD",
+    "destination": "WarehouseC",
+    "hops": [
+      " Hub3 "
+    ],
+    "quantity": 75,
+    "expected_days": 5,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S65",
+    "source": "SupplierI",
+    "destination": "WAREHOUSED",
+    "hops": [
+      "Hub1",
+      "Hub2",
+      "Hub4"
+    ],
+    "quantity": 72,
+    "expected_days": 6,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S66",
+    "source": "SupplierD",
+    "destination": " WarehouseC ",
+    "hops": [
+      " Hub2 "
+    ],
+    "quantity": 89,
+    "expected_days": 8,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S67",
+    "source": "SupplierF",
+    "destination": "WAREHOUSEE",
+    "hops": [
+      "hub6"
+    ],
+    "quantity": 69,
+    "expected_days": 5,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S68",
+    "source": "SupplierB",
+    "destination": " WarehouseB ",
+    "hops": [
+      " Hub6 ",
+      " Hub2 "
+    ],
+    "quantity": 154,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S69",
+    "source": "SupplierE",
+    "destination": "warehousec",
+    "hops": [
+      "Hub2",
+      " Hub3 ",
+      "HUB6"
+    ],
+    "quantity": 102,
+    "expected_days": 7,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S70",
+    "source": "SupplierK",
+    "destination": "WarehouseA",
+    "hops": [
+      "HUB4",
+      "hub1"
+    ],
+    "quantity": 106,
+    "expected_days": 7,
+    "actual_days": 9
+  },
+  {
+    "shipment_id": "S71",
+    "source": "SupplierE",
+    "destination": "warehoused",
+    "hops": [
+      " Hub4 ",
+      "HUB1",
+      "Hub5"
+    ],
+    "quantity": 47,
+    "expected_days": 8,
+    "actual_days": 9
+  },
+  {
+    "shipment_id": "S72",
+    "source": "SupplierB",
+    "destination": "WAREHOUSEE",
+    "hops": [
+      "Hub4",
+      "Hub5"
+    ],
+    "quantity": 102,
+    "expected_days": 7,
+    "actual_days": 9
+  },
+  {
+    "shipment_id": "S73",
+    "source": "SupplierJ",
+    "destination": "warehousee",
+    "hops": [
+      "Hub3",
+      "hub5",
+      "hub1"
+    ],
+    "quantity": 117,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S74",
+    "source": "SupplierI",
+    "destination": "WarehouseD",
+    "hops": [
+      "HUB1"
+    ],
+    "quantity": 95,
+    "expected_days": 6,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S75",
+    "source": "SupplierD",
+    "destination": "WarehouseF",
+    "hops": [
+      "Hub3"
+    ],
+    "quantity": 109,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S76",
+    "source": "SupplierI",
+    "destination": " WarehouseC ",
+    "hops": [
+      "HUB2"
+    ],
+    "quantity": 88,
+    "expected_days": 4,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S77",
+    "source": "SupplierL",
+    "destination": " WarehouseA ",
+    "hops": [
+      "Hub3",
+      "Hub4"
+    ],
+    "quantity": 66,
+    "expected_days": 6,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S78",
+    "source": "SupplierA",
+    "destination": "WarehouseE",
+    "hops": [
+      " Hub6 ",
+      " Hub3 "
+    ],
+    "quantity": 106,
+    "expected_days": 5,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S79",
+    "source": "SupplierK",
+    "destination": "Warehouseb",
+    "hops": [
+      "Hub5",
+      "Hub1"
+    ],
+    "quantity": 42,
+    "expected_days": 5,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S80",
+    "source": "SupplierF",
+    "destination": "Warehousef",
+    "hops": [
+      "Hub3"
+    ],
+    "quantity": 110,
+    "expected_days": 3,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S81",
+    "source": "SupplierE",
+    "destination": " WarehouseA ",
+    "hops": [
+      " Hub4 ",
+      "Hub5"
+    ],
+    "quantity": 66,
+    "expected_days": 5,
+    "actual_days": 9
+  },
+  {
+    "shipment_id": "S82",
+    "source": "SupplierH",
+    "destination": "WarehouseE",
+    "hops": [
+      "Hub2"
+    ],
+    "quantity": 109,
+    "expected_days": 5,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S83",
+    "source": "SupplierD",
+    "destination": "warehousec",
+    "hops": [
+      "hub2"
+    ],
+    "quantity": 42,
+    "expected_days": 3,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S84",
+    "source": "SupplierE",
+    "destination": "warehousea",
+    "hops": [
+      "Hub5",
+      "Hub4"
+    ],
+    "quantity": 123,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S85",
+    "source": "SupplierH",
+    "destination": " WarehouseD ",
+    "hops": [
+      "Hub3",
+      "hub5",
+      " Hub6 "
+    ],
+    "quantity": 156,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S86",
+    "source": "SupplierL",
+    "destination": "WAREHOUSED",
+    "hops": [
+      "Hub1",
+      "HUB3"
+    ],
+    "quantity": 10,
+    "expected_days": 5,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S87",
+    "source": "SupplierJ",
+    "destination": "warehouseb",
+    "hops": [
+      "Hub6",
+      "HUB4"
+    ],
+    "quantity": 56,
+    "expected_days": 5,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S88",
+    "source": "SupplierL",
+    "destination": "Warehouseb",
+    "hops": [
+      "Hub4"
+    ],
+    "quantity": 115,
+    "expected_days": 6,
+    "actual_days": 10
+  },
+  {
+    "shipment_id": "S89",
+    "source": "SupplierK",
+    "destination": " WarehouseD ",
+    "hops": [
+      "Hub6",
+      "Hub2"
+    ],
+    "quantity": 120,
+    "expected_days": 7,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S90",
+    "source": "SupplierH",
+    "destination": "WAREHOUSED",
+    "hops": [
+      "Hub2"
+    ],
+    "quantity": 95,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S91",
+    "source": "SupplierF",
+    "destination": " WarehouseC ",
+    "hops": [
+      " Hub4 ",
+      "Hub1"
+    ],
+    "quantity": 147,
+    "expected_days": 6,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S92",
+    "source": "SupplierB",
+    "destination": "WarehouseC",
+    "hops": [
+      "Hub6"
+    ],
+    "quantity": 36,
+    "expected_days": 4,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S93",
+    "source": "SupplierH",
+    "destination": " WarehouseA ",
+    "hops": [
+      "hub3"
+    ],
+    "quantity": 168,
+    "expected_days": 5,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S94",
+    "source": "SupplierG",
+    "destination": "Warehouseb",
+    "hops": [
+      " Hub2 ",
+      "hub6"
+    ],
+    "quantity": 120,
+    "expected_days": 3,
+    "actual_days": 2
+  },
+  {
+    "shipment_id": "S95",
+    "source": "SupplierJ",
+    "destination": " WarehouseF ",
+    "hops": [
+      "HUB4"
+    ],
+    "quantity": 99,
+    "expected_days": 3,
+    "actual_days": 2
+  },
+  {
+    "shipment_id": "S96",
+    "source": "SupplierC",
+    "destination": "Warehousee",
+    "hops": [
+      "HUB3"
+    ],
+    "quantity": 130,
+    "expected_days": 5,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S97",
+    "source": "SupplierE",
+    "destination": "Warehoused",
+    "hops": [
+      "Hub4"
+    ],
+    "quantity": 130,
+    "expected_days": 5,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S98",
+    "source": "SupplierE",
+    "destination": "warehousef",
+    "hops": [
+      "HUB6"
+    ],
+    "quantity": 124,
+    "expected_days": 3,
+    "actual_days": 2
+  },
+  {
+    "shipment_id": "S99",
+    "source": "SupplierJ",
+    "destination": "WAREHOUSEE",
+    "hops": [
+      "Hub2",
+      "Hub6"
+    ],
+    "quantity": 99,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S100",
+    "source": "SupplierH",
+    "destination": "warehousef",
+    "hops": [
+      "Hub3"
+    ],
+    "quantity": 167,
+    "expected_days": 4,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S101",
+    "source": "SupplierD",
+    "destination": "WAREHOUSEC",
+    "hops": [
+      "Hub5"
+    ],
+    "quantity": 13,
+    "expected_days": 4,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S102",
+    "source": "SupplierL",
+    "destination": "WAREHOUSEA",
+    "hops": [
+      "Hub1",
+      " Hub4 "
+    ],
+    "quantity": 82,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S103",
+    "source": "SupplierB",
+    "destination": "warehousee",
+    "hops": [
+      "HUB1",
+      "Hub3"
+    ],
+    "quantity": 127,
+    "expected_days": 8,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S104",
+    "source": "SupplierH",
+    "destination": "WAREHOUSEC",
+    "hops": [
+      "Hub5"
+    ],
+    "quantity": 126,
+    "expected_days": 7,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S105",
+    "source": "SupplierK",
+    "destination": "warehousea",
+    "hops": [
+      " Hub2 "
+    ],
+    "quantity": 132,
+    "expected_days": 6,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S106",
+    "source": "SupplierG",
+    "destination": "warehousef",
+    "hops": [
+      " Hub6 "
+    ],
+    "quantity": 88,
+    "expected_days": 8,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S107",
+    "source": "SupplierG",
+    "destination": "WarehouseD",
+    "hops": [
+      "hub4",
+      "HUB5"
+    ],
+    "quantity": 130,
+    "expected_days": 8,
+    "actual_days": 10
+  },
+  {
+    "shipment_id": "S108",
+    "source": "SupplierK",
+    "destination": "Warehousec",
+    "hops": [
+      "Hub6"
+    ],
+    "quantity": 87,
+    "expected_days": 3,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S109",
+    "source": "SupplierB",
+    "destination": "warehousea",
+    "hops": [
+      "Hub6",
+      " Hub5 "
+    ],
+    "quantity": 134,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S110",
+    "source": "SupplierJ",
+    "destination": "warehousec",
+    "hops": [
+      "HUB2"
+    ],
+    "quantity": 111,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S111",
+    "source": "SupplierC",
+    "destination": "WAREHOUSEA",
+    "hops": [
+      " Hub2 "
+    ],
+    "quantity": 95,
+    "expected_days": 3,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S112",
+    "source": "SupplierA",
+    "destination": "Warehouseb",
+    "hops": [
+      "Hub1"
+    ],
+    "quantity": 92,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S113",
+    "source": "SupplierH",
+    "destination": "Warehousea",
+    "hops": [
+      " Hub5 ",
+      "HUB6"
+    ],
+    "quantity": 72,
+    "expected_days": 7,
+    "actual_days": 11
+  },
+  {
+    "shipment_id": "S114",
+    "source": "SupplierK",
+    "destination": "WAREHOUSED",
+    "hops": [
+      "Hub1",
+      "Hub4",
+      "Hub5"
+    ],
+    "quantity": 108,
+    "expected_days": 8,
+    "actual_days": 11
+  },
+  {
+    "shipment_id": "S115",
+    "source": "SupplierJ",
+    "destination": "WAREHOUSEC",
+    "hops": [
+      " Hub2 "
+    ],
+    "quantity": 62,
+    "expected_days": 8,
+    "actual_days": 14
+  },
+  {
+    "shipment_id": "S116",
+    "source": "SupplierH",
+    "destination": "warehousea",
+    "hops": [
+      " Hub4 "
+    ],
+    "quantity": 62,
+    "expected_days": 8,
+    "actual_days": 11
+  },
+  {
+    "shipment_id": "S117",
+    "source": "SupplierG",
+    "destination": "WAREHOUSED",
+    "hops": [
+      "Hub2"
+    ],
+    "quantity": 76,
+    "expected_days": 6,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S118",
+    "source": "SupplierK",
+    "destination": "Warehousef",
+    "hops": [
+      "Hub2"
+    ],
+    "quantity": 137,
+    "expected_days": 6,
+    "actual_days": 10
+  },
+  {
+    "shipment_id": "S119",
+    "source": "SupplierB",
+    "destination": "WarehouseE",
+    "hops": [
+      "HUB3",
+      "Hub2"
+    ],
+    "quantity": 193,
+    "expected_days": 7,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S120",
+    "source": "SupplierE",
+    "destination": "WAREHOUSEE",
+    "hops": [
+      "hub3",
+      "Hub1"
+    ],
+    "quantity": 136,
+    "expected_days": 7,
+    "actual_days": 10
+  },
+  {
+    "shipment_id": "S121",
+    "source": "SupplierI",
+    "destination": "WAREHOUSEE",
+    "hops": [
+      " Hub3 "
+    ],
+    "quantity": 106,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S122",
+    "source": "SupplierA",
+    "destination": " WarehouseC ",
+    "hops": [
+      "hub6"
+    ],
+    "quantity": 141,
+    "expected_days": 5,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S123",
+    "source": "SupplierK",
+    "destination": "Warehousef",
+    "hops": [
+      "Hub2"
+    ],
+    "quantity": 93,
+    "expected_days": 8,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S124",
+    "source": "SupplierF",
+    "destination": "warehousef",
+    "hops": [
+      "Hub3"
+    ],
+    "quantity": 92,
+    "expected_days": 5,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S125",
+    "source": "SupplierC",
+    "destination": "WarehouseC",
+    "hops": [
+      "hub1",
+      " Hub6 "
+    ],
+    "quantity": 60,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S126",
+    "source": "SupplierF",
+    "destination": "warehousef",
+    "hops": [
+      "Hub3"
+    ],
+    "quantity": 114,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S127",
+    "source": "SupplierG",
+    "destination": "warehousec",
+    "hops": [
+      "Hub1",
+      "Hub6",
+      "hub2"
+    ],
+    "quantity": 164,
+    "expected_days": 5,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S128",
+    "source": "SupplierG",
+    "destination": "Warehousee",
+    "hops": [
+      "Hub2"
+    ],
+    "quantity": 76,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S129",
+    "source": "SupplierL",
+    "destination": "WAREHOUSED",
+    "hops": [
+      "Hub1"
+    ],
+    "quantity": 170,
+    "expected_days": 7,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S130",
+    "source": "SupplierB",
+    "destination": "Warehouseb",
+    "hops": [
+      "Hub3"
+    ],
+    "quantity": 62,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S131",
+    "source": "SupplierB",
+    "destination": "warehoused",
+    "hops": [
+      "HUB5"
+    ],
+    "quantity": 60,
+    "expected_days": 5,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S132",
+    "source": "SupplierB",
+    "destination": "warehousee",
+    "hops": [
+      "HUB1"
+    ],
+    "quantity": 93,
+    "expected_days": 7,
+    "actual_days": 11
+  },
+  {
+    "shipment_id": "S133",
+    "source": "SupplierD",
+    "destination": "Warehouseb",
+    "hops": [
+      "Hub3"
+    ],
+    "quantity": 110,
+    "expected_days": 8,
+    "actual_days": 13
+  },
+  {
+    "shipment_id": "S134",
+    "source": "SupplierJ",
+    "destination": "Warehousef",
+    "hops": [
+      "HUB4",
+      "hub5"
+    ],
+    "quantity": 120,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S135",
+    "source": "SupplierB",
+    "destination": "Warehousec",
+    "hops": [
+      "Hub6"
+    ],
+    "quantity": 115,
+    "expected_days": 5,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S136",
+    "source": "SupplierA",
+    "destination": " WarehouseA ",
+    "hops": [
+      " Hub3 "
+    ],
+    "quantity": 48,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S137",
+    "source": "SupplierI",
+    "destination": " WarehouseE ",
+    "hops": [
+      "HUB5"
+    ],
+    "quantity": 162,
+    "expected_days": 3,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S138",
+    "source": "SupplierH",
+    "destination": " WarehouseD ",
+    "hops": [
+      "Hub1"
+    ],
+    "quantity": 81,
+    "expected_days": 3,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S139",
+    "source": "SupplierK",
+    "destination": "WAREHOUSEF",
+    "hops": [
+      "HUB2"
+    ],
+    "quantity": 60,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S140",
+    "source": "SupplierG",
+    "destination": "WarehouseF",
+    "hops": [
+      "HUB3"
+    ],
+    "quantity": 116,
+    "expected_days": 7,
+    "actual_days": 10
+  },
+  {
+    "shipment_id": "S141",
+    "source": "SupplierF",
+    "destination": "WarehouseD",
+    "hops": [
+      "HUB6"
+    ],
+    "quantity": 86,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S142",
+    "source": "SupplierJ",
+    "destination": "WAREHOUSEF",
+    "hops": [
+      " Hub3 ",
+      "Hub6"
+    ],
+    "quantity": 162,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S143",
+    "source": "SupplierI",
+    "destination": " WarehouseB ",
+    "hops": [
+      "Hub3"
+    ],
+    "quantity": 63,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S144",
+    "source": "SupplierF",
+    "destination": "warehouseb",
+    "hops": [
+      "hub3"
+    ],
+    "quantity": 34,
+    "expected_days": 4,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S145",
+    "source": "SupplierC",
+    "destination": " WarehouseA ",
+    "hops": [
+      "HUB3"
+    ],
+    "quantity": 50,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S146",
+    "source": "SupplierC",
+    "destination": "Warehouseb",
+    "hops": [
+      "Hub2",
+      "Hub6"
+    ],
+    "quantity": 97,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S147",
+    "source": "SupplierF",
+    "destination": "WAREHOUSEE",
+    "hops": [
+      "Hub2",
+      "hub4"
+    ],
+    "quantity": 85,
+    "expected_days": 6,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S148",
+    "source": "SupplierK",
+    "destination": "WAREHOUSED",
+    "hops": [
+      "hub4",
+      " Hub6 ",
+      "hub3"
+    ],
+    "quantity": 164,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S149",
+    "source": "SupplierA",
+    "destination": " WarehouseA ",
+    "hops": [
+      "HUB3",
+      "Hub5"
+    ],
+    "quantity": 88,
+    "expected_days": 3,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S150",
+    "source": "SupplierC",
+    "destination": " WarehouseD ",
+    "hops": [
+      "Hub1",
+      "Hub2"
+    ],
+    "quantity": 53,
+    "expected_days": 5,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S151",
+    "source": "SupplierF",
+    "destination": "warehousec",
+    "hops": [
+      "hub1"
+    ],
+    "quantity": 105,
+    "expected_days": 3,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S152",
+    "source": "SupplierA",
+    "destination": " WarehouseF ",
+    "hops": [
+      "Hub4"
+    ],
+    "quantity": 134,
+    "expected_days": 4,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S153",
+    "source": "SupplierA",
+    "destination": "WarehouseB",
+    "hops": [
+      "hub1",
+      "HUB3",
+      "Hub2"
+    ],
+    "quantity": 38,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S154",
+    "source": "SupplierD",
+    "destination": " WarehouseD ",
+    "hops": [
+      " Hub5 "
+    ],
+    "quantity": 80,
+    "expected_days": 3,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S155",
+    "source": "SupplierA",
+    "destination": " WarehouseF ",
+    "hops": [
+      "hub5",
+      "Hub2"
+    ],
+    "quantity": 126,
+    "expected_days": 7,
+    "actual_days": 10
+  },
+  {
+    "shipment_id": "S156",
+    "source": "SupplierF",
+    "destination": "Warehousee",
+    "hops": [
+      "Hub5"
+    ],
+    "quantity": 133,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S157",
+    "source": "SupplierA",
+    "destination": "WAREHOUSEF",
+    "hops": [
+      "Hub3",
+      " Hub6 "
+    ],
+    "quantity": 170,
+    "expected_days": 5,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S158",
+    "source": "SupplierC",
+    "destination": "Warehousec",
+    "hops": [
+      "Hub5"
+    ],
+    "quantity": 107,
+    "expected_days": 8,
+    "actual_days": 12
+  },
+  {
+    "shipment_id": "S159",
+    "source": "SupplierK",
+    "destination": "WarehouseA",
+    "hops": [
+      "hub2"
+    ],
+    "quantity": 79,
+    "expected_days": 3,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S160",
+    "source": "SupplierF",
+    "destination": "WAREHOUSEC",
+    "hops": [
+      "HUB5",
+      "HUB4",
+      "Hub6"
+    ],
+    "quantity": 10,
+    "expected_days": 3,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S161",
+    "source": "SupplierE",
+    "destination": "WAREHOUSED",
+    "hops": [
+      "Hub3"
+    ],
+    "quantity": 150,
+    "expected_days": 6,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S162",
+    "source": "SupplierI",
+    "destination": " WarehouseF ",
+    "hops": [
+      "hub1"
+    ],
+    "quantity": 57,
+    "expected_days": 6,
+    "actual_days": 9
+  },
+  {
+    "shipment_id": "S163",
+    "source": "SupplierE",
+    "destination": "WAREHOUSEC",
+    "hops": [
+      "Hub1"
+    ],
+    "quantity": 81,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S164",
+    "source": "SupplierH",
+    "destination": "WarehouseE",
+    "hops": [
+      "Hub3"
+    ],
+    "quantity": 70,
+    "expected_days": 6,
+    "actual_days": 12
+  },
+  {
+    "shipment_id": "S165",
+    "source": "SupplierK",
+    "destination": "WarehouseF",
+    "hops": [
+      "Hub3",
+      "hub5"
+    ],
+    "quantity": 57,
+    "expected_days": 4,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S166",
+    "source": "SupplierD",
+    "destination": "WAREHOUSED",
+    "hops": [
+      "Hub3",
+      "HUB6"
+    ],
+    "quantity": 10,
+    "expected_days": 7,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S167",
+    "source": "SupplierH",
+    "destination": " WarehouseE ",
+    "hops": [
+      "hub5",
+      "Hub2"
+    ],
+    "quantity": 76,
+    "expected_days": 5,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S168",
+    "source": "SupplierG",
+    "destination": "warehousef",
+    "hops": [
+      "Hub1",
+      "hub3",
+      "Hub5"
+    ],
+    "quantity": 125,
+    "expected_days": 6,
+    "actual_days": 9
+  },
+  {
+    "shipment_id": "S169",
+    "source": "SupplierB",
+    "destination": " WarehouseD ",
+    "hops": [
+      " Hub6 "
+    ],
+    "quantity": 172,
+    "expected_days": 5,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S170",
+    "source": "SupplierE",
+    "destination": "Warehousec",
+    "hops": [
+      "hub2",
+      "hub6"
+    ],
+    "quantity": 98,
+    "expected_days": 7,
+    "actual_days": 13
+  },
+  {
+    "shipment_id": "S171",
+    "source": "SupplierA",
+    "destination": "WAREHOUSEC",
+    "hops": [
+      "Hub5"
+    ],
+    "quantity": 10,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S172",
+    "source": "SupplierG",
+    "destination": " WarehouseD ",
+    "hops": [
+      "Hub6",
+      "Hub4",
+      "Hub5"
+    ],
+    "quantity": 123,
+    "expected_days": 7,
+    "actual_days": 13
+  },
+  {
+    "shipment_id": "S173",
+    "source": "SupplierF",
+    "destination": " WarehouseF ",
+    "hops": [
+      "Hub5"
+    ],
+    "quantity": 41,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S174",
+    "source": "SupplierC",
+    "destination": "WAREHOUSEC",
+    "hops": [
+      " Hub2 "
+    ],
+    "quantity": 64,
+    "expected_days": 8,
+    "actual_days": 13
+  },
+  {
+    "shipment_id": "S175",
+    "source": "SupplierB",
+    "destination": " WarehouseE ",
+    "hops": [
+      " Hub6 "
+    ],
+    "quantity": 91,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S176",
+    "source": "SupplierC",
+    "destination": "WarehouseF",
+    "hops": [
+      "Hub5"
+    ],
+    "quantity": 155,
+    "expected_days": 7,
+    "actual_days": 12
+  },
+  {
+    "shipment_id": "S177",
+    "source": "SupplierB",
+    "destination": " WarehouseE ",
+    "hops": [
+      "Hub6"
+    ],
+    "quantity": 97,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S178",
+    "source": "SupplierE",
+    "destination": "warehouseb",
+    "hops": [
+      "Hub3",
+      "Hub4"
+    ],
+    "quantity": 127,
+    "expected_days": 8,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S179",
+    "source": "SupplierH",
+    "destination": "Warehouseb",
+    "hops": [
+      "HUB4"
+    ],
+    "quantity": 88,
+    "expected_days": 8,
+    "actual_days": 14
+  },
+  {
+    "shipment_id": "S180",
+    "source": "SupplierC",
+    "destination": "warehousea",
+    "hops": [
+      "Hub5",
+      "hub6"
+    ],
+    "quantity": 118,
+    "expected_days": 5,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S181",
+    "source": "SupplierB",
+    "destination": "warehousee",
+    "hops": [
+      "hub4"
+    ],
+    "quantity": 10,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S182",
+    "source": "SupplierH",
+    "destination": " WarehouseD ",
+    "hops": [
+      "Hub4",
+      "hub6",
+      "hub3"
+    ],
+    "quantity": 150,
+    "expected_days": 3,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S183",
+    "source": "SupplierF",
+    "destination": "Warehoused",
+    "hops": [
+      "Hub3"
+    ],
+    "quantity": 37,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S184",
+    "source": "SupplierC",
+    "destination": "WAREHOUSED",
+    "hops": [
+      " Hub6 ",
+      "hub3"
+    ],
+    "quantity": 55,
+    "expected_days": 5,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S185",
+    "source": "SupplierI",
+    "destination": "WarehouseE",
+    "hops": [
+      "hub4"
+    ],
+    "quantity": 51,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S186",
+    "source": "SupplierG",
+    "destination": " WarehouseE ",
+    "hops": [
+      " Hub3 "
+    ],
+    "quantity": 115,
+    "expected_days": 5,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S187",
+    "source": "SupplierG",
+    "destination": " WarehouseA ",
+    "hops": [
+      " Hub1 "
+    ],
+    "quantity": 123,
+    "expected_days": 6,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S188",
+    "source": "SupplierC",
+    "destination": " WarehouseC ",
+    "hops": [
+      "HUB5"
+    ],
+    "quantity": 127,
+    "expected_days": 4,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S189",
+    "source": "SupplierF",
+    "destination": "WarehouseE",
+    "hops": [
+      "HUB5"
+    ],
+    "quantity": 48,
+    "expected_days": 6,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S190",
+    "source": "SupplierG",
+    "destination": "warehousee",
+    "hops": [
+      " Hub6 ",
+      " Hub1 "
+    ],
+    "quantity": 103,
+    "expected_days": 6,
+    "actual_days": 9
+  },
+  {
+    "shipment_id": "S191",
+    "source": "SupplierL",
+    "destination": " WarehouseB ",
+    "hops": [
+      "Hub4"
+    ],
+    "quantity": 36,
+    "expected_days": 6,
+    "actual_days": 9
+  },
+  {
+    "shipment_id": "S192",
+    "source": "SupplierL",
+    "destination": "Warehoused",
+    "hops": [
+      "hub1"
+    ],
+    "quantity": 90,
+    "expected_days": 5,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S193",
+    "source": "SupplierI",
+    "destination": "WAREHOUSEF",
+    "hops": [
+      " Hub4 ",
+      "Hub1"
+    ],
+    "quantity": 117,
+    "expected_days": 5,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S194",
+    "source": "SupplierC",
+    "destination": " WarehouseC ",
+    "hops": [
+      "HUB5"
+    ],
+    "quantity": 120,
+    "expected_days": 7,
+    "actual_days": 11
+  },
+  {
+    "shipment_id": "S195",
+    "source": "SupplierH",
+    "destination": "WAREHOUSEC",
+    "hops": [
+      "Hub2"
+    ],
+    "quantity": 73,
+    "expected_days": 5,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S196",
+    "source": "SupplierH",
+    "destination": "Warehousec",
+    "hops": [
+      "Hub6"
+    ],
+    "quantity": 89,
+    "expected_days": 5,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S197",
+    "source": "SupplierF",
+    "destination": "WAREHOUSEC",
+    "hops": [
+      "hub2",
+      "hub3",
+      " Hub1 "
+    ],
+    "quantity": 115,
+    "expected_days": 6,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S198",
+    "source": "SupplierI",
+    "destination": "warehousee",
+    "hops": [
+      "Hub2",
+      " Hub1 "
+    ],
+    "quantity": 95,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S199",
+    "source": "SupplierK",
+    "destination": "warehoused",
+    "hops": [
+      " Hub1 "
+    ],
+    "quantity": 78,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S200",
+    "source": "SupplierG",
+    "destination": "WarehouseF",
+    "hops": [
+      "HUB4",
+      "HUB6"
+    ],
+    "quantity": 139,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S201",
+    "source": "SupplierB",
+    "destination": "Warehousef",
+    "hops": [
+      "Hub2",
+      "Hub5"
+    ],
+    "quantity": 84,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S202",
+    "source": "SupplierC",
+    "destination": " WarehouseC ",
+    "hops": [
+      "HUB3",
+      "Hub1",
+      " Hub5 "
+    ],
+    "quantity": 10,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S203",
+    "source": "SupplierH",
+    "destination": "WarehouseD",
+    "hops": [
+      "HUB2",
+      "hub5"
+    ],
+    "quantity": 89,
+    "expected_days": 5,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S204",
+    "source": "SupplierL",
+    "destination": "Warehousee",
+    "hops": [
+      " Hub3 "
+    ],
+    "quantity": 172,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S205",
+    "source": "SupplierG",
+    "destination": "WAREHOUSED",
+    "hops": [
+      "Hub1"
+    ],
+    "quantity": 87,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S206",
+    "source": "SupplierG",
+    "destination": "WAREHOUSEC",
+    "hops": [
+      "HUB3"
+    ],
+    "quantity": 77,
+    "expected_days": 5,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S207",
+    "source": "SupplierL",
+    "destination": "WAREHOUSEA",
+    "hops": [
+      "Hub6"
+    ],
+    "quantity": 76,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S208",
+    "source": "SupplierF",
+    "destination": "Warehoused",
+    "hops": [
+      "Hub2",
+      " Hub6 "
+    ],
+    "quantity": 105,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S209",
+    "source": "SupplierI",
+    "destination": "WarehouseF",
+    "hops": [
+      "Hub2",
+      " Hub6 "
+    ],
+    "quantity": 102,
+    "expected_days": 3,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S210",
+    "source": "SupplierA",
+    "destination": "WarehouseE",
+    "hops": [
+      " Hub5 ",
+      "Hub2"
+    ],
+    "quantity": 18,
+    "expected_days": 7,
+    "actual_days": 9
+  },
+  {
+    "shipment_id": "S211",
+    "source": "SupplierK",
+    "destination": " WarehouseD ",
+    "hops": [
+      "Hub5"
+    ],
+    "quantity": 140,
+    "expected_days": 3,
+    "actual_days": 2
+  },
+  {
+    "shipment_id": "S212",
+    "source": "SupplierA",
+    "destination": "WarehouseF",
+    "hops": [
+      "hub6",
+      " Hub3 "
+    ],
+    "quantity": 125,
+    "expected_days": 3,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S213",
+    "source": "SupplierA",
+    "destination": "WAREHOUSEA",
+    "hops": [
+      "Hub6"
+    ],
+    "quantity": 86,
+    "expected_days": 3,
+    "actual_days": 2
+  },
+  {
+    "shipment_id": "S214",
+    "source": "SupplierG",
+    "destination": "Warehousef",
+    "hops": [
+      "HUB2"
+    ],
+    "quantity": 96,
+    "expected_days": 8,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S215",
+    "source": "SupplierH",
+    "destination": " WarehouseA ",
+    "hops": [
+      "Hub4",
+      "hub6"
+    ],
+    "quantity": 75,
+    "expected_days": 7,
+    "actual_days": 11
+  },
+  {
+    "shipment_id": "S216",
+    "source": "SupplierG",
+    "destination": " WarehouseB ",
+    "hops": [
+      "Hub6"
+    ],
+    "quantity": 46,
+    "expected_days": 3,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S217",
+    "source": "SupplierG",
+    "destination": "Warehouseb",
+    "hops": [
+      "Hub2"
+    ],
+    "quantity": 77,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S218",
+    "source": "SupplierJ",
+    "destination": "warehouseb",
+    "hops": [
+      " Hub1 ",
+      "Hub2"
+    ],
+    "quantity": 105,
+    "expected_days": 3,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S219",
+    "source": "SupplierL",
+    "destination": " WarehouseB ",
+    "hops": [
+      "hub4"
+    ],
+    "quantity": 35,
+    "expected_days": 3,
+    "actual_days": 9
+  },
+  {
+    "shipment_id": "S220",
+    "source": "SupplierF",
+    "destination": "WAREHOUSEB",
+    "hops": [
+      "Hub6",
+      "HUB3"
+    ],
+    "quantity": 83,
+    "expected_days": 5,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S221",
+    "source": "SupplierA",
+    "destination": "Warehousef",
+    "hops": [
+      " Hub5 ",
+      "HUB2"
+    ],
+    "quantity": 77,
+    "expected_days": 3,
+    "actual_days": 2
+  },
+  {
+    "shipment_id": "S222",
+    "source": "SupplierG",
+    "destination": "warehouseb",
+    "hops": [
+      "HUB4"
+    ],
+    "quantity": 54,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S223",
+    "source": "SupplierH",
+    "destination": " WarehouseE ",
+    "hops": [
+      "Hub5",
+      "HUB4",
+      "Hub6"
+    ],
+    "quantity": 61,
+    "expected_days": 5,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S224",
+    "source": "SupplierL",
+    "destination": " WarehouseD ",
+    "hops": [
+      "Hub1",
+      "hub3"
+    ],
+    "quantity": 92,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S225",
+    "source": "SupplierL",
+    "destination": "warehouseb",
+    "hops": [
+      "Hub2",
+      "Hub4"
+    ],
+    "quantity": 124,
+    "expected_days": 3,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S226",
+    "source": "SupplierL",
+    "destination": "WAREHOUSEB",
+    "hops": [
+      "Hub2",
+      " Hub4 "
+    ],
+    "quantity": 73,
+    "expected_days": 7,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S227",
+    "source": "SupplierE",
+    "destination": "WAREHOUSED",
+    "hops": [
+      "hub5"
+    ],
+    "quantity": 29,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S228",
+    "source": "SupplierF",
+    "destination": " WarehouseB ",
+    "hops": [
+      " Hub5 "
+    ],
+    "quantity": 115,
+    "expected_days": 8,
+    "actual_days": 9
+  },
+  {
+    "shipment_id": "S229",
+    "source": "SupplierL",
+    "destination": "Warehouseb",
+    "hops": [
+      "HUB2"
+    ],
+    "quantity": 81,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S230",
+    "source": "SupplierL",
+    "destination": "Warehouseb",
+    "hops": [
+      "hub4",
+      " Hub6 "
+    ],
+    "quantity": 134,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S231",
+    "source": "SupplierC",
+    "destination": "warehousea",
+    "hops": [
+      "Hub5",
+      "hub1",
+      "Hub6"
+    ],
+    "quantity": 155,
+    "expected_days": 3,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S232",
+    "source": "SupplierI",
+    "destination": "WarehouseE",
+    "hops": [
+      "Hub1"
+    ],
+    "quantity": 79,
+    "expected_days": 8,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S233",
+    "source": "SupplierA",
+    "destination": "Warehousea",
+    "hops": [
+      " Hub4 "
+    ],
+    "quantity": 163,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S234",
+    "source": "SupplierC",
+    "destination": "WAREHOUSEE",
+    "hops": [
+      "HUB1"
+    ],
+    "quantity": 106,
+    "expected_days": 4,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S235",
+    "source": "SupplierE",
+    "destination": "WarehouseD",
+    "hops": [
+      "Hub1",
+      "Hub3"
+    ],
+    "quantity": 71,
+    "expected_days": 8,
+    "actual_days": 11
+  },
+  {
+    "shipment_id": "S236",
+    "source": "SupplierG",
+    "destination": "Warehoused",
+    "hops": [
+      "Hub5"
+    ],
+    "quantity": 107,
+    "expected_days": 3,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S237",
+    "source": "SupplierG",
+    "destination": "WAREHOUSEA",
+    "hops": [
+      " Hub3 ",
+      "Hub5"
+    ],
+    "quantity": 170,
+    "expected_days": 4,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S238",
+    "source": "SupplierA",
+    "destination": "WAREHOUSEB",
+    "hops": [
+      "hub6",
+      "Hub3",
+      "Hub1"
+    ],
+    "quantity": 44,
+    "expected_days": 5,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S239",
+    "source": "SupplierC",
+    "destination": "WAREHOUSEF",
+    "hops": [
+      "Hub5",
+      " Hub4 "
+    ],
+    "quantity": 128,
+    "expected_days": 8,
+    "actual_days": 14
+  },
+  {
+    "shipment_id": "S240",
+    "source": "SupplierA",
+    "destination": "WarehouseA",
+    "hops": [
+      "HUB2"
+    ],
+    "quantity": 78,
+    "expected_days": 5,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S241",
+    "source": "SupplierK",
+    "destination": " WarehouseD ",
+    "hops": [
+      "Hub4"
+    ],
+    "quantity": 106,
+    "expected_days": 6,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S242",
+    "source": "SupplierE",
+    "destination": "WAREHOUSEA",
+    "hops": [
+      "hub6",
+      "Hub1"
+    ],
+    "quantity": 150,
+    "expected_days": 5,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S243",
+    "source": "SupplierF",
+    "destination": " WarehouseC ",
+    "hops": [
+      "Hub1"
+    ],
+    "quantity": 36,
+    "expected_days": 3,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S244",
+    "source": "SupplierI",
+    "destination": "WAREHOUSEA",
+    "hops": [
+      " Hub1 "
+    ],
+    "quantity": 123,
+    "expected_days": 3,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S245",
+    "source": "SupplierG",
+    "destination": " WarehouseD ",
+    "hops": [
+      " Hub4 "
+    ],
+    "quantity": 111,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S246",
+    "source": "SupplierC",
+    "destination": "WAREHOUSEC",
+    "hops": [
+      "hub2",
+      "Hub6"
+    ],
+    "quantity": 36,
+    "expected_days": 5,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S247",
+    "source": "SupplierG",
+    "destination": "WarehouseC",
+    "hops": [
+      "Hub1"
+    ],
+    "quantity": 99,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S248",
+    "source": "SupplierC",
+    "destination": "WAREHOUSEC",
+    "hops": [
+      "Hub4"
+    ],
+    "quantity": 130,
+    "expected_days": 7,
+    "actual_days": 11
+  },
+  {
+    "shipment_id": "S249",
+    "source": "SupplierG",
+    "destination": "WAREHOUSEB",
+    "hops": [
+      "Hub6",
+      "HUB5"
+    ],
+    "quantity": 83,
+    "expected_days": 8,
+    "actual_days": 10
+  },
+  {
+    "shipment_id": "S250",
+    "source": "SupplierL",
+    "destination": "WarehouseB",
+    "hops": [
+      "Hub4",
+      "HUB5"
+    ],
+    "quantity": 151,
+    "expected_days": 5,
+    "actual_days": 9
+  },
+  {
+    "shipment_id": "S251",
+    "source": "SupplierJ",
+    "destination": "WAREHOUSEB",
+    "hops": [
+      "Hub5"
+    ],
+    "quantity": 78,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S252",
+    "source": "SupplierL",
+    "destination": "warehousef",
+    "hops": [
+      "HUB4"
+    ],
+    "quantity": 54,
+    "expected_days": 6,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S253",
+    "source": "SupplierL",
+    "destination": "WarehouseA",
+    "hops": [
+      " Hub4 "
+    ],
+    "quantity": 48,
+    "expected_days": 7,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S254",
+    "source": "SupplierF",
+    "destination": " WarehouseF ",
+    "hops": [
+      "HUB5",
+      "hub6"
+    ],
+    "quantity": 116,
+    "expected_days": 3,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S255",
+    "source": "SupplierA",
+    "destination": " WarehouseC ",
+    "hops": [
+      " Hub6 ",
+      " Hub4 "
+    ],
+    "quantity": 141,
+    "expected_days": 3,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S256",
+    "source": "SupplierL",
+    "destination": "Warehoused",
+    "hops": [
+      "HUB4",
+      "Hub3"
+    ],
+    "quantity": 90,
+    "expected_days": 6,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S257",
+    "source": "SupplierB",
+    "destination": " WarehouseA ",
+    "hops": [
+      "hub1"
+    ],
+    "quantity": 131,
+    "expected_days": 5,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S258",
+    "source": "SupplierH",
+    "destination": "WAREHOUSED",
+    "hops": [
+      "Hub1"
+    ],
+    "quantity": 43,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S259",
+    "source": "SupplierA",
+    "destination": " WarehouseC ",
+    "hops": [
+      " Hub1 ",
+      "hub6"
+    ],
+    "quantity": 64,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S260",
+    "source": "SupplierC",
+    "destination": "Warehoused",
+    "hops": [
+      "hub4"
+    ],
+    "quantity": 51,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S261",
+    "source": "SupplierG",
+    "destination": "WarehouseB",
+    "hops": [
+      "HUB5"
+    ],
+    "quantity": 59,
+    "expected_days": 3,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S262",
+    "source": "SupplierJ",
+    "destination": "Warehouseb",
+    "hops": [
+      "HUB5"
+    ],
+    "quantity": 113,
+    "expected_days": 5,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S263",
+    "source": "SupplierI",
+    "destination": "WarehouseE",
+    "hops": [
+      "HUB3",
+      " Hub5 ",
+      " Hub4 "
+    ],
+    "quantity": 84,
+    "expected_days": 5,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S264",
+    "source": "SupplierK",
+    "destination": " WarehouseB ",
+    "hops": [
+      "hub1"
+    ],
+    "quantity": 112,
+    "expected_days": 5,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S265",
+    "source": "SupplierG",
+    "destination": "warehousee",
+    "hops": [
+      " Hub2 "
+    ],
+    "quantity": 80,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S266",
+    "source": "SupplierH",
+    "destination": "Warehousec",
+    "hops": [
+      "Hub2"
+    ],
+    "quantity": 117,
+    "expected_days": 6,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S267",
+    "source": "SupplierC",
+    "destination": "warehousee",
+    "hops": [
+      "Hub4"
+    ],
+    "quantity": 53,
+    "expected_days": 8,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S268",
+    "source": "SupplierB",
+    "destination": "Warehousea",
+    "hops": [
+      "Hub2",
+      " Hub3 "
+    ],
+    "quantity": 98,
+    "expected_days": 5,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S269",
+    "source": "SupplierI",
+    "destination": " WarehouseA ",
+    "hops": [
+      "Hub5"
+    ],
+    "quantity": 94,
+    "expected_days": 5,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S270",
+    "source": "SupplierD",
+    "destination": "warehousea",
+    "hops": [
+      "Hub1",
+      "Hub2",
+      "Hub3"
+    ],
+    "quantity": 149,
+    "expected_days": 6,
+    "actual_days": 10
+  },
+  {
+    "shipment_id": "S271",
+    "source": "SupplierD",
+    "destination": " WarehouseF ",
+    "hops": [
+      "hub5",
+      "Hub3"
+    ],
+    "quantity": 67,
+    "expected_days": 7,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S272",
+    "source": "SupplierF",
+    "destination": " WarehouseE ",
+    "hops": [
+      "HUB5"
+    ],
+    "quantity": 72,
+    "expected_days": 4,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S273",
+    "source": "SupplierE",
+    "destination": "warehoused",
+    "hops": [
+      "hub5",
+      "hub1",
+      "HUB2"
+    ],
+    "quantity": 209,
+    "expected_days": 8,
+    "actual_days": 12
+  },
+  {
+    "shipment_id": "S274",
+    "source": "SupplierK",
+    "destination": "WarehouseE",
+    "hops": [
+      "Hub2"
+    ],
+    "quantity": 38,
+    "expected_days": 8,
+    "actual_days": 10
+  },
+  {
+    "shipment_id": "S275",
+    "source": "SupplierK",
+    "destination": "WarehouseE",
+    "hops": [
+      "HUB1",
+      " Hub4 "
+    ],
+    "quantity": 99,
+    "expected_days": 5,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S276",
+    "source": "SupplierL",
+    "destination": "Warehousef",
+    "hops": [
+      " Hub4 "
+    ],
+    "quantity": 38,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S277",
+    "source": "SupplierD",
+    "destination": "WarehouseC",
+    "hops": [
+      "HUB2",
+      "Hub4",
+      "Hub3"
+    ],
+    "quantity": 117,
+    "expected_days": 7,
+    "actual_days": 11
+  },
+  {
+    "shipment_id": "S278",
+    "source": "SupplierK",
+    "destination": "warehousea",
+    "hops": [
+      "Hub4",
+      "hub1"
+    ],
+    "quantity": 67,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S279",
+    "source": "SupplierK",
+    "destination": "Warehousea",
+    "hops": [
+      "Hub3"
+    ],
+    "quantity": 82,
+    "expected_days": 5,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S280",
+    "source": "SupplierK",
+    "destination": "warehouseb",
+    "hops": [
+      "Hub6"
+    ],
+    "quantity": 74,
+    "expected_days": 6,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S281",
+    "source": "SupplierH",
+    "destination": "warehouseb",
+    "hops": [
+      "Hub5"
+    ],
+    "quantity": 56,
+    "expected_days": 3,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S282",
+    "source": "SupplierH",
+    "destination": "WAREHOUSEA",
+    "hops": [
+      "HUB4"
+    ],
+    "quantity": 94,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S283",
+    "source": "SupplierE",
+    "destination": "WAREHOUSEF",
+    "hops": [
+      "Hub2"
+    ],
+    "quantity": 122,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S284",
+    "source": "SupplierL",
+    "destination": "WarehouseB",
+    "hops": [
+      "hub6"
+    ],
+    "quantity": 99,
+    "expected_days": 6,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S285",
+    "source": "SupplierB",
+    "destination": "WarehouseE",
+    "hops": [
+      "HUB1"
+    ],
+    "quantity": 95,
+    "expected_days": 6,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S286",
+    "source": "SupplierD",
+    "destination": " WarehouseC ",
+    "hops": [
+      "HUB5",
+      "hub6"
+    ],
+    "quantity": 63,
+    "expected_days": 8,
+    "actual_days": 12
+  },
+  {
+    "shipment_id": "S287",
+    "source": "SupplierJ",
+    "destination": "Warehoused",
+    "hops": [
+      "hub6"
+    ],
+    "quantity": 96,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S288",
+    "source": "SupplierK",
+    "destination": "WAREHOUSEC",
+    "hops": [
+      " Hub5 ",
+      "Hub1"
+    ],
+    "quantity": 112,
+    "expected_days": 5,
+    "actual_days": 9
+  },
+  {
+    "shipment_id": "S289",
+    "source": "SupplierI",
+    "destination": "WAREHOUSEA",
+    "hops": [
+      "Hub4",
+      " Hub1 "
+    ],
+    "quantity": 94,
+    "expected_days": 4,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S290",
+    "source": "SupplierK",
+    "destination": "WAREHOUSEF",
+    "hops": [
+      " Hub4 ",
+      "hub6"
+    ],
+    "quantity": 96,
+    "expected_days": 6,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S291",
+    "source": "SupplierB",
+    "destination": "WAREHOUSEB",
+    "hops": [
+      "Hub5"
+    ],
+    "quantity": 122,
+    "expected_days": 5,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S292",
+    "source": "SupplierL",
+    "destination": " WarehouseA ",
+    "hops": [
+      "Hub2"
+    ],
+    "quantity": 96,
+    "expected_days": 4,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S293",
+    "source": "SupplierJ",
+    "destination": "Warehousef",
+    "hops": [
+      "hub6"
+    ],
+    "quantity": 86,
+    "expected_days": 3,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S294",
+    "source": "SupplierF",
+    "destination": "WarehouseC",
+    "hops": [
+      "HUB6"
+    ],
+    "quantity": 79,
+    "expected_days": 4,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S295",
+    "source": "SupplierA",
+    "destination": " WarehouseC ",
+    "hops": [
+      "Hub4"
+    ],
+    "quantity": 69,
+    "expected_days": 7,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S296",
+    "source": "SupplierF",
+    "destination": "WarehouseB",
+    "hops": [
+      " Hub5 "
+    ],
+    "quantity": 95,
+    "expected_days": 5,
+    "actual_days": 9
+  },
+  {
+    "shipment_id": "S297",
+    "source": "SupplierD",
+    "destination": "Warehousea",
+    "hops": [
+      "Hub1",
+      " Hub6 "
+    ],
+    "quantity": 101,
+    "expected_days": 6,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S298",
+    "source": "SupplierD",
+    "destination": "WarehouseF",
+    "hops": [
+      "HUB4"
+    ],
+    "quantity": 145,
+    "expected_days": 5,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S299",
+    "source": "SupplierI",
+    "destination": "WAREHOUSEB",
+    "hops": [
+      "HUB1",
+      "HUB2"
+    ],
+    "quantity": 137,
+    "expected_days": 6,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S300",
+    "source": "SupplierB",
+    "destination": "Warehouseb",
+    "hops": [
+      " Hub1 ",
+      "hub3"
+    ],
+    "quantity": 10,
+    "expected_days": 5,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S301",
+    "source": "SupplierF",
+    "destination": " WarehouseF ",
+    "hops": [
+      "Hub4",
+      "hub2"
+    ],
+    "quantity": 154,
+    "expected_days": 4,
+    "actual_days": 9
+  },
+  {
+    "shipment_id": "S302",
+    "source": "SupplierF",
+    "destination": "warehousec",
+    "hops": [
+      "HUB6",
+      "Hub1"
+    ],
+    "quantity": 60,
+    "expected_days": 3,
+    "actual_days": 2
+  },
+  {
+    "shipment_id": "S303",
+    "source": "SupplierI",
+    "destination": " WarehouseB ",
+    "hops": [
+      "HUB4",
+      "Hub6",
+      "Hub1"
+    ],
+    "quantity": 95,
+    "expected_days": 4,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S304",
+    "source": "SupplierB",
+    "destination": "warehoused",
+    "hops": [
+      "Hub6"
+    ],
+    "quantity": 82,
+    "expected_days": 3,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S305",
+    "source": "SupplierD",
+    "destination": "warehoused",
+    "hops": [
+      "Hub3"
+    ],
+    "quantity": 80,
+    "expected_days": 5,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S306",
+    "source": "SupplierC",
+    "destination": " WarehouseB ",
+    "hops": [
+      "Hub5",
+      "Hub1"
+    ],
+    "quantity": 37,
+    "expected_days": 3,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S307",
+    "source": "SupplierF",
+    "destination": "WAREHOUSED",
+    "hops": [
+      " Hub2 ",
+      "Hub4",
+      "hub3"
+    ],
+    "quantity": 98,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S308",
+    "source": "SupplierC",
+    "destination": "warehousec",
+    "hops": [
+      "HUB2"
+    ],
+    "quantity": 120,
+    "expected_days": 6,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S309",
+    "source": "SupplierA",
+    "destination": "Warehousea",
+    "hops": [
+      "hub4",
+      "hub5",
+      "hub2"
+    ],
+    "quantity": 29,
+    "expected_days": 4,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S310",
+    "source": "SupplierF",
+    "destination": "warehousee",
+    "hops": [
+      "Hub6",
+      "Hub1"
+    ],
+    "quantity": 117,
+    "expected_days": 7,
+    "actual_days": 11
+  },
+  {
+    "shipment_id": "S311",
+    "source": "SupplierK",
+    "destination": "warehousea",
+    "hops": [
+      "Hub2"
+    ],
+    "quantity": 162,
+    "expected_days": 5,
+    "actual_days": 10
+  },
+  {
+    "shipment_id": "S312",
+    "source": "SupplierJ",
+    "destination": "WAREHOUSED",
+    "hops": [
+      "hub6"
+    ],
+    "quantity": 57,
+    "expected_days": 6,
+    "actual_days": 9
+  },
+  {
+    "shipment_id": "S313",
+    "source": "SupplierD",
+    "destination": "WarehouseB",
+    "hops": [
+      "Hub3",
+      " Hub6 ",
+      "Hub4"
+    ],
+    "quantity": 154,
+    "expected_days": 4,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S314",
+    "source": "SupplierB",
+    "destination": "WarehouseD",
+    "hops": [
+      " Hub2 "
+    ],
+    "quantity": 112,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S315",
+    "source": "SupplierG",
+    "destination": "WarehouseE",
+    "hops": [
+      "HUB3",
+      "hub4"
+    ],
+    "quantity": 107,
+    "expected_days": 7,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S316",
+    "source": "SupplierF",
+    "destination": "warehousea",
+    "hops": [
+      "hub1",
+      "Hub3"
+    ],
+    "quantity": 63,
+    "expected_days": 6,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S317",
+    "source": "SupplierK",
+    "destination": "warehousef",
+    "hops": [
+      "HUB5"
+    ],
+    "quantity": 225,
+    "expected_days": 4,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S318",
+    "source": "SupplierC",
+    "destination": " WarehouseF ",
+    "hops": [
+      "HUB3"
+    ],
+    "quantity": 146,
+    "expected_days": 8,
+    "actual_days": 11
+  },
+  {
+    "shipment_id": "S319",
+    "source": "SupplierJ",
+    "destination": "WarehouseD",
+    "hops": [
+      "hub2"
+    ],
+    "quantity": 76,
+    "expected_days": 3,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S320",
+    "source": "SupplierI",
+    "destination": "WAREHOUSEE",
+    "hops": [
+      "hub3"
+    ],
+    "quantity": 93,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S321",
+    "source": "SupplierA",
+    "destination": "Warehousef",
+    "hops": [
+      "HUB5"
+    ],
+    "quantity": 159,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S322",
+    "source": "SupplierJ",
+    "destination": "WAREHOUSEC",
+    "hops": [
+      "Hub3"
+    ],
+    "quantity": 65,
+    "expected_days": 4,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S323",
+    "source": "SupplierC",
+    "destination": "warehousec",
+    "hops": [
+      "HUB5",
+      "hub6"
+    ],
+    "quantity": 108,
+    "expected_days": 4,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S324",
+    "source": "SupplierL",
+    "destination": " WarehouseE ",
+    "hops": [
+      "hub6"
+    ],
+    "quantity": 152,
+    "expected_days": 6,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S325",
+    "source": "SupplierF",
+    "destination": "WarehouseD",
+    "hops": [
+      "Hub5",
+      "HUB2",
+      "Hub1"
+    ],
+    "quantity": 141,
+    "expected_days": 4,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S326",
+    "source": "SupplierE",
+    "destination": "WarehouseA",
+    "hops": [
+      "Hub6"
+    ],
+    "quantity": 151,
+    "expected_days": 5,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S327",
+    "source": "SupplierG",
+    "destination": " WarehouseB ",
+    "hops": [
+      "Hub4"
+    ],
+    "quantity": 134,
+    "expected_days": 6,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S328",
+    "source": "SupplierK",
+    "destination": "WAREHOUSED",
+    "hops": [
+      "HUB2",
+      "Hub6"
+    ],
+    "quantity": 69,
+    "expected_days": 3,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S329",
+    "source": "SupplierE",
+    "destination": "warehoused",
+    "hops": [
+      "Hub1",
+      "Hub3",
+      "Hub2"
+    ],
+    "quantity": 108,
+    "expected_days": 3,
+    "actual_days": 9
+  },
+  {
+    "shipment_id": "S330",
+    "source": "SupplierJ",
+    "destination": "WAREHOUSEA",
+    "hops": [
+      " Hub2 ",
+      " Hub1 "
+    ],
+    "quantity": 113,
+    "expected_days": 5,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S331",
+    "source": "SupplierK",
+    "destination": "WarehouseA",
+    "hops": [
+      "Hub2"
+    ],
+    "quantity": 149,
+    "expected_days": 6,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S332",
+    "source": "SupplierE",
+    "destination": "Warehoused",
+    "hops": [
+      "HUB6",
+      "Hub5"
+    ],
+    "quantity": 115,
+    "expected_days": 4,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S333",
+    "source": "SupplierB",
+    "destination": "WAREHOUSED",
+    "hops": [
+      "hub4"
+    ],
+    "quantity": 41,
+    "expected_days": 3,
+    "actual_days": 2
+  },
+  {
+    "shipment_id": "S334",
+    "source": "SupplierG",
+    "destination": "WAREHOUSEA",
+    "hops": [
+      "hub4"
+    ],
+    "quantity": 104,
+    "expected_days": 5,
+    "actual_days": 5
+  },
+  {
+    "shipment_id": "S335",
+    "source": "SupplierJ",
+    "destination": "WarehouseF",
+    "hops": [
+      " Hub6 "
+    ],
+    "quantity": 148,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S336",
+    "source": "SupplierG",
+    "destination": "WarehouseF",
+    "hops": [
+      "Hub4",
+      "HUB5"
+    ],
+    "quantity": 133,
+    "expected_days": 6,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S337",
+    "source": "SupplierG",
+    "destination": "WarehouseA",
+    "hops": [
+      "hub6",
+      "Hub1",
+      "Hub2"
+    ],
+    "quantity": 141,
+    "expected_days": 4,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S338",
+    "source": "SupplierK",
+    "destination": "WarehouseB",
+    "hops": [
+      "Hub6"
+    ],
+    "quantity": 86,
+    "expected_days": 7,
+    "actual_days": 12
+  },
+  {
+    "shipment_id": "S339",
+    "source": "SupplierG",
+    "destination": "warehousec",
+    "hops": [
+      "Hub5",
+      "Hub3"
+    ],
+    "quantity": 11,
+    "expected_days": 3,
+    "actual_days": 2
+  },
+  {
+    "shipment_id": "S340",
+    "source": "SupplierC",
+    "destination": "Warehousea",
+    "hops": [
+      " Hub5 ",
+      "HUB1"
+    ],
+    "quantity": 88,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S341",
+    "source": "SupplierE",
+    "destination": "Warehousee",
+    "hops": [
+      "Hub4"
+    ],
+    "quantity": 91,
+    "expected_days": 5,
+    "actual_days": 4
+  },
+  {
+    "shipment_id": "S342",
+    "source": "SupplierF",
+    "destination": "WAREHOUSEC",
+    "hops": [
+      "HUB1",
+      "HUB4"
+    ],
+    "quantity": 93,
+    "expected_days": 5,
+    "actual_days": 9
+  },
+  {
+    "shipment_id": "S343",
+    "source": "SupplierH",
+    "destination": " WarehouseB ",
+    "hops": [
+      "HUB6",
+      "Hub1"
+    ],
+    "quantity": 171,
+    "expected_days": 6,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S344",
+    "source": "SupplierK",
+    "destination": " WarehouseB ",
+    "hops": [
+      "Hub4"
+    ],
+    "quantity": 180,
+    "expected_days": 6,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S345",
+    "source": "SupplierC",
+    "destination": "warehousee",
+    "hops": [
+      "hub6"
+    ],
+    "quantity": 42,
+    "expected_days": 7,
+    "actual_days": 7
+  },
+  {
+    "shipment_id": "S346",
+    "source": "SupplierD",
+    "destination": "Warehoused",
+    "hops": [
+      "HUB2",
+      "HUB1"
+    ],
+    "quantity": 139,
+    "expected_days": 3,
+    "actual_days": 3
+  },
+  {
+    "shipment_id": "S347",
+    "source": "SupplierI",
+    "destination": " WarehouseF ",
+    "hops": [
+      " Hub1 "
+    ],
+    "quantity": 137,
+    "expected_days": 7,
+    "actual_days": 6
+  },
+  {
+    "shipment_id": "S348",
+    "source": "SupplierF",
+    "destination": "warehousef",
+    "hops": [
+      "Hub3"
+    ],
+    "quantity": 107,
+    "expected_days": 8,
+    "actual_days": 9
+  },
+  {
+    "shipment_id": "S349",
+    "source": "SupplierJ",
+    "destination": "warehousef",
+    "hops": [
+      "Hub2",
+      "Hub6"
+    ],
+    "quantity": 104,
+    "expected_days": 8,
+    "actual_days": 8
+  },
+  {
+    "shipment_id": "S350",
+    "source": "SupplierK",
+    "destination": "Warehouseb",
+    "hops": [
+      "HUB1"
+    ],
+    "quantity": 126,
+    "expected_days": 5,
+    "actual_days": 5
+  }
+]
