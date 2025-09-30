@@ -196,32 +196,23 @@ def grade(transcript: str | None = None) -> GradingResult:
     sol = _read_solution(workdir / "sol.csv")
 
     subs = {
-        "has_file": 0.0,
-        "correct_columns": 0.0,
-        "row_count": 0.0,
         "exact_values": 0.0,
     }
-    weights = {"has_file": 0.1, "correct_columns": 0.05, "row_count": 0.1, "exact_values": 0.75}
+    weights = {"exact_values": 1}
 
     if sol is None:
         feedback = "Missing or unreadable /workdir/sol.csv"
         return GradingResult(score=0.0, feedback=feedback, subscores=subs, weights=weights)
-
-    subs["has_file"] = 1.0
 
     if list(sol.columns) != ["user_id","p95_ms","error_rate"]:
         feedback = "Incorrect columns. Expected 'user_id,p95_ms,error_rate'."
         score = sum(subs[k]*weights[k] for k in subs)
         return GradingResult(score=score, feedback=feedback, subscores=subs, weights=weights)
 
-    subs["correct_columns"] = 1.0
-
     if len(sol) != len(exp):
         feedback = f"Row count mismatch. Expected {len(exp)}, got {len(sol)}."
         score = sum(subs[k]*weights[k] for k in subs)
         return GradingResult(score=score, feedback=feedback, subscores=subs, weights=weights)
-
-    subs["row_count"] = 1.0
 
     mismatches = []
     for i in range(len(exp)):
