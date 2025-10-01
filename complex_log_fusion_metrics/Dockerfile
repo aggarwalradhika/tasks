@@ -2,9 +2,15 @@ FROM apex_arena:base
 
 # -------------- Placeholder for additional dependencies --------------
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends python3 python3-pip bzip2 gzip && \
-    pip3 install --no-cache-dir pandas==2.2.2 numpy==1.26.4 python-dateutil==2.9.0.post0 && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends bzip2 gzip && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m ensurepip --upgrade && \
+    python3 -m pip install --no-cache-dir --upgrade "pip==24.2" && \
+    python3 -m pip install --no-cache-dir \
+        "pandas==2.2.2" \
+        "numpy==1.26.4" \
+        "python-dateutil==2.9.0.post0"
 # -------------- Placeholder ends -------------------------------------
 
 # -------------- Placeholder for operations ---------------------------
