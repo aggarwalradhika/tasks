@@ -1,0 +1,58 @@
+prompt: |
+  Supply-Chain Stockout Vulnerability (find exactly 5 SKUs with the highest vulnerability)
+
+  Files (JSON, read-only):
+  /workdir/data/skus.json
+  /workdir/data/warehouses.json
+  /workdir/data/shipments.json
+  /workdir/data/demand_forecast.json
+
+  Eligibility (all must hold at SKU level):
+  • lead_time_days ≥ 3 (use sku.lead_time_days)
+  • mean_daily_demand ≥ 5 (mean over demand_forecast.daily_demand for next 30 days for that sku_id)
+  • SKU active flag true (sku.active == true)
+  • distributed across ≥ 2 warehouses with current_stock > 0
+
+  Vulnerability components (compute exactly):
+  1) safety_stock_ratio = (reorder_point - mean_daily_demand * lead_time_days) / mean_daily_demand
+     reorder_point = mean_daily_demand * lead_time_days + 1.65 * sqrt(lead_time_days * demand_stddev^2)
+     demand_stddev is standard deviation of daily_demand for next 30 days.
+     If demand_stddev==0 -> use 0.5.
+  2) in_transit_risk = 1 - sigmoid( on_way_qty / (mean_daily_demand * lead_time_days + 1) )
+     where on_way_qty = sum of shipments.qty for this sku_id with status in ["in_transit","scheduled"]
+     sigmoid(x) = 1/(1+exp(-x/10)) (note: divide x by 10 inside exp)
+  3) warehouse_concentration:
+     compute per-warehouse fractions f_i = stock_i / total_stock (only warehouses with stock>0)
+     if number of warehouses ≤1 -> 1.0
+     else concentration = sum(f_i^2) (i.e. Herfindahl index)
+  4) supplier_reliability_penalty:
+     for each supplier of sku (sku.suppliers list with supplier_id and historical_on_time_rate)
+     supplier_score = mean(historical_on_time_rate) across suppliers
+     penalty = max(0, 1.0 - supplier_score)
+
+  Total vulnerability:
+  vulnerability_score = 2.5*safety_stock_ratio + 1.8*in_transit_risk + 2.0*warehouse_concentration + 3.0*supplier_reliability_penalty
+
+  Selection & ordering:
+  • Consider only eligible SKUs.
+  • Sort by vulnerability_score descending; tie-breaker by sku.category, sku.sku_id.
+  • Take top 5; assign rank=1..5 (1 highest vulnerability).
+
+  Output (CSV → /workdir/sol.csv; exact header & order):
+  sku_id,sku_name,category,mean_daily_demand,safety_stock_ratio,in_transit_risk,warehouse_concentration,supplier_reliability_penalty,vulnerability_score,rank
+
+  Formatting:
+  mean_daily_demand:2dp; safety_stock_ratio:3dp; in_transit_risk:3dp; warehouse_concentration:3dp;
+  supplier_reliability_penalty:3dp; vulnerability_score:3dp; rank:1..5
+  Exactly 5 rows. No extra columns. No index.
+
+metadata:
+  difficulty: hard
+  category: "supply-chain"
+  tags: ["inventory","risk","probabilistic","forecasting","optimization"]
+  references: ["N/A"]
+time_limit: 180
+memory_limit: 1024
+max_agent_timeout_sec: 160
+expert_time_estimate_min: 25
+junior_time_estimate_min: 60

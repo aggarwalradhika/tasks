@@ -1,0 +1,146 @@
+[
+  {
+    "shipment_id": "SH-001",
+    "sku_id": "SKU-001",
+    "qty": 50,
+    "status": "in_transit"
+  },
+  {
+    "shipment_id": "SH-002",
+    "sku_id": "SKU-001",
+    "qty": 30,
+    "status": "scheduled"
+  },
+  {
+    "shipment_id": "SH-003",
+    "sku_id": "SKU-002",
+    "qty": 10,
+    "status": "delivered"
+  },
+  {
+    "shipment_id": "SH-004",
+    "sku_id": "SKU-003",
+    "qty": 0,
+    "status": "scheduled"
+  },
+  {
+    "shipment_id": "SH-005",
+    "sku_id": "SKU-004",
+    "qty": 60,
+    "status": "cancelled"
+  },
+  {
+    "shipment_id": "SH-006",
+    "sku_id": "SKU-006",
+    "qty": 5,
+    "status": "in_transit"
+  },
+  {
+    "shipment_id": "SH-007",
+    "sku_id": "SKU-007",
+    "qty": 0,
+    "status": "scheduled"
+  },
+  {
+    "shipment_id": "SH-008",
+    "sku_id": "SKU-008",
+    "qty": 25,
+    "status": "in_transit"
+  },
+  {
+    "shipment_id": "SH-009",
+    "sku_id": "SKU-010",
+    "qty": 12,
+    "status": "scheduled"
+  },
+  {
+    "shipment_id": "SH-010",
+    "sku_id": "SKU-011",
+    "qty": 0,
+    "status": "scheduled"
+  },
+  {
+    "shipment_id": "SH-011",
+    "sku_id": "SKU-012",
+    "qty": 1,
+    "status": "in_transit"
+  },
+  {
+    "shipment_id": "SH-012",
+    "sku_id": "SKU-014",
+    "qty": 20,
+    "status": "scheduled"
+  },
+  {
+    "shipment_id": "SH-013",
+    "sku_id": "SKU-015",
+    "qty": 0,
+    "status": "in_transit"
+  },
+  {
+    "shipment_id": "SH-014",
+    "sku_id": "SKU-016",
+    "qty": 18,
+    "status": "in_transit"
+  },
+  {
+    "shipment_id": "SH-015",
+    "sku_id": "SKU-017",
+    "qty": 0,
+    "status": "cancelled"
+  },
+  {
+    "shipment_id": "SH-016",
+    "sku_id": "SKU-018",
+    "qty": 6,
+    "status": "in_transit"
+  },
+  {
+    "shipment_id": "SH-017",
+    "sku_id": "SKU-019",
+    "qty": 0,
+    "status": "scheduled"
+  },
+  {
+    "shipment_id": "SH-018",
+    "sku_id": "SKU-020",
+    "qty": 16,
+    "status": "scheduled"
+  },
+  {
+    "shipment_id": "SH-019",
+    "sku_id": "SKU-021",
+    "qty": 9,
+    "status": "in_transit"
+  },
+  {
+    "shipment_id": "SH-020",
+    "sku_id": "SKU-022",
+    "qty": 2,
+    "status": "scheduled"
+  },
+  {
+    "shipment_id": "SH-021",
+    "sku_id": "SKU-023",
+    "qty": 0,
+    "status": "in_transit"
+  },
+  {
+    "shipment_id": "SH-022",
+    "sku_id": "SKU-024",
+    "qty": 7,
+    "status": "scheduled"
+  },
+  {
+    "shipment_id": "SH-023",
+    "sku_id": "SKU-026",
+    "qty": 0,
+    "status": "scheduled"
+  },
+  {
+    "shipment_id": "SH-024",
+    "sku_id": "SKU-028",
+    "qty": 4,
+    "status": "in_transit"
+  }
+]
