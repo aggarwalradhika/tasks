@@ -1,10 +1,10 @@
 {
   "task_id": "24f83c16-1972-4a49-a561-add019661340",
   "version_info": {
-    "version_number": 2,
-    "date_created": "2025-10-04T15:44:32.583Z",
+    "version_number": 3,
+    "date_created": "2025-10-05T10:50:45.822Z",
     "upload_method": "update",
-    "gcs_path": "v2_24f83c16-1972-4a49-a561-add019661340"
+    "gcs_path": "v3_24f83c16-1972-4a49-a561-add019661340"
   },
-  "downloaded_at": "2025-10-04T15:44:56.464072+00:00"
+  "downloaded_at": "2025-10-05T10:51:25.584361+00:00"
 }
