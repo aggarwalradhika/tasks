@@ -22,7 +22,8 @@ Notes
 
 import csv, json
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, List, Optional
+import pandas as pd
 
 # ---- GradingResult (pydantic if available) ----
 try:
@@ -49,6 +50,12 @@ class GradingResult(BaseModel):
 DATA = Path("/workdir/data")
 SOL  = Path("/workdir/sol.csv")
 
+HEADER = [
+    "account_id","campaign_id","campaign_name","spend_last_30d",
+    "abnormal_click_rate","ip_aggregation_score","rapid_fire_clicks",
+    "conversion_quality_penalty","fraud_score","rank"
+]
+
 def _load_json(name: str):
     with open(DATA / name, "r", encoding="utf-8") as f:
         return json.load(f)
@@ -60,6 +67,41 @@ def _minute_bucket(ts: str) -> str:
 
 def _fmt2(x: float) -> str: return f"{x:.2f}"
 def _fmt3(x: float) -> str: return f"{x:.3f}"
+
+# --- helpers added for better diagnostics (do not change existing comments above) ---
+def _csv_to_string(rows: List[List[str]]) -> str:
+    from io import StringIO
+    s = StringIO()
+    w = csv.writer(s)
+    for r in rows:
+        w.writerow(r)
+    return s.getvalue()
+
+def _try_float(x: str) -> Optional[float]:
+    try:
+        return float(x)
+    except Exception:
+        return None
+
+def _row_diff(exp_row: List[str], got_row: List[str]) -> Dict[str, Any]:
+    diffs = []
+    for idx, col in enumerate(HEADER):
+        exp = exp_row[idx]
+        got = got_row[idx] if idx < len(got_row) else ""
+        if exp != got:
+            e_num = _try_float(exp)
+            g_num = _try_float(got)
+            diffs.append({
+                "column": col,
+                "expected": exp,
+                "found": got,
+                "numeric_delta": (None if (e_num is None or g_num is None) else (g_num - e_num))
+            })
+    return {
+        "mismatch_columns": [d["column"] for d in diffs],
+        "mismatches": diffs
+    }
+# --- end helpers ---
 
 def _recompute_ground_truth():
     """
@@ -177,14 +219,9 @@ def _recompute_ground_truth():
     for i, r in enumerate(rows, 1):
         r["rank"] = str(i)
 
-    header = [
-        "account_id","campaign_id","campaign_name","spend_last_30d",
-        "abnormal_click_rate","ip_aggregation_score","rapid_fire_clicks",
-        "conversion_quality_penalty","fraud_score","rank"
-    ]
-    gt = [header]
+    gt = [HEADER]
     for r in rows:
-        gt.append([r[k] for k in header])
+        gt.append([r[k] for k in HEADER])
     return gt
 
 def grade(transcript: str | None = None) -> GradingResult:
@@ -192,6 +229,9 @@ def grade(transcript: str | None = None) -> GradingResult:
     subscores: Dict[str, float] = {"exact_match": 0.0}
     weights:   Dict[str, float] = {"exact_match": 1.0}
     details:   Dict[str, Any]   = {}
+
+    gt = _recompute_ground_truth()
+    details["expected_csv"] = _csv_to_string(gt)
 
     if not SOL.exists():
         return GradingResult(
@@ -202,30 +242,41 @@ def grade(transcript: str | None = None) -> GradingResult:
             details=details
         )
 
-    gt = _recompute_ground_truth()
-
-    with open(SOL, "r", encoding="utf-8") as f:
-        lines = [list(row) for row in csv.reader(f)]
-
-    if not lines:
+    # --- NEW: read as a table using pandas (all as strings, no NaNs) ---
+    try:
+        df = pd.read_csv(SOL, dtype=str, keep_default_na=False)
+    except Exception as e:
+        details["read_error"] = f"{type(e).__name__}: {e}"
         return GradingResult(
             score=0.0,
-            feedback="sol.csv empty",
+            feedback="Failed to read sol.csv as a table",
             subscores=subscores,
             weights=weights,
             details=details
         )
 
-    if lines[0] != gt[0]:
+    # Build GT as a DataFrame (strings only) for comparison
+    gt_header = gt[0]
+    gt_rows = gt[1:]  # list of lists
+    gt_df = pd.DataFrame(gt_rows, columns=gt_header, dtype=str)
+
+    # ---- Header check via df.columns (order matters) ----
+    found_header = df.columns.tolist()
+    if found_header != gt_header:
+        details["found_header"] = found_header
+        details["expected_header"] = gt_header
         return GradingResult(
             score=0.0,
-            feedback=f"Incorrect header. Expected: {gt[0]}",
+            feedback="Incorrect header.",
             subscores=subscores,
             weights=weights,
             details=details
         )
 
-    if len(lines) != 6:
+    # ---- Row-count check via df.shape ----
+    if df.shape[0] != 5:
+        details["found_row_count_excluding_header"] = int(df.shape[0])
+        details["expected_row_count"] = 5
         return GradingResult(
             score=0.0,
             feedback="Expected exactly 5 data rows",
@@ -234,18 +285,59 @@ def grade(transcript: str | None = None) -> GradingResult:
             details=details
         )
 
-    for i in range(1, 6):
-        cand = lines[i]
-        exp  = gt[i]
-        if cand != exp:
-            details.update({"first_mismatch_row": i, "expected": exp, "found": cand})
-            return GradingResult(
-                score=0.0,
-                feedback=f"Row {i} mismatch.",
-                subscores=subscores,
-                weights=weights,
-                details=details
-            )
+    # Normalize row order (they must match GT order exactly)
+    # Compare cell-by-cell equality as a boolean table
+    df_cmp = (df.reset_index(drop=True) == gt_df.reset_index(drop=True))
+    # Find all mismatching (row, col) coordinates
+    import numpy as _np
+    mism = _np.argwhere(~df_cmp.to_numpy())  # array of [row_idx, col_idx]
+
+    if mism.size > 0:
+        # first mismatching data row index (1..5 when counted like CSV data rows)
+        first_row_idx = int(mism[0, 0]) + 1
+        details["first_mismatch_row"] = first_row_idx
+
+        # Build up to 3 detailed row diffs using your existing helper
+        row_diffs = []
+        seen_rows = set()
+        for r, c in mism:
+            if r in seen_rows:
+                continue
+            seen_rows.add(r)
+            exp_row = gt_rows[r]
+            got_row = df.iloc[r].tolist()
+            rd = _row_diff(exp_row, got_row)
+            rd["row_index"] = r + 1  # CSV-style data-row index (1..5)
+            row_diffs.append(rd)
+            if len(row_diffs) >= 3:
+                break
+
+        details["row_diffs"] = row_diffs
+        details["diff_summary"] = "; ".join(
+            [f"row {d['row_index']}: " + ", ".join(d["mismatch_columns"]) for d in row_diffs]
+        )
+
+        # Also put a concise, human-readable preview directly in feedback
+        first = row_diffs[0]
+        cols_list = ", ".join(first.get("mismatch_columns", [])) or "unknown columns"
+        pairs = []
+        for m in first.get("mismatches", []):
+            pairs.append(f"{m['column']} (exp={m['expected']}, got={m['found']})")
+        preview = "; ".join(pairs[:5]) if pairs else "no per-column details"
+        more_note = "" if len(pairs) <= 5 else f" (+{len(pairs)-5} more)"
+
+        return GradingResult(
+            score=0.0,
+            feedback=(
+                f"Content mismatch at data row {first_row_idx}. "
+                f"Columns differing: {cols_list}. "
+                f"First-row diffs: {preview}{more_note}. "
+                f"See details.row_diffs for full breakdown."
+            ),
+            subscores=subscores,
+            weights=weights,
+            details=details
+        )
 
     subscores["exact_match"] = 1.0
     return GradingResult(
