@@ -31,5 +31,15 @@ prompt: |
 metadata:
   difficulty: hard
   category: data-analytics
-  tags: [data-engineering, analytics, supply-chain, rounding, sorting]
+  tags:
+    - data-engineering
+    - analytics
+    - supply-chain
+    - rounding
+    - sorting
   references: []
+  time_limit: 300      
+  memory_limit: 1024         
+  max_agent_timeout_sec: 600
+  expert_time_estimate_min: 25
+  junior_time_estimate_min: 50
