@@ -196,8 +196,8 @@ def grade(_: str | None = None) -> GradingResult:
         gt = _ground_truth(shipments, capacities)
         sub = _read_submission()
 
-        subs = {"has_file": 1.0, "row_count": 0.0, "exact_match": 0.0}
-        wts  = {"has_file": 0.05, "row_count": 0.05, "exact_match": 0.9}
+        subs = {"exact_match": 0.0}
+        wts  = {"exact_match": 1.0}
 
         if len(sub) != len(gt):
             score = sum(subs[k]*wts[k] for k in subs)
@@ -206,8 +206,6 @@ def grade(_: str | None = None) -> GradingResult:
                 try: setattr(res, k, v)
                 except Exception: pass
             return res
-
-        subs["row_count"] = 1.0
 
         for i, (a, b) in enumerate(zip(sub, gt), 1):
             for k in COLS:
