@@ -1,0 +1,11 @@
+{
+  "origin": "A",
+  "destination": "Z",
+  "deadline_h": 18.0,
+  "penalty_lambda": 3.0,
+  "fuel_price_usd_per_litre": 1.30,
+  "congestion_index": 0.7,
+  "weather_disruption_prob": 0.15,
+  "mc_samples": 800,
+  "rng_seed": 20250930
+}

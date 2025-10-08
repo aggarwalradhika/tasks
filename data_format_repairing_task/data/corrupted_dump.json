@@ -1,0 +1,74 @@
+[
+  {
+    "iD": " 101 ",
+    "Name": "Alice Smith",
+    "Department": "Engineering",
+    "Email": "ALICE.SMITH@EXAMPLE.com"
+  },
+  {
+    "id": "102",
+    "name": "Bob Jones",
+    "department": "Hr",
+    "e-mail": "bob.jones@exÁmple.com"
+  },
+  {
+    "id": "103",
+    "nam": "Charlie Day",
+    "department": "Finance",
+    "email": "charlie.day@example.com"
+  },
+  {
+    "id": "104",
+    "name": "Diana Prince",
+    "departmnt": "Marketing",
+    "email": "diana.prince@example"
+  },
+  {
+    "id": "101",
+    "name": "Alice Smith",
+    "department": "Engineering",
+    "email": "alice.smith@example.com"
+  },
+  {
+    "id": "107",
+    "name": "Gabriel Trujillo",
+    "Department": "Sales",
+    "EMAIL": "gabriel.t@ex-ample.com"
+  },
+  {
+    "ID": "108",
+    "Name": "Hana Kim",
+    "department": "Legal",
+    "email": "hana_kim@exämple.com"
+  },
+  {
+    "id": "109",
+    "name": "Ivan Petrov",
+    "department": "Finance",
+    "email": "ivan.petrov@example.com"
+  },
+  {
+    "id": "110",
+    "name": "Jane Murphy",
+    "department": "Finance",
+    "email": "jane.murphy@example.com"
+  },
+  {
+    "id": "111",
+    "name": "Ken Adams",
+    "department": "Engineering",
+    "email": "ken.adams@example.com"
+  },
+  {
+    "id": "112 ",
+    "nam": "Linda Lee",
+    "department": "HR",
+    "email": "linda.lee@example.com"
+  },
+  {
+    "id": "113",
+    "name": "Martin Eden",
+    "department": "IT",
+    "email": "martin.eden@example.com"
+  }
+]

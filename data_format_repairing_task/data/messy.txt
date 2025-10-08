@@ -1,0 +1,12 @@
+id|name|department|email
+101|Alice Smith|Engineering|alice.smith@example.com
+112|Linda Lee|Human Resources|linda.lee@exámple.com
+113|Martin Eden|IT|martin.eden@example.com
+
+# corrupted encoding and inconsistent header
+\ufeffiD;Name;Department;Email
+102;Bob Jones;Human Resources;bob.jones@exÁmple.com
+105;Eve Polastri;Legal;eve.polastri@example.com
+110;Jane Murphy;Finance;jane.murphy@EXAMPLE.com
+111;Ken Adams;Engineering;ken.adams@example.com
+114;Nina Simone;Legal;nina.simone@example.com

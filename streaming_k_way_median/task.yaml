@@ -1,0 +1,75 @@
+prompt: |
+  You are given a single input file at /workdir/data/stream.jsonl.
+
+  ## Accepted line formats (either form may appear; lines are independent)
+  1) Object line (structured):
+     {
+       "batch_id": <int>,                # if missing or invalid, auto-assigned in ingest order
+       "type": "data" | "retract",
+       // if type == "data":
+       "records": [
+         {"key": "<str>", "value": <int>, "weight": <int, optional>=1},
+         ...
+       ]
+       // if type == "retract":
+       "target_batch_id": <int>
+     }
+
+  2) Array line (compact):
+     [<int>, <int>, ...]
+     - Interpreted as a "data" batch for a single synthetic key "A".
+     - Each value in the array is taken with weight = 1.
+     - A batch_id is auto-assigned for this line.
+
+  ## Normalization & tolerance rules (applied to each line before processing)
+  - Missing/invalid "batch_id" → auto-assign an increasing integer in ingest order (1, 2, 3, ...).
+  - For "data" lines:
+      * "records" not present or not a list → treated as empty.
+      * Each record must be an object with "key" (string) and "value" (int); otherwise it is ignored.
+      * "weight" is optional; defaults to 1. If non-integer or ≤ 0, coerce to 1.
+  - Lines that cannot be parsed as JSON, or that do not match either line format above, are ignored.
+  - Lines starting with '//' and blank lines are ignored.
+
+  ## Fixed parameters for this task
+  - percentiles = [10, 50, 90]        # nearest-rank, weighted
+  - window_size_batches = 6            # sliding window size by ingest index
+
+  ## Semantics
+  Process ingests in order (line 1 has ingest_index=1, etc.). Maintain a sliding window of the last W ingests (W=6).
+    • For type="data": add each record (key,value) with multiplicity = weight.
+    • For type="retract": if target_batch_id refers to a DATA batch currently inside the
+      window, remove all of that target batch's contributions from the window; otherwise no-op.
+
+  ## Percentiles (nearest-rank with weights)
+  For a multiset of values with integer frequencies:
+    Let N = total weight. For percentile p, r = ceil(p/100 * N).
+    Sort values ascending and return the first value where cumulative weight >= r.
+    If N == 0 for a scope, leave that percentile cell empty.
+
+  ## Output
+  Write /workdir/sol.csv after processing all ingests. For each ingest i (1..T), append:
+    1) One GLOBAL row for all keys combined (scope="GLOBAL", key="").
+    2) One row per PRESENT key (scope="KEY", key="<key>") with total weight > 0,
+       keys sorted lexicographically.
+
+  ## CSV schema (strict column order; percentile columns follow the fixed list)
+  ingest_index,window_start_ingest,window_end_ingest,scope,key,p10,p50,p90
+
+  ## Notes
+  - Values may be negative. Empty DATA batches are allowed.
+  - No network access. Deterministic output only.
+  - The file must be written to /workdir/sol.csv with the exact header and ordering above.
+
+metadata:
+  title: Streaming K-Way Percentiles (Sliding Window, Weights, Retractions)
+  difficulty: hard
+  category: algorithms
+  tags: [streaming, percentiles, sliding-window, retractions, weighted, csv]
+  references: []
+  owner: apex-arena
+
+time_limit: 1800
+memory_limit: 512
+max_agent_timeout_sec: 1200
+expert_time_estimate_min: 120
+junior_time_estimate_min: 240

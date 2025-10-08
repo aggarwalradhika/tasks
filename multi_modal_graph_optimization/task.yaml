@@ -1,0 +1,32 @@
+prompt: |
+  You’re given a multi-modal logistics network (`/workdir/data/graph.json`) with stochastic travel times and costs whose parameters depend on fuel, congestion, and weather. A deadline (in hours) and a quadratic delay penalty are provided in `/workdir/data/params.json`.
+
+  Compute the lowest expected total cost path from origin to destination where:
+    total_cost = expected transport cost + expected quadratic deadline penalty.
+
+  Details:
+  • Edge time ~ LogNormal with mean:
+      base_time_mean_h
+      × (1 + congestion_sensitivity * congestion_index)
+      × (1 + weather_sensitivity * weather_disruption_prob)
+    and CoV = base_time_cv.
+  • Edge cost = handling_fee + (fuel_rate_l_per_km * distance_km * fuel_price_usd_per_litre).
+  • Path time = sum of edge times (independent).
+  • Penalty = penalty_lambda × E[(max(0, path_time - deadline_h))^2].
+  • You may switch modes freely (road/rail/air/sea).
+
+  Write your result to `/workdir/sol.csv` with headers:
+    path_nodes (semicolon-separated node IDs),
+    path_modes (semicolon-separated modes),
+    expected_cost (float),
+    p_delay (float)
+
+  Assumptions:
+  • No internet.
+  • Python available (stdlib + preinstalled libs only).
+  • Randomness should use the rng_seed in params for reproducibility.
+metadata:
+  difficulty: hard
+  category: open_ended
+  tags: [logistics, stochastic_optimization, graphs, simulation, planning]
+  references: ["N/A"]

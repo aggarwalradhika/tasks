@@ -1,0 +1,34 @@
+prompt: |
+  You are inside a Linux container without internet.
+
+  Inputs under /workdir/data/:
+    - regexes.txt  : each line is a regular expression over the alphabet {a,b}
+    - strings.txt  : each line is a test string over {a,b} or the symbol ε for the empty string
+
+  Goal:
+    Produce /workdir/sol.csv with EXACT header:
+      regex_id,string,accepts
+
+  Rules & Constraints:
+    - Implement a REGEX ENGINE using classic Theory of Computation steps:
+        1) Parse regex with precedence:  (highest) *   >   concatenation   >   | (lowest)
+           Concatenation is implicit (e.g., ab means a·b).
+        2) Build an NFA via Thompson construction.
+        3) Convert NFA → DFA via subset construction.
+        4) Decide membership for each string (ε is the empty string).
+    - DO NOT use the programming language's built-in regex engine (e.g., Python 're' module).
+    - Operators allowed: symbols 'a', 'b', unary postfix '*', binary '|' (union), parentheses '(' ')'.
+      No other operators, character classes, escapes, or whitespace.
+    - Malformed regex lines must be handled gracefully:
+        - Skip those regexes entirely (no output rows for that line).
+    - Output format:
+        - regex_id is the 1-based line number in regexes.txt of the VALID regexes only (skipping malformed).
+        - string must match exactly what appears in strings.txt (use 'ε' literal for the empty string).
+        - accepts ∈ {0,1}
+        - Rows must be sorted by regex_id ascending, then by the original order of strings in strings.txt.
+
+metadata:
+  difficulty: "very-hard"
+  category: "theory-of-computation"
+  tags: [theory-of-computation, automata, nfa, dfa, parsing]
+  references: []

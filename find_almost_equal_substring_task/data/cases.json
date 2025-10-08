@@ -1,0 +1,54 @@
+{
+  "cases": [
+    {
+      "s": "abcdefg",
+      "patterns": [
+        { "pattern": "bcdffg", "k": 1 }
+      ]
+    },
+    {
+      "s": "ababbababa",
+      "patterns": [
+        { "pattern": "bacaba", "k": 1 }
+      ]
+    },
+    {
+      "s": "abcd",
+      "patterns": [
+        { "pattern": "dba", "k": 1 }
+      ]
+    },
+    {
+      "s": "dde",
+      "patterns": [
+        { "pattern": "d", "k": 1 }
+      ]
+    },
+    {
+      "s": "aaaaabaaaaa",
+      "patterns": [
+        { "pattern": "aaa?ba", "k": 0, "wildcards": true }
+      ]
+    },
+    {
+      "s": "xyzzzyxzzzy",
+      "patterns": [
+        { "pattern": "zzzz", "k": 1, "banned_indices": [1] }
+      ]
+    },
+    {
+      "s": "abcabcabcabcabcabcabcabcabcabcxabcabcabcabcabcabcabcabcabcabc",
+      "patterns": [
+        { "pattern": "abx",  "k": 1 },
+        { "pattern": "xabc", "k": 1 }
+      ]
+    },
+    {
+      "s": "azzzzb",
+      "patterns": [
+        { "pattern": "?zz?z", "k": 0, "wildcards": true, "banned_indices": [0, 4] },
+        { "pattern": "zzzzb", "k": 1 }
+      ]
+    }
+  ]
+}

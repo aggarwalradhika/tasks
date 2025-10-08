@@ -1,0 +1,24 @@
+{"batch_id": 1, "type": "data", "records": [{"key": "A", "value": -4, "weight": 1}, {"key": "B", "value": 52, "weight": 1}, {"key": "A", "value": 16, "weight": 5}]}
+{"batch_id": 2, "type": "data", "records": [{"key": "C", "value": 12, "weight": 1}, {"key": "B", "value": -2, "weight": 1}, {"key": "A", "value": 45, "weight": 1}]}
+{"batch_id": 3, "type": "data", "records": [{"key": "C", "value": -4, "weight": 1}, {"key": "A", "value": 16, "weight": 1}, {"key": "B", "value": 61, "weight": 1}]}
+{"batch_id": 4, "type": "data", "records": [{"key": "C", "value": 98, "weight": 1}]}
+{"batch_id": 5, "type": "retract", "target_batch_id": 3}
+{"batch_id": 6, "type": "data", "records": [{"key": "A", "value": 76, "weight": 1}]}
+{"batch_id": 7, "type": "data", "records": []}
+{"batch_id": 8, "type": "data", "records": [{"key": "B", "value": 14, "weight": 1}]}
+{"batch_id": 9, "type": "data", "records": [{"key": "A", "value": 100, "weight": 1}, {"key": "A", "value": -10, "weight": 3}]}
+{"batch_id": 10, "type": "data", "records": [{"key": "C", "value": 33, "weight": 1}, {"key": "B", "value": 23, "weight": 1}]}
+{"batch_id": 11, "type": "retract", "target_batch_id": 8}
+{"batch_id": 12, "type": "data", "records": [{"key": "B", "value": 0, "weight": 5}]}
+{"batch_id": 13, "type": "data", "records": []}
+{"batch_id": 14, "type": "data", "records": [{"key": "A", "value": 11, "weight": 1}, {"key": "A", "value": 32, "weight": 1}]}
+{"batch_id": 15, "type": "data", "records": [{"key": "B", "value": 120, "weight": 1}]}
+{"batch_id": 16, "type": "data", "records": [{"key": "C", "value": -6, "weight": 2}, {"key": "C", "value": 97, "weight": 1}]}
+{"batch_id": 17, "type": "retract", "target_batch_id": 12}
+{"batch_id": 18, "type": "data", "records": [{"key": "A", "value": 60, "weight": 1}]}
+{"batch_id": 19, "type": "data", "records": [{"key": "B", "value": 1, "weight": 1}, {"key": "B", "value": 2, "weight": 3}]}
+{"batch_id": 20, "type": "data", "records": [{"key": "C", "value": 70, "weight": 1}]}
+{"batch_id": 21, "type": "data", "records": [{"key": "A", "value": 3, "weight": 1}]}
+{"batch_id": 22, "type": "data", "records": [{"key": "B", "value": 14, "weight": 2}]}
+{"batch_id": 23, "type": "data", "records": [{"key": "C", "value": 40, "weight": 1}]}
+{"batch_id": 24, "type": "data", "records": [{"key": "A", "value": 7, "weight": 5}]}

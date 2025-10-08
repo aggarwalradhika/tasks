@@ -1,0 +1,56 @@
+prompt: |
+  You are given multiple test cases in /workdir/data/cases.json with this schema:
+    {
+      "cases": [
+        {
+          "s": "<string>",
+          "patterns": [
+            {
+              "pattern": "<string>",
+              "k": <int, max substitutions allowed>,          # default: 1
+              "wildcards": <bool, '?' matches any char>,      # default: false
+              "banned_indices": [<int>, ...]                  # default: []
+            },
+            ...
+          ]
+        },
+        ...
+      ]
+    }
+
+  Definition:
+    A substring x of s is *almost equal* to pattern p if we can change at most k characters
+    in x to make it identical to p. Wildcards: If wildcards=true, '?' in p matches any
+    single character without consuming the substitution budget. Changes are only substitutions
+    (no insertions/deletions). A substitution at absolute index i in s is forbidden if i is
+    in `banned_indices`.
+
+  Task:
+    • For each case, and for each pattern in order, find the smallest starting index i
+      such that s[i : i+len(p)] is almost equal to p under the above rules.
+    • If none exists, output -1 for that pattern.
+    • Write outputs to /workdir/sol.csv with ONE integer per line, in the same order as the
+      patterns appear across all cases (case0-pattern0, case0-pattern1, …).
+    • No header, no extra whitespace.
+
+  Tie-breaking:
+    • Return the smallest valid index i.
+
+  Constraints & Notes:
+    • Lowercase English letters in s and pattern (besides '?' when wildcards=true).
+    • Practical constraint for this task: 1 ≤ len(pattern) ≤ len(s) ≤ 25,000.
+      (Hardness comes from multiple patterns, per-pattern budgets, wildcards, and banned indices.)
+    • banned_indices are 0-based absolute indices into s.
+    • Output strictly one integer per line to /workdir/sol.csv.
+
+metadata:
+  difficulty: hard
+  category: string-matching
+  tags: [strings, substring, pattern-matching, wildcards, constraints]
+  references: ["N/A"]
+
+time_limit: 10
+memory_limit: 1024
+max_agent_timeout_sec: 40
+expert_time_estimate_min: 40
+junior_time_estimate_min: 120
