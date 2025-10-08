@@ -16,8 +16,11 @@ Scoring:
 
 from dataclasses import dataclass, field
 from pathlib import Path
-import csv, json, math
-from typing import List, Dict, Tuple
+from typing import Dict, List
+
+import math
+import json
+import pandas as pd
 
 # ---- GradingResult -----------------
 try:
@@ -36,14 +39,14 @@ except Exception:  # pragma: no cover
 DATA_DIR = Path("/workdir/data")
 SUBMISSION_CSV = Path("/workdir/sol.csv")
 
-HEADER = [
+COLS = [
     "sku_id","sku_name","category","mean_daily_demand",
     "safety_stock_ratio","in_transit_risk","warehouse_concentration",
     "supplier_reliability_penalty","vulnerability_score","rank"
 ]
 
-# Rounding spec per column
-NDEC = {
+# Required decimals (used for rounding/equality); "up to" in task spec.
+DECIMALS = {
     "mean_daily_demand": 2,
     "safety_stock_ratio": 3,
     "in_transit_risk": 3,
@@ -51,272 +54,233 @@ NDEC = {
     "supplier_reliability_penalty": 3,
     "vulnerability_score": 3,
 }
+NUMERIC_COLS = list(DECIMALS.keys())
+TEXT_COLS = [c for c in COLS if c not in NUMERIC_COLS and c != "rank"]
+ORDER_KEY = ["vulnerability_score", "category", "sku_id"]  # score desc, then asc, asc
 
-# ---- Helpers (pure Python; no numpy) --------------------------------
+# ---- Utils -----------------------------------------------------------
 def _round_to_str(x: float, nd: int) -> str:
-    """Return a decimal-fixed string representation of x with nd places."""
     return f"{x:.{nd}f}"
 
 def _mean(xs: List[float]) -> float:
-    """Population mean; returns 0.0 for empty input."""
     return sum(xs) / len(xs) if xs else 0.0
 
 def _pop_stdev(xs: List[float]) -> float:
-    """Population standard deviation (denominator = N). Returns 0.0 if empty."""
     if not xs:
         return 0.0
     mu = _mean(xs)
-    return math.sqrt(sum((x - mu) ** 2 for x in xs) / len(xs))
+    return (sum((x - mu) ** 2 for x in xs) / len(xs)) ** 0.5
 
 def _sigmoid(x: float) -> float:
-    """Sigmoid used by spec: 1/(1+exp(-x/10)). Note the division by 10."""
     return 1.0 / (1.0 + math.exp(-x / 10.0))
 
-# ---- Loaders ---------------------------------------------------------
-def _load_data():
-    """Load all required JSON inputs from /workdir/data."""
-    skus = json.loads((DATA_DIR / "skus.json").read_text())
-    warehouses = json.loads((DATA_DIR / "warehouses.json").read_text())
-    shipments = json.loads((DATA_DIR / "shipments.json").read_text())
-    demand = json.loads((DATA_DIR / "demand_forecast.json").read_text())
-    return skus, warehouses, shipments, demand
+def _decimals_in_string(s: str) -> int:
+    s = str(s).strip().lower()
+    if "e" in s:  # scientific notation → let numeric tolerance handle it
+        return 99
+    if "." not in s:
+        return 0
+    return len(s.split(".", 1)[1])
 
-# ---- Metric Computation per Spec ------------------------------------
-def _compute_ground_truth():
-    """Compute the ground-truth top-5 rows according to the task specification.
+def _approx_equal_num(a_str: str, b_str: str, nd: int) -> bool:
+    """Numeric equivalence with half-ulp tolerance at nd decimals."""
+    try:
+        a = float(a_str); b = float(b_str)
+    except Exception:
+        return False
+    ra = round(a, nd); rb = round(b, nd)
+    tol = 0.5 * (10 ** -nd) + 1e-12
+    return abs(ra - rb) <= tol
 
-    Implements:
-      - Eligibility filters (lead time, demand mean≥5, active, ≥2 stocked WHs).
-      - Metric formulas (safety_stock_ratio, in_transit_risk, Herfindahl, supplier penalty).
-      - Total vulnerability score and sorting with tie-breakers.
-      - Fixed-decimal string formatting before comparison.
+# ---- Load data -------------------------------------------------------
+def _load_json(name: str):
+    return json.loads((DATA_DIR / name).read_text())
 
-    Returns:
-        List[Dict[str, str]]: Exactly five dictionaries with all output columns,
-        each value as string (pre-rounded), and rank as "1".."5".
-    """
-    skus, warehouses, shipments, demand = _load_data()
+# ---- Compute ground truth (strings with required rounding) -----------
+def _compute_ground_truth_df() -> pd.DataFrame:
+    skus = _load_json("skus.json")
+    warehouses = _load_json("warehouses.json")
+    shipments = _load_json("shipments.json")
+    demand = _load_json("demand_forecast.json")
 
-    # Index: 30-day demand per sku_id
-    demand30: Dict[str, List[float]] = {}
-    for rec in demand:
-        arr = list(rec.get("daily_demand", []))[:30]
-        demand30[rec["sku_id"]] = arr
+    # Demand horizon (30d) per sku_id
+    demand30 = {d["sku_id"]: list(d.get("daily_demand", []))[:30] for d in demand}
 
-    # Aggregate current stock per SKU per warehouse (only >0 counts)
+    # Stock per sku per warehouse (only >0)
     stock_by_sku_wh: Dict[str, Dict[str, int]] = {}
     for wh in warehouses:
         wid = wh["warehouse_id"]
         for it in wh.get("inventory", []):
-            sku_id = it.get("sku_id")
-            qty = int(it.get("current_stock", 0) or 0)
-            if qty > 0 and sku_id:
-                stock_by_sku_wh.setdefault(sku_id, {}).setdefault(wid, 0)
-                stock_by_sku_wh[sku_id][wid] += qty
+            sid = it.get("sku_id"); q = int(it.get("current_stock", 0) or 0)
+            if sid and q > 0:
+                stock_by_sku_wh.setdefault(sid, {}).setdefault(wid, 0)
+                stock_by_sku_wh[sid][wid] += q
 
-    # On-way quantities: statuses limited to ["in_transit","scheduled"]
-    ONWAY_OK = {"in_transit", "scheduled"}
-    on_way_qty: Dict[str, float] = {}
+    # On-way qty for allowed statuses
+    onway = {}
     for sh in shipments:
-        if sh.get("status") in ONWAY_OK:
-            sku_id = sh.get("sku_id")
-            if sku_id:
-                on_way_qty[sku_id] = on_way_qty.get(sku_id, 0.0) + float(sh.get("qty", 0) or 0.0)
+        if sh.get("status") in {"in_transit","scheduled"}:
+            sid = sh.get("sku_id")
+            if sid:
+                onway[sid] = onway.get(sid, 0.0) + float(sh.get("qty", 0) or 0.0)
 
     rows = []
     for sku in skus:
         if not sku.get("active", False):
             continue
-        sku_id = sku["sku_id"]
+        sid = sku["sku_id"]
         lt = float(sku.get("lead_time_days", 0.0))
-        dd = demand30.get(sku_id, [])
+        dd = demand30.get(sid, [])
         if len(dd) < 30:
-            # Require full 30-day horizon
             continue
         mu = _mean(dd)
-        if lt < 3.0:
+        if lt < 3.0 or mu < 5.0:
             continue
-        if mu < 5.0:
-            continue
-
-        # Warehouses with stock > 0
-        whs = stock_by_sku_wh.get(sku_id, {})
-        wh_count = sum(1 for v in whs.values() if v > 0)
-        if wh_count < 2:
+        whs = stock_by_sku_wh.get(sid, {})
+        if sum(1 for v in whs.values() if v > 0) < 2:
             continue
 
-        # demand stddev with special rule
         sd = _pop_stdev(dd)
         if sd == 0.0:
             sd = 0.5
 
-        # (1) safety_stock_ratio
-        reorder_point = mu * lt + 1.65 * math.sqrt(lt * (sd ** 2))
-        safety_stock_ratio = (reorder_point - mu * lt) / mu
+        reorder_point = mu * lt + 1.65 * (lt * (sd ** 2)) ** 0.5
+        ssr = (reorder_point - mu * lt) / mu
 
-        # (2) in_transit_risk
-        ow = float(on_way_qty.get(sku_id, 0.0))
-        denom = mu * lt + 1.0
-        in_transit_risk = 1.0 - _sigmoid(ow / denom)
+        ow = float(onway.get(sid, 0.0))
+        itr = 1.0 - _sigmoid(ow / (mu * lt + 1.0))
 
-        # (3) warehouse_concentration (Herfindahl over >0 stocks)
         stocks_pos = [float(v) for v in whs.values() if v > 0]
         if len(stocks_pos) <= 1:
-            warehouse_concentration = 1.0
+            whc = 1.0
         else:
             total = sum(stocks_pos)
             fracs = [v / total for v in stocks_pos]
-            warehouse_concentration = sum(f * f for f in fracs)
+            whc = sum(f * f for f in fracs)
 
-        # (4) supplier_reliability_penalty
-        suppliers = sku.get("suppliers", [])
-        if suppliers:
-            supplier_score = _mean([float(s["historical_on_time_rate"]) for s in suppliers])
-        else:
-            supplier_score = 0.0
-        supplier_reliability_penalty = max(0.0, 1.0 - supplier_score)
+        sups = sku.get("suppliers", [])
+        supplier_score = _mean([float(s["historical_on_time_rate"]) for s in sups]) if sups else 0.0
+        penalty = max(0.0, 1.0 - supplier_score)
 
-        # Total score
-        vulnerability_score = (
-            2.5 * safety_stock_ratio +
-            1.8 * in_transit_risk +
-            2.0 * warehouse_concentration +
-            3.0 * supplier_reliability_penalty
-        )
+        score = 2.5*ssr + 1.8*itr + 2.0*whc + 3.0*penalty
 
-        # Collect (with string rounding exactly as the output spec)
         rows.append({
-            "sku_id": sku_id,
+            "sku_id": sid,
             "sku_name": sku["sku_name"],
             "category": sku["category"],
-            "mean_daily_demand": _round_to_str(mu, NDEC["mean_daily_demand"]),
-            "safety_stock_ratio": _round_to_str(safety_stock_ratio, NDEC["safety_stock_ratio"]),
-            "in_transit_risk": _round_to_str(in_transit_risk, NDEC["in_transit_risk"]),
-            "warehouse_concentration": _round_to_str(warehouse_concentration, NDEC["warehouse_concentration"]),
-            "supplier_reliability_penalty": _round_to_str(supplier_reliability_penalty, NDEC["supplier_reliability_penalty"]),
-            "vulnerability_score": _round_to_str(vulnerability_score, NDEC["vulnerability_score"]),
+            "mean_daily_demand": _round_to_str(mu, DECIMALS["mean_daily_demand"]),
+            "safety_stock_ratio": _round_to_str(ssr, DECIMALS["safety_stock_ratio"]),
+            "in_transit_risk": _round_to_str(itr, DECIMALS["in_transit_risk"]),
+            "warehouse_concentration": _round_to_str(whc, DECIMALS["warehouse_concentration"]),
+            "supplier_reliability_penalty": _round_to_str(penalty, DECIMALS["supplier_reliability_penalty"]),
+            "vulnerability_score": _round_to_str(score, DECIMALS["vulnerability_score"]),
         })
 
-    # Sort: score desc; tie-breaker by category asc, then sku_id asc
-    def _sort_key(r):
-        """Key function for final ordering: (-score, category, sku_id)."""
-        return (-float(r["vulnerability_score"]), r["category"], r["sku_id"])
+    gt = pd.DataFrame(rows, columns=COLS[:-1])
+    if gt.empty:
+        return gt
 
-    rows.sort(key=_sort_key)
-    top5 = rows[:5]
-    for i, r in enumerate(top5, 1):
-        r["rank"] = str(i)  # compare as strings for CSV parity
+    # Sort & add rank
+    gt = gt.sort_values(
+        by=["vulnerability_score","category","sku_id"],
+        ascending=[False, True, True],
+        key=lambda s: s.astype(float) if s.name == "vulnerability_score" else s
+    ).head(5).reset_index(drop=True)
+    gt["rank"] = (gt.index + 1).astype(str)
+    return gt[COLS]
 
-    return top5
-
-# ---- Submission Reader & Checks -------------------------------------
-def _read_submission() -> List[Dict[str, str]]:
-    """Read and validate /workdir/sol.csv structure and formatting.
-
-    Validates:
-      - Header exact match and row count == 5.
-      - Rank sequence 1..5 and sorted order per spec.
-      - Decimal precision for numeric columns.
-
-    Returns:
-        A list of row dicts (strings preserved) for subsequent value checks.
-    """
+# ---- Read submission via pandas -------------------------------------
+def _read_submission_df() -> pd.DataFrame:
     if not SUBMISSION_CSV.exists():
         raise FileNotFoundError("Missing /workdir/sol.csv")
-    with SUBMISSION_CSV.open("r", newline="") as f:
-        reader = csv.reader(f)
-        rows = list(reader)
 
-    if not rows:
-        raise ValueError("sol.csv is empty")
+    # Read as strings to preserve formatting
+    df = pd.read_csv(SUBMISSION_CSV, dtype=str, keep_default_na=False)
 
-    header = rows[0]
-    if header != HEADER:
-        raise ValueError(f"Header mismatch.\nExpected: {HEADER}\nGot     : {header}")
+    # Header & column order
+    if list(df.columns) != COLS:
+        raise ValueError(f"Header mismatch.\nExpected: {COLS}\nGot     : {list(df.columns)}")
 
-    data = rows[1:]
-    if len(data) != 5:
-        raise ValueError(f"Expected exactly 5 data rows; got {len(data)}")
+    # Exactly 5 rows
+    if len(df) != 5:
+        raise ValueError(f"Expected exactly 5 data rows; got {len(df)}")
 
-    # Convert to list of dicts (strings preserved)
-    dict_rows: List[Dict[str, str]] = []
-    for i, r in enumerate(data, 1):
-        if len(r) != len(HEADER):
-            raise ValueError(f"Row {i} has {len(r)} columns; expected {len(HEADER)}")
-        rec = {HEADER[j]: r[j].strip() for j in range(len(HEADER))}
-        dict_rows.append(rec)
+    # Basic type checks: numerics must be floatable, decimals up to N; rank must be 1..5
+    # Allow fewer decimals (up to N), reject if more than N.
+    for col in NUMERIC_COLS:
+        for i, s in enumerate(df[col].tolist(), start=1):
+            if _decimals_in_string(s) > DECIMALS[col]:
+                raise ValueError(f"Row {i} col '{col}': must have up to {DECIMALS[col]} decimal places; got {s!r}.")
+            try:
+                float(s)
+            except Exception:
+                raise ValueError(f"Row {i} col '{col}': invalid numeric {s!r}.")
 
-    # Validate rank sequence 1..5 and ordering (desc by vulnerability_score, tiebreakers)
-    for i, rec in enumerate(dict_rows, 1):
-        if rec["rank"] != str(i):
-            raise ValueError(f"Rank mismatch at row {i}: got {rec['rank']}, expected {i}")
+    # Rank: "1".."5"
+    if df["rank"].tolist() != [str(i) for i in range(1, 6)]:
+        raise ValueError(f"Rank must be the strings 1..5 in order. Got {df['rank'].tolist()}")
 
-    # Check the rows are in the correct sorted order per spec
-    def _order_key(r):
-        """Ordering key for verifying submission: (-score, category, sku_id)."""
-        return (-float(r["vulnerability_score"]), r["category"], r["sku_id"])
-
-    sorted_copy = sorted(dict_rows, key=_order_key)
-    if sorted_copy != dict_rows:
-        raise ValueError("Rows are not sorted by vulnerability_score desc with specified tie-breakers.")
-
-    # Check numeric formatting (exact decimals)
-    def _check_dp(name: str, s: str, nd: int):
-        """Ensure s parses as float and re-renders with exactly nd decimals."""
-        try:
-            val = float(s)
-        except Exception:
-            raise ValueError(f"Invalid numeric value for {name}: {s!r}")
-        back = _round_to_str(val, nd)
-        if back != s:
-            raise ValueError(f"{name} must have exactly {nd} decimals. Got {s!r}, expected {back!r}.")
-
-    for rec in dict_rows:
-        _check_dp("mean_daily_demand", rec["mean_daily_demand"], NDEC["mean_daily_demand"])
-        _check_dp("safety_stock_ratio", rec["safety_stock_ratio"], NDEC["safety_stock_ratio"])
-        _check_dp("in_transit_risk", rec["in_transit_risk"], NDEC["in_transit_risk"])
-        _check_dp("warehouse_concentration", rec["warehouse_concentration"], NDEC["warehouse_concentration"])
-        _check_dp("supplier_reliability_penalty", rec["supplier_reliability_penalty"], NDEC["supplier_reliability_penalty"])
-        _check_dp("vulnerability_score", rec["vulnerability_score"], NDEC["vulnerability_score"])
-
-    return dict_rows
+    return df
 
 # ---- Grade -----------------------------------------------------------
 def grade(_submission_dir: str | None = None) -> GradingResult:
-    """Main entry for Apex Arena.
-
-    Returns:
-        GradingResult: score=1.0 if submission exactly matches recomputed ground
-        truth (including formatting and ordering), else score=0.0 with feedback.
-    """
-    subscores = {"exact_match": 0.0}
-    weights = {"exact_match": 1.0}
+    subscores = {
+        "exact_match": 0.0
+    }
     details: Dict[str, object] = {}
+    weights = {k: 1.0 for k in subscores}  # visibility only (score is binary)
+
+    if not SUBMISSION_CSV.exists():
+        return GradingResult(score=0.0, feedback="Missing /workdir/sol.csv",
+                             subscores=subscores, details=details, weights=weights)
+
+    # Parse + structural checks
     try:
-        gt = _compute_ground_truth()
-        sub = _read_submission()
+        sub = _read_submission_df()
 
-        diffs = []
-        for i, (a, b) in enumerate(zip(sub, gt), 1):
-            for col in HEADER:
-                if a[col] != b[col]:
-                    diffs.append({"row": i, "col": col, "got": a[col], "expected": b[col]})
-                    if len(diffs) >= 5:
-                        break
-            if diffs:
-                break
-
-        if diffs:
-            details["diffs_preview"] = diffs
-            return GradingResult(
-                score=0.0,
-                feedback="Content mismatch in sol.csv.",
-                subscores=subscores,
-                details=details,
-                weights=weights,
-            )
-
-        subscores["exact_match"] = 1.0
-        return GradingResult(score=1.0, feedback="OK",subscores=subscores, details=details, weights=weights)
     except Exception as e:
-        return GradingResult(score=0.0, feedback=f"Failed: {e}",subscores=subscores, details=details, weights=weights)
+        return GradingResult(score=0.0, feedback=f"Failed: {e}",
+                             subscores=subscores, details=details, weights=weights)
+
+    # Compute GT
+    try:
+        gt = _compute_ground_truth_df()
+        if gt.empty or len(gt) != 5:
+            details["gt_row_count"] = 0 if gt is None else len(gt)
+            return GradingResult(score=0.0,
+                                 feedback=f"Internal error: ground truth produced {len(gt) if gt is not None else 0} rows (expected 5).",
+                                 subscores=subscores, details=details, weights=weights)
+
+    except Exception as e:
+        return GradingResult(score=0.0, feedback=f"Internal error computing ground truth: {e}",
+                             subscores=subscores, details=details, weights=weights)
+
+    # Value-by-value comparison (index aligned, tolerant numerics)
+    diffs = []
+    for i in range(5):
+        for col in COLS:
+            a = sub.at[i, col]
+            b = gt.at[i, col]
+            if col in NUMERIC_COLS:
+                nd = DECIMALS[col]
+                if not _approx_equal_num(a, b, nd):
+                    diffs.append({"row": i+1, "col": col, "got": a, "expected": b})
+            else:
+                if str(a) != str(b):
+                    diffs.append({"row": i+1, "col": col, "got": a, "expected": b})
+            if len(diffs) >= 10:
+                break
+        if len(diffs) >= 10:
+            break
+
+    if diffs:
+        details["diffs_preview"] = diffs
+        # Build a concise feedback string listing the first few diffs
+        lines = [f"Row {d['row']} col '{d['col']}': got {d['got']!r}, expected {d['expected']!r}" for d in diffs[:10]]
+        feedback = "Content mismatch in sol.csv:\n" + "\n".join(lines)
+        return GradingResult(score=0.0, feedback=feedback,
+                             subscores=subscores, details=details, weights=weights)
+
+    subscores["exact_match"] = 1.0
+    return GradingResult(score=1.0, feedback="OK",
+                         subscores=subscores, details=details, weights=weights)

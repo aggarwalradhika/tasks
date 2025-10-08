@@ -24,6 +24,7 @@ import csv, json
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 import pandas as pd
+import hashlib
 
 # ---- GradingResult (pydantic if available) ----
 try:
@@ -101,6 +102,9 @@ def _row_diff(exp_row: List[str], got_row: List[str]) -> Dict[str, Any]:
         "mismatch_columns": [d["column"] for d in diffs],
         "mismatches": diffs
     }
+
+def _sha256_text(s: str) -> str:
+    return hashlib.sha256(s.encode("utf-8")).hexdigest()
 # --- end helpers ---
 
 def _recompute_ground_truth():
@@ -232,6 +236,7 @@ def grade(transcript: str | None = None) -> GradingResult:
 
     gt = _recompute_ground_truth()
     details["expected_csv"] = _csv_to_string(gt)
+    details["expected_csv_sha256"] = _sha256_text(details["expected_csv"])
 
     if not SOL.exists():
         return GradingResult(
@@ -242,9 +247,9 @@ def grade(transcript: str | None = None) -> GradingResult:
             details=details
         )
 
-    # --- NEW: read as a table using pandas (all as strings, no NaNs) ---
+    # --- Read as a table; normalize whitespace; drop fully-empty rows ---
     try:
-        df = pd.read_csv(SOL, dtype=str, keep_default_na=False)
+        raw_df = pd.read_csv(SOL, dtype=str, keep_default_na=False, skip_blank_lines=True)
     except Exception as e:
         details["read_error"] = f"{type(e).__name__}: {e}"
         return GradingResult(
@@ -255,16 +260,31 @@ def grade(transcript: str | None = None) -> GradingResult:
             details=details
         )
 
-    # Build GT as a DataFrame (strings only) for comparison
-    gt_header = gt[0]
-    gt_rows = gt[1:]  # list of lists
-    gt_df = pd.DataFrame(gt_rows, columns=gt_header, dtype=str)
+    # helpers kept separate so comments/docstrings above remain unchanged
+    def _strip_df_strings(df: pd.DataFrame) -> pd.DataFrame:
+        return df.applymap(lambda x: x.strip() if isinstance(x, str) else x).astype(str)
 
-    # ---- Header check via df.columns (order matters) ----
-    found_header = df.columns.tolist()
+    def _nonempty_df(df: pd.DataFrame) -> pd.DataFrame:
+        return df.replace("", pd.NA).dropna(how="all")
+
+    df = _strip_df_strings(raw_df)
+    df_ne = _nonempty_df(df).reset_index(drop=True)  # use this for counts & compares
+
+    # Build GT DataFrame (strings only)
+    gt_header = gt[0]
+    gt_rows = gt[1:]
+    gt_df = pd.DataFrame(gt_rows, columns=gt_header, dtype=str)
+    gt_df = _strip_df_strings(gt_df).reset_index(drop=True)
+
+    # ---- Header check via df.columns (order matters); also detect extra/missing columns ----
+    found_header = df_ne.columns.tolist()
     if found_header != gt_header:
         details["found_header"] = found_header
         details["expected_header"] = gt_header
+        extra_cols = [c for c in found_header if c not in gt_header]
+        missing_cols = [c for c in gt_header if c not in found_header]
+        if extra_cols: details["extra_columns"] = extra_cols
+        if missing_cols: details["missing_columns"] = missing_cols
         return GradingResult(
             score=0.0,
             feedback="Incorrect header.",
@@ -273,10 +293,13 @@ def grade(transcript: str | None = None) -> GradingResult:
             details=details
         )
 
-    # ---- Row-count check via df.shape ----
-    if df.shape[0] != 5:
-        details["found_row_count_excluding_header"] = int(df.shape[0])
+    # ---- Row-count check after dropping blank/whitespace-only lines ----
+    if int(df_ne.shape[0]) != 5:
+        details["found_row_count_excluding_header"] = int(df_ne.shape[0])
         details["expected_row_count"] = 5
+        dropped = len(df) - len(df_ne)
+        if dropped > 0:
+            details["dropped_blank_rows"] = dropped
         return GradingResult(
             score=0.0,
             feedback="Expected exactly 5 data rows",
@@ -285,19 +308,16 @@ def grade(transcript: str | None = None) -> GradingResult:
             details=details
         )
 
-    # Normalize row order (they must match GT order exactly)
-    # Compare cell-by-cell equality as a boolean table
-    df_cmp = (df.reset_index(drop=True) == gt_df.reset_index(drop=True))
-    # Find all mismatching (row, col) coordinates
+    # ---- Content check (cell-by-cell) on normalized frames ----
+    df_cmp = (df_ne.reset_index(drop=True) == gt_df.reset_index(drop=True))
     import numpy as _np
     mism = _np.argwhere(~df_cmp.to_numpy())  # array of [row_idx, col_idx]
 
     if mism.size > 0:
-        # first mismatching data row index (1..5 when counted like CSV data rows)
-        first_row_idx = int(mism[0, 0]) + 1
+        first_row_idx = int(mism[0, 0]) + 1  # 1..5 (data rows)
         details["first_mismatch_row"] = first_row_idx
 
-        # Build up to 3 detailed row diffs using your existing helper
+        # Build up to 3 detailed diffs
         row_diffs = []
         seen_rows = set()
         for r, c in mism:
@@ -305,9 +325,9 @@ def grade(transcript: str | None = None) -> GradingResult:
                 continue
             seen_rows.add(r)
             exp_row = gt_rows[r]
-            got_row = df.iloc[r].tolist()
+            got_row = df_ne.iloc[r].tolist()
             rd = _row_diff(exp_row, got_row)
-            rd["row_index"] = r + 1  # CSV-style data-row index (1..5)
+            rd["row_index"] = r + 1
             row_diffs.append(rd)
             if len(row_diffs) >= 3:
                 break
@@ -317,7 +337,7 @@ def grade(transcript: str | None = None) -> GradingResult:
             [f"row {d['row_index']}: " + ", ".join(d["mismatch_columns"]) for d in row_diffs]
         )
 
-        # Also put a concise, human-readable preview directly in feedback
+        # concise inline feedback
         first = row_diffs[0]
         cols_list = ", ".join(first.get("mismatch_columns", [])) or "unknown columns"
         pairs = []

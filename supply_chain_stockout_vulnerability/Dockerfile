@@ -4,6 +4,8 @@ FROM apex_arena:base
 RUN apt-get update && \
     apt-get install -y --no-install-recommends && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install --no-cache-dir pandas==2.2.2
 # -------------- Placeholder ends -------------------------------------
 
 # -------------- Placeholder for operations ---------------------------
@@ -13,6 +15,7 @@ RUN apt-get update && \
 # -------------------- DO NOT CHANGE BELOW ----------------------------
 COPY ./solution.sh /tests/
 COPY ./grader.py /tests/
+COPY ./tests/ /tests/
 COPY ./data /workdir/data
 
 # Make data readable by 'model' user (tests/ is already root-only)
