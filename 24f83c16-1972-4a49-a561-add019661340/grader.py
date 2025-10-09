@@ -268,7 +268,7 @@ def grade(transcript: str | None = None) -> GradingResult:
         return df.replace("", pd.NA).dropna(how="all")
 
     df = _strip_df_strings(raw_df)
-    df_ne = _nonempty_df(df).reset_index(drop=True)  # use this for counts & compares
+    df_ne = _nonempty_df(df).reset_index(drop=True)
 
     # Build GT DataFrame (strings only)
     gt_header = gt[0]
@@ -293,44 +293,85 @@ def grade(transcript: str | None = None) -> GradingResult:
             details=details
         )
 
-    # ---- Row-count check after dropping blank/whitespace-only lines ----
-    if int(df_ne.shape[0]) != 5:
-        details["found_row_count_excluding_header"] = int(df_ne.shape[0])
+    # ---- Row count check ----
+    if len(df_ne) != 5:
+        details["found_row_count"] = len(df_ne)
         details["expected_row_count"] = 5
-        dropped = len(df) - len(df_ne)
-        if dropped > 0:
-            details["dropped_blank_rows"] = dropped
         return GradingResult(
             score=0.0,
-            feedback="Expected exactly 5 data rows",
+            feedback=f"Expected exactly 5 data rows, found {len(df_ne)}",
             subscores=subscores,
             weights=weights,
             details=details
         )
 
     # ---- Content check (cell-by-cell) on normalized frames ----
-    df_cmp = (df_ne.reset_index(drop=True) == gt_df.reset_index(drop=True))
-    import numpy as _np
-    mism = _np.argwhere(~df_cmp.to_numpy())  # array of [row_idx, col_idx]
+    left  = df_ne.reset_index(drop=True)
+    right = gt_df.reset_index(drop=True)
 
-    if mism.size > 0:
-        first_row_idx = int(mism[0, 0]) + 1  # 1..5 (data rows)
+    # Check shapes match (they should after header & row count checks, but be safe)
+    if left.shape != right.shape:
+        details["found_shape"] = left.shape
+        details["expected_shape"] = right.shape
+        return GradingResult(
+            score=0.0,
+            feedback=f"Shape mismatch: expected {right.shape}, found {left.shape}",
+            subscores=subscores,
+            weights=weights,
+            details=details
+        )
+
+    # 1) Boolean-matrix mismatch count (fast path)
+    try:
+        df_cmp = (left == right)
+        import numpy as _np
+        cmp_mat = df_cmp.to_numpy()
+        mismatch_count = int(_np.count_nonzero(~cmp_mat))
+    except Exception as e:
+        # If comparison fails for any reason, fall back to row-by-row
+        details["comparison_error"] = f"{type(e).__name__}: {e}"
+        mismatch_count = 1  # Force detailed check
+
+    # 2) Hard string-equality gate (authoritative)
+    #    Build row-wise lists and compare to GT rows exactly.
+    gt_rows_list   = [ [right.iloc[r, c] for c in range(right.shape[1])] for r in range(right.shape[0]) ]
+    cand_rows_list = [ [left.iloc[r, c]  for c in range(left.shape[1])]  for r in range(left.shape[0])  ]
+    hard_mismatch  = (cand_rows_list != gt_rows_list)
+
+    if (mismatch_count > 0) or hard_mismatch:
+        # First mismatching row index (1..5) using robust scan on hard lists
+        first_row_idx = None
+        for r in range(len(gt_rows_list)):
+            if r >= len(cand_rows_list) or cand_rows_list[r] != gt_rows_list[r]:
+                first_row_idx = r + 1
+                break
+        if first_row_idx is None:
+            # fallback to boolean matrix detection (shouldn't happen)
+            try:
+                bad = _np.argwhere(~cmp_mat)
+                first_row_idx = int(bad[0, 0]) + 1 if bad.size else 1
+            except:
+                first_row_idx = 1
+
         details["first_mismatch_row"] = first_row_idx
 
         # Build up to 3 detailed diffs
         row_diffs = []
-        seen_rows = set()
-        for r, c in mism:
-            if r in seen_rows:
-                continue
-            seen_rows.add(r)
-            exp_row = gt_rows[r]
-            got_row = df_ne.iloc[r].tolist()
-            rd = _row_diff(exp_row, got_row)
-            rd["row_index"] = r + 1
-            row_diffs.append(rd)
-            if len(row_diffs) >= 3:
-                break
+        reported = 0
+        for r in range(len(gt_rows_list)):
+            if r >= len(cand_rows_list):
+                exp_row = gt_rows_list[r]
+                got_row = []
+            else:
+                exp_row = gt_rows_list[r]
+                got_row = cand_rows_list[r]
+            if exp_row != got_row:
+                rd = _row_diff(exp_row, got_row)
+                rd["row_index"] = r + 1
+                row_diffs.append(rd)
+                reported += 1
+                if reported >= 3:
+                    break
 
         details["row_diffs"] = row_diffs
         details["diff_summary"] = "; ".join(
@@ -359,6 +400,7 @@ def grade(transcript: str | None = None) -> GradingResult:
             details=details
         )
 
+    # If we reach here, both checks agree there's no difference.
     subscores["exact_match"] = 1.0
     return GradingResult(
         score=1.0,
