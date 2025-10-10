@@ -1,0 +1,41 @@
+prompt: |
+  Hi! I am currently working at Open AI. Recently, we have made GPT-5 accessible to the paid customers. 
+  GPT-5 is extremenly big neural network with about a trillion parameters. So, only a few GPUs can take up that high load.
+
+  I am given the task of efficiently scheduling the customer requests on these GPUs, so that the customers do not experience long delays in GPT responses.
+  Some customers have taken our "Ultra Fast" plan, so we should give more priority to their requests than the regular customers.
+  I need your help on this.
+
+  Input: The file requests.txt contains the input.
+  - The first line of the file contains integer n and m denoting the number of available GPUs and cutomer queries, respectively. 
+  - Then, each of the next m*n lines contains the <cutomer_request_id> <priority> <GPU_id> <expected_execution_time_on_GPU_in_sec>.
+    Example: 2 4
+             id1 1 GPU1 5
+             id2 2 GPU1 7
+             id3 2 GPU1 7
+             id4 1 GPU1 5
+             id1 1 GPU2 5
+             id2 2 GPU2 5
+             id3 2 GPU2 5
+             id4 1 GPU2 5
+  
+  Ouput: Design a heuristic to minimize the maximum weighted completion time of the customer requests.
+  The weighted completion time of a request is = priority*completion_time.
+  Write the obtained maximum weighted completion time in file ans.txt.
+  Example: for the above scenario, we will schedule the requests: id2, id1 on GPU1, and id3, id4 on GPU1.
+           The maximum weighted completion time is 14.
+
+metadata:
+  difficulty: medium
+  category: algorithms
+  required_tools:
+    - bash
+  tags:
+    - python
+    - np-hard
+    - heuristic
+    - scheduling-problem
+    - partitioning-problem
+    - load-balancing
+  time_limit: 10
+  memory_limit: 32  
