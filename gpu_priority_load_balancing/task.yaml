@@ -1,17 +1,140 @@
 prompt: |
-  Hi! I am currently working at OpenAI. Recently, we have made GPT-5 accessible to paid customers.
-  GPT-5 is an extremely large neural network with about a trillion parameters. Only a few GPUs can handle this high load.
+  You are working at OpenAI on infrastructure for GPT-5, an extremely large neural network that requires specialized GPU allocation.
+  
+  ## Your Task
+  
+  Design an optimal schedule to minimize the maximum weighted completion time across all customer requests.
+  
+  ## Problem Details
+  
+  - You have `n` GPUs available (GPU1, GPU2, ..., GPUn)
+  - You have `m` unique customer requests to schedule
+  - Each request has a **priority level**:
+    * priority = 2 → "Ultra Fast" tier (premium customers)
+    * priority = 1 → Regular tier
+  - Each request can run on any GPU, but with different execution times
+  - **Each request must be assigned to exactly ONE GPU**
+  - Requests assigned to the same GPU execute sequentially (no parallelism within a GPU)
+  
+  ## Objective
+  
+  Minimize the **maximum weighted completion time** across all requests.
+  
+  **Definitions:**
+  - `completion_time` = the time when a request finishes execution
+    - If GPU is busy, the request waits in queue
+    - completion_time = (sum of execution times of all requests before it on that GPU) + (its own execution time)
+  - `weighted_completion_time = priority × completion_time`
+  - **Goal:** Minimize `max(weighted_completion_time)` across all requests
+  
+  ## Why This Matters
+  
+  High-priority customers pay premium rates and expect fast service. A customer with priority=2 who waits 100 seconds has a weighted completion time of 200, which is worse than a regular customer (priority=1) waiting 150 seconds (weighted CT = 150). Your schedule must balance both priorities and execution times.
+  
+  ## Input Format
+  
+  The file `/workdir/data/requests.txt` contains:
+  
+  ```
+  n m
+  <request_id> <priority> <GPU_id> <execution_time_seconds>
+  <request_id> <priority> <GPU_id> <execution_time_seconds>
+  ...
+  ```
+  
+  - First line: `n` (number of GPUs) and `m` (number of unique requests)
+  - Following lines: For each request, there are `n` lines showing execution time on each GPU
+  
+  **Example:**
+  ```
+  2 3
+  req1 1 GPU1 10
+  req1 1 GPU2 8
+  req2 2 GPU1 5
+  req2 2 GPU2 6
+  req3 1 GPU1 7
+  req3 1 GPU2 9
+  ```
+  
+  This means:
+  - 2 GPUs, 3 requests
+  - req1 (priority=1): 10 sec on GPU1, 8 sec on GPU2
+  - req2 (priority=2): 5 sec on GPU1, 6 sec on GPU2  
+  - req3 (priority=1): 7 sec on GPU1, 9 sec on GPU2
+  
+  ## Output Format
+  
+  You must produce **TWO files**:
+  
+  ### 1. `/workdir/schedule.txt` - Your scheduling decisions
+  
+  One line per request:
+  ```
+  <request_id> <assigned_GPU_id>
+  ```
+  
+  Example:
+  ```
+  req1 GPU2
+  req2 GPU1
+  req3 GPU1
+  ```
+  
+  This means:
+  - req1 runs on GPU2 (takes 8 sec, completes at time 8, weighted CT = 1×8 = 8)
+  - req2 runs on GPU1 (takes 5 sec, completes at time 5, weighted CT = 2×5 = 10)
+  - req3 runs on GPU1 (takes 7 sec, starts after req2, completes at time 12, weighted CT = 1×12 = 12)
+  - Maximum weighted CT = 12
+  
+  ### 2. `/workdir/ans.txt` - The optimal value
+  
+  A single integer: the maximum weighted completion time from your schedule.
+  
+  Example:
+  ```
+  12
+  ```
+  
+  ## Constraints
+  
+  - 2 ≤ n ≤ 8 (number of GPUs)
+  - 10 ≤ m ≤ 50 (number of requests)
+  - 1 ≤ execution_time ≤ 100 seconds
+  - priority ∈ {1, 2}
+  - You do NOT have internet access
+  - Python 3 is available
+  
+  ## Important Notes
+  
+  1. **This is NP-hard**: There's no known polynomial-time optimal algorithm. Use heuristics/approximation algorithms.
+  
+  2. **Your schedule will be validated**: The grader will:
+     - Check that every request is assigned exactly once
+     - Verify the schedule is feasible
+     - Compute the actual max weighted CT from your schedule
+     - Check that it matches your claimed answer in ans.txt
+     - Verify your solution is near-optimal (within reasonable bounds)
+  
+  3. **Think algorithmically**: Consider approaches like:
+     - Greedy algorithms (priority-based, shortest-job-first, etc.)
+     - Dynamic programming (if feasible)
+     - Local search / simulated annealing
+     - Branch and bound with pruning
+  
+  4. **Be deterministic**: If your algorithm has ties, break them consistently.
+  
+  5. **Test your solution**: Manually verify a small example to ensure your logic is correct.
 
-  Your task is to schedule customer requests efficiently across available GPUs to minimize delays.
-
-  Each customer request has a different expected execution time on each GPU, and a priority level:
-  - priority = 2 → "Ultra Fast" customer
-  - priority = 1 → regular customer
-
-  Input: The file `requests.txt`
-  - The first line contains two integers n and m — the number of GPUs and number of unique requests.
-  - Then, for each request, there are n lines describing how long that request takes on each GPU:
-      <request_id> <priority> <GPU_id> <expected_execution_time_on_GPU_in_sec>
-
-  Output: Write to `ans.txt` the minimum possible **maximum weighted completion time**, where:
-  weighted_completion_time = priority × completion_time
+metadata:
+  difficulty: hard
+  category: optimization algorithms
+  tags:
+    - scheduling
+    - greedy algorithms
+    - resource allocation
+    - NP-hard optimization
+    - weighted completion time
+  references:
+    - "Inspired by weighted completion time minimization (scheduling theory)"
+    - "Related to parallel machine scheduling with job-dependent processing times"
+    - "Connection to makespan minimization with priorities"
