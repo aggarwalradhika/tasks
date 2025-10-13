@@ -35,8 +35,8 @@ prompt: |
 
   Selection & ordering:
   • Consider only eligible SKUs.
-  • Sort by vulnerability_score descending; tie-breaker by sku.category, sku.sku_id.
-  • Take top 5; assign rank=1..5 (1 highest vulnerability).
+  • Sort by vulnerability_score descending, then category ascending, then sku_id ascending.
+  • Take top 5; assign rank=1..5 in order (1 = highest vulnerability).
 
   Output (CSV → /workdir/sol.csv; exact header & order):
   sku_id,sku_name,category,mean_daily_demand,safety_stock_ratio,in_transit_risk,warehouse_concentration,supplier_reliability_penalty,vulnerability_score,rank

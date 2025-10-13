@@ -16,11 +16,12 @@ Scoring:
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List
-
+from typing import Dict, List, Optional, Any
+import csv
 import math
 import json
 import pandas as pd
+import hashlib
 
 # ---- GradingResult -----------------
 try:
@@ -55,8 +56,7 @@ DECIMALS = {
     "vulnerability_score": 3,
 }
 NUMERIC_COLS = list(DECIMALS.keys())
-TEXT_COLS = [c for c in COLS if c not in NUMERIC_COLS and c != "rank"]
-ORDER_KEY = ["vulnerability_score", "category", "sku_id"]  # score desc, then asc, asc
+TEXT_COLS = ["sku_id", "sku_name", "category"]
 
 # ---- Utils -----------------------------------------------------------
 def _round_to_str(x: float, nd: int) -> str:
@@ -74,30 +74,31 @@ def _pop_stdev(xs: List[float]) -> float:
 def _sigmoid(x: float) -> float:
     return 1.0 / (1.0 + math.exp(-x / 10.0))
 
-def _decimals_in_string(s: str) -> int:
-    s = str(s).strip().lower()
-    if "e" in s:  # scientific notation → let numeric tolerance handle it
-        return 99
-    if "." not in s:
-        return 0
-    return len(s.split(".", 1)[1])
-
-def _approx_equal_num(a_str: str, b_str: str, nd: int) -> bool:
-    """Numeric equivalence with half-ulp tolerance at nd decimals."""
+def _try_float(x: str) -> Optional[float]:
     try:
-        a = float(a_str); b = float(b_str)
+        return float(x)
     except Exception:
-        return False
-    ra = round(a, nd); rb = round(b, nd)
-    tol = 0.5 * (10 ** -nd) + 1e-12
-    return abs(ra - rb) <= tol
+        return None
+
+def _csv_to_string(rows: List[List[str]]) -> str:
+    """Convert list of rows to CSV string."""
+    from io import StringIO
+    s = StringIO()
+    w = csv.writer(s)
+    for r in rows:
+        w.writerow(r)
+    return s.getvalue()
+
+def _sha256_text(s: str) -> str:
+    return hashlib.sha256(s.encode("utf-8")).hexdigest()
 
 # ---- Load data -------------------------------------------------------
 def _load_json(name: str):
     return json.loads((DATA_DIR / name).read_text())
 
 # ---- Compute ground truth (strings with required rounding) -----------
-def _compute_ground_truth_df() -> pd.DataFrame:
+def _compute_ground_truth_rows() -> List[List[str]]:
+    """Returns [header_row, data_row1, data_row2, ...]"""
     skus = _load_json("skus.json")
     warehouses = _load_json("warehouses.json")
     shipments = _load_json("shipments.json")
@@ -176,111 +177,234 @@ def _compute_ground_truth_df() -> pd.DataFrame:
             "vulnerability_score": _round_to_str(score, DECIMALS["vulnerability_score"]),
         })
 
-    gt = pd.DataFrame(rows, columns=COLS[:-1])
-    if gt.empty:
-        return gt
+    # Sort & take top-5; tie-break by category then sku_id
+    rows.sort(key=lambda r: (-float(r["vulnerability_score"]), r["category"], r["sku_id"]))
+    rows = rows[:5]
+    for i, r in enumerate(rows, 1):
+        r["rank"] = str(i)
 
-    # Sort & add rank
-    gt = gt.sort_values(
-        by=["vulnerability_score","category","sku_id"],
-        ascending=[False, True, True],
-        key=lambda s: s.astype(float) if s.name == "vulnerability_score" else s
-    ).head(5).reset_index(drop=True)
-    gt["rank"] = (gt.index + 1).astype(str)
-    return gt[COLS]
+    # Convert to list of lists format
+    result = [COLS]  # Header
+    for r in rows:
+        result.append([r[col] for col in COLS])
+    
+    return result
 
-# ---- Read submission via pandas -------------------------------------
-def _read_submission_df() -> pd.DataFrame:
-    if not SUBMISSION_CSV.exists():
-        raise FileNotFoundError("Missing /workdir/sol.csv")
+# ---- Detailed row comparison ----------------------------------------
 
-    # Read as strings to preserve formatting
-    df = pd.read_csv(SUBMISSION_CSV, dtype=str, keep_default_na=False)
+def _row_diff(exp_row: List[str], got_row: List[str], row_idx: int) -> Dict[str, Any]:
+    """Compare two rows with numeric tolerance on decimals."""
+    diffs = []
+    for idx, col in enumerate(COLS):
+        exp = exp_row[idx]
+        got = got_row[idx] if idx < len(got_row) else ""
 
-    # Header & column order
-    if list(df.columns) != COLS:
-        raise ValueError(f"Header mismatch.\nExpected: {COLS}\nGot     : {list(df.columns)}")
+        # Try to interpret both as floats
+        e_num = _try_float(exp)
+        g_num = _try_float(got)
 
-    # Exactly 5 rows
-    if len(df) != 5:
-        raise ValueError(f"Expected exactly 5 data rows; got {len(df)}")
+        if e_num is not None and g_num is not None and col in DECIMALS:
+            # Get number of decimals to check for this column
+            nd = DECIMALS.get(col, 3)
+            # Compare numerically, not as strings
+            if round(e_num, nd) != round(g_num, nd):
+                diffs.append({
+                    "column": col,
+                    "expected": exp,
+                    "found": got,
+                    "numeric_delta": g_num - e_num
+                })
+        else:
+            # Non-numeric comparison (string columns)
+            if exp.strip() != got.strip():
+                diffs.append({
+                    "column": col,
+                    "expected": exp,
+                    "found": got,
+                    "numeric_delta": None
+                })
 
-    # Basic type checks: numerics must be floatable, decimals up to N; rank must be 1..5
-    # Allow fewer decimals (up to N), reject if more than N.
-    for col in NUMERIC_COLS:
-        for i, s in enumerate(df[col].tolist(), start=1):
-            if _decimals_in_string(s) > DECIMALS[col]:
-                raise ValueError(f"Row {i} col '{col}': must have up to {DECIMALS[col]} decimal places; got {s!r}.")
-            try:
-                float(s)
-            except Exception:
-                raise ValueError(f"Row {i} col '{col}': invalid numeric {s!r}.")
+    return {
+        "row_index": row_idx,
+        "mismatch_columns": [d["column"] for d in diffs],
+        "mismatches": diffs
+    }
 
-    # Rank: "1".."5"
-    if df["rank"].tolist() != [str(i) for i in range(1, 6)]:
-        raise ValueError(f"Rank must be the strings 1..5 in order. Got {df['rank'].tolist()}")
-
-    return df
 
 # ---- Grade -----------------------------------------------------------
 def grade(_submission_dir: str | None = None) -> GradingResult:
-    subscores = {
-        "exact_match": 0.0
-    }
+    subscores = {"exact_match": 0.0}
     details: Dict[str, object] = {}
-    weights = {k: 1.0 for k in subscores}  # visibility only (score is binary)
+    weights = {"exact_match": 1.0}
 
+    # Compute ground truth
+    try:
+        gt_rows = _compute_ground_truth_rows()
+        if len(gt_rows) != 6:  # header + 5 data rows
+            details["gt_row_count"] = len(gt_rows) - 1
+            return GradingResult(
+                score=0.0,
+                feedback=f"Internal error: ground truth produced {len(gt_rows)-1} rows (expected 5).",
+                subscores=subscores, details=details, weights=weights
+            )
+    except Exception as e:
+        details["gt_error"] = str(e)
+        return GradingResult(
+            score=0.0, 
+            feedback=f"Internal error computing ground truth: {e}",
+            subscores=subscores, details=details, weights=weights
+        )
+
+    # Store expected output for debugging
+    gt_csv_str = _csv_to_string(gt_rows)
+    details["expected_csv"] = gt_csv_str
+    details["expected_csv_sha256"] = _sha256_text(gt_csv_str)
+
+    # Check file exists
     if not SUBMISSION_CSV.exists():
-        return GradingResult(score=0.0, feedback="Missing /workdir/sol.csv",
-                             subscores=subscores, details=details, weights=weights)
+        return GradingResult(
+            score=0.0, 
+            feedback="Missing /workdir/sol.csv",
+            subscores=subscores, details=details, weights=weights
+        )
 
-    # Parse + structural checks
+    # Read submission as raw rows (strings only)
     try:
-        sub = _read_submission_df()
-
+        with open(SUBMISSION_CSV, 'r', encoding='utf-8') as f:
+            reader = csv.reader(f)
+            sub_rows = []
+            for row in reader:
+                # Strip whitespace from each cell
+                sub_rows.append([cell.strip() for cell in row])
     except Exception as e:
-        return GradingResult(score=0.0, feedback=f"Failed: {e}",
-                             subscores=subscores, details=details, weights=weights)
+        details["read_error"] = str(e)
+        return GradingResult(
+            score=0.0,
+            feedback=f"Failed to read sol.csv: {e}",
+            subscores=subscores, details=details, weights=weights
+        )
 
-    # Compute GT
-    try:
-        gt = _compute_ground_truth_df()
-        if gt.empty or len(gt) != 5:
-            details["gt_row_count"] = 0 if gt is None else len(gt)
-            return GradingResult(score=0.0,
-                                 feedback=f"Internal error: ground truth produced {len(gt) if gt is not None else 0} rows (expected 5).",
-                                 subscores=subscores, details=details, weights=weights)
+    # Remove completely empty rows
+    sub_rows = [row for row in sub_rows if any(cell for cell in row)]
+    
+    if len(sub_rows) == 0:
+        return GradingResult(
+            score=0.0,
+            feedback="sol.csv is empty",
+            subscores=subscores, details=details, weights=weights
+        )
 
-    except Exception as e:
-        return GradingResult(score=0.0, feedback=f"Internal error computing ground truth: {e}",
-                             subscores=subscores, details=details, weights=weights)
+    # Store submitted CSV for debugging
+    details["submitted_csv"] = _csv_to_string(sub_rows)
+    details["submitted_csv_sha256"] = _sha256_text(details["submitted_csv"])
 
-    # Value-by-value comparison (index aligned, tolerant numerics)
-    diffs = []
+    # Check header
+    sub_header = sub_rows[0]
+    exp_header = gt_rows[0]
+    
+    if sub_header != exp_header:
+        details["found_header"] = sub_header
+        details["expected_header"] = exp_header
+        extra_cols = [c for c in sub_header if c not in exp_header]
+        missing_cols = [c for c in exp_header if c not in sub_header]
+        if extra_cols:
+            details["extra_columns"] = extra_cols
+        if missing_cols:
+            details["missing_columns"] = missing_cols
+        
+        return GradingResult(
+            score=0.0,
+            feedback=f"Incorrect header. Expected: {exp_header}, Got: {sub_header}",
+            subscores=subscores, details=details, weights=weights
+        )
+
+    # Check row count (should be exactly 5 data rows)
+    sub_data_rows = sub_rows[1:]
+    if len(sub_data_rows) != 5:
+        details["found_row_count"] = len(sub_data_rows)
+        details["expected_row_count"] = 5
+        return GradingResult(
+            score=0.0,
+            feedback=f"Expected exactly 5 data rows, found {len(sub_data_rows)}",
+            subscores=subscores, details=details, weights=weights
+        )
+
+    # Check each data row has correct number of columns
+    for i, row in enumerate(sub_data_rows, 1):
+        if len(row) != len(COLS):
+            details["row_with_wrong_col_count"] = i
+            details["expected_col_count"] = len(COLS)
+            details["found_col_count"] = len(row)
+            return GradingResult(
+                score=0.0,
+                feedback=f"Row {i} has {len(row)} columns, expected {len(COLS)}",
+                subscores=subscores, details=details, weights=weights
+            )
+
+    # Detailed content comparison (cell-by-cell, exact string match)
+    gt_data_rows = gt_rows[1:]
+    all_diffs = []
+    
     for i in range(5):
-        for col in COLS:
-            a = sub.at[i, col]
-            b = gt.at[i, col]
-            if col in NUMERIC_COLS:
-                nd = DECIMALS[col]
-                if not _approx_equal_num(a, b, nd):
-                    diffs.append({"row": i+1, "col": col, "got": a, "expected": b})
+        exp_row = gt_data_rows[i]
+        got_row = sub_data_rows[i]
+        
+        # Check if rows match exactly
+        if exp_row != got_row:
+            diff_info = _row_diff(exp_row, got_row, i + 1)
+            all_diffs.append(diff_info)
+
+    # If there are any differences, fail with detailed feedback
+    if all_diffs:
+        details["total_rows_with_mismatches"] = len(all_diffs)
+        details["row_diffs"] = all_diffs[:5]  # Show first 5 rows with issues
+        
+        # Build detailed feedback message
+        first_diff = all_diffs[0]
+        first_row_idx = first_diff["row_index"]
+        cols_list = ", ".join(first_diff["mismatch_columns"])
+        
+        # Show detailed mismatches for first row
+        lines = [f"Content mismatch at data row {first_row_idx}."]
+        lines.append(f"Columns differing: {cols_list}")
+        lines.append("")
+        lines.append("Details for first mismatched row:")
+        
+        for mismatch in first_diff["mismatches"][:5]:  # Show first 5 column diffs
+            col = mismatch["column"]
+            exp = mismatch["expected"]
+            got = mismatch["found"]
+            
+            if mismatch["numeric_delta"] is not None:
+                delta = mismatch["numeric_delta"]
+                lines.append(f"  • {col}: expected={exp}, got={got}, delta={delta:.6f}")
             else:
-                if str(a) != str(b):
-                    diffs.append({"row": i+1, "col": col, "got": a, "expected": b})
-            if len(diffs) >= 10:
-                break
-        if len(diffs) >= 10:
-            break
+                lines.append(f"  • {col}: expected={exp!r}, got={got!r}")
+        
+        if len(first_diff["mismatches"]) > 5:
+            lines.append(f"  ... and {len(first_diff['mismatches']) - 5} more column(s) in this row")
+        
+        if len(all_diffs) > 1:
+            lines.append("")
+            lines.append(f"Total: {len(all_diffs)} row(s) with mismatches. See details.row_diffs for full breakdown.")
+        
+        feedback = "\n".join(lines)
+        
+        return GradingResult(
+            score=0.0,
+            feedback=feedback,
+            subscores=subscores,
+            details=details,
+            weights=weights
+        )
 
-    if diffs:
-        details["diffs_preview"] = diffs
-        # Build a concise feedback string listing the first few diffs
-        lines = [f"Row {d['row']} col '{d['col']}': got {d['got']!r}, expected {d['expected']!r}" for d in diffs[:10]]
-        feedback = "Content mismatch in sol.csv:\n" + "\n".join(lines)
-        return GradingResult(score=0.0, feedback=feedback,
-                             subscores=subscores, details=details, weights=weights)
-
+    # All checks passed!
     subscores["exact_match"] = 1.0
-    return GradingResult(score=1.0, feedback="OK",
-                         subscores=subscores, details=details, weights=weights)
+    details["rows_checked"] = 5
+    return GradingResult(
+        score=1.0,
+        feedback="Correct",
+        subscores=subscores,
+        details=details,
+        weights=weights
+    )
