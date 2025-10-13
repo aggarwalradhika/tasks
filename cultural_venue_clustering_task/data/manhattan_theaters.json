@@ -1,0 +1,654 @@
+{
+  "manhattan_theaters": {
+    "description": "Directory of 20 notable theaters in Manhattan with complete address information",
+    "last_updated": "2025-08-12",
+    "total_theaters": 20,
+    "theaters": [
+      {
+        "id": 1,
+        "name": "Majestic Theatre",
+        "address": {
+          "street": "245 West 44th Street",
+          "cross_street": "7th & 8th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10036",
+          "full_address": "245 West 44th Street, New York, NY 10036"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Theater District",
+          "coordinates": {
+            "latitude": 40.7566,
+            "longitude": -73.9868
+          }
+        },
+        "theater_type": "Broadway",
+        "capacity": 1681,
+        "opened": 1927,
+        "current_show": "Gypsy",
+        "notable_productions": ["The Phantom of the Opera", "The Wiz", "42nd Street"],
+        "architect": "Herbert J. Krapp",
+        "website": "https://majestictheatre.com",
+        "box_office": "(212) 239-6200"
+      },
+      {
+        "id": 2,
+        "name": "Palace Theatre",
+        "address": {
+          "street": "1564 Broadway",
+          "cross_street": "47th Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10036",
+          "full_address": "1564 Broadway, New York, NY 10036"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Theater District",
+          "coordinates": {
+            "latitude": 40.7590,
+            "longitude": -73.9857
+          }
+        },
+        "theater_type": "Broadway",
+        "capacity": 1743,
+        "opened": 1913,
+        "current_show": "Tammy Faye",
+        "notable_productions": ["Beauty and the Beast", "Aida", "Chicago"],
+        "architect": "Thomas Lamb",
+        "website": "https://palacetheatre.com",
+        "box_office": "(212) 239-6200",
+        "note": "Historic vaudeville palace"
+      },
+      {
+        "id": 3,
+        "name": "St. James Theatre",
+        "address": {
+          "street": "246 West 44th Street",
+          "cross_street": "7th & 8th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10036",
+          "full_address": "246 West 44th Street, New York, NY 10036"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Theater District",
+          "coordinates": {
+            "latitude": 40.7566,
+            "longitude": -73.9869
+          }
+        },
+        "theater_type": "Broadway",
+        "capacity": 1710,
+        "opened": 1927,
+        "current_show": "The Queen of Versailles",
+        "notable_productions": ["Oklahoma!", "Hello, Dolly!", "The Producers"],
+        "architect": "Warren and Wetmore",
+        "website": "https://stjamestheatre.com",
+        "box_office": "(212) 239-6200"
+      },
+      {
+        "id": 4,
+        "name": "Lyceum Theatre",
+        "address": {
+          "street": "149 West 45th Street",
+          "cross_street": "6th & 7th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10036",
+          "full_address": "149 West 45th Street, New York, NY 10036"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Theater District",
+          "coordinates": {
+            "latitude": 40.7572,
+            "longitude": -73.9855
+          }
+        },
+        "theater_type": "Broadway",
+        "capacity": 950,
+        "opened": 1903,
+        "current_show": "Oh, Mary!",
+        "notable_productions": ["Born Yesterday", "The Little Foxes", "A View from the Bridge"],
+        "architect": "Herts & Tallant",
+        "website": "https://lyceumtheatre.com",
+        "box_office": "(212) 239-6200",
+        "note": "Oldest continuously operating Broadway theater"
+      },
+      {
+        "id": 5,
+        "name": "Richard Rodgers Theatre",
+        "address": {
+          "street": "226 West 46th Street",
+          "cross_street": "7th & 8th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10036",
+          "full_address": "226 West 46th Street, New York, NY 10036"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Theater District",
+          "coordinates": {
+            "latitude": 40.7580,
+            "longitude": -73.9868
+          }
+        },
+        "theater_type": "Broadway",
+        "capacity": 1319,
+        "opened": 1924,
+        "current_show": "Hamilton",
+        "notable_productions": ["Chicago", "In the Heights", "Guys and Dolls"],
+        "architect": "Herbert J. Krapp",
+        "website": "https://richardrodgerstheatre.com",
+        "box_office": "(212) 239-6200"
+      },
+      {
+        "id": 6,
+        "name": "Gershwin Theatre",
+        "address": {
+          "street": "222 West 51st Street",
+          "cross_street": "7th & 8th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10019",
+          "full_address": "222 West 51st Street, New York, NY 10019"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Theater District",
+          "coordinates": {
+            "latitude": 40.7614,
+            "longitude": -73.9868
+          }
+        },
+        "theater_type": "Broadway",
+        "capacity": 1933,
+        "opened": 1972,
+        "current_show": "Wicked",
+        "notable_productions": ["Oklahoma!", "Show Boat", "Starlight Express"],
+        "architect": "Ralph Alswang",
+        "website": "https://gershwintheatre.com",
+        "box_office": "(212) 239-6200",
+        "note": "Largest Broadway theater"
+      },
+      {
+        "id": 7,
+        "name": "New Amsterdam Theatre",
+        "address": {
+          "street": "214 West 42nd Street",
+          "cross_street": "7th & 8th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10036",
+          "full_address": "214 West 42nd Street, New York, NY 10036"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Theater District",
+          "coordinates": {
+            "latitude": 40.7550,
+            "longitude": -73.9868
+          }
+        },
+        "theater_type": "Broadway",
+        "capacity": 1814,
+        "opened": 1903,
+        "current_show": "Aladdin",
+        "notable_productions": ["The Lion King", "Mary Poppins", "Ziegfeld Follies"],
+        "architect": "Herts & Tallant",
+        "website": "https://newamsterdamtheatre.com",
+        "box_office": "(212) 239-6200",
+        "note": "Restored by Disney in 1997"
+      },
+      {
+        "id": 8,
+        "name": "Winter Garden Theatre",
+        "address": {
+          "street": "1634 Broadway",
+          "cross_street": "50th Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10019",
+          "full_address": "1634 Broadway, New York, NY 10019"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Theater District",
+          "coordinates": {
+            "latitude": 40.7605,
+            "longitude": -73.9857
+          }
+        },
+        "theater_type": "Broadway",
+        "capacity": 1526,
+        "opened": 1911,
+        "current_show": "Mamma Mia!",
+        "notable_productions": ["Cats", "School of Rock", "West Side Story"],
+        "architect": "William Albert Swasey",
+        "website": "https://wintergardentheatre.com",
+        "box_office": "(212) 239-6200"
+      },
+      {
+        "id": 9,
+        "name": "Minskoff Theatre",
+        "address": {
+          "street": "1515 Broadway",
+          "cross_street": "44th & 45th Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10036",
+          "full_address": "1515 Broadway, New York, NY 10036"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Theater District",
+          "coordinates": {
+            "latitude": 40.7566,
+            "longitude": -73.9857
+          }
+        },
+        "theater_type": "Broadway",
+        "capacity": 1710,
+        "opened": 1973,
+        "current_show": "The Lion King",
+        "notable_productions": ["Sunset Boulevard", "Women on the Verge", "Hair"],
+        "architect": "Roche-Dinkeloo",
+        "website": "https://minskofftheatre.com",
+        "box_office": "(212) 239-6200",
+        "note": "Located on the third floor of an office building"
+      },
+      {
+        "id": 10,
+        "name": "Circle in the Square Theatre",
+        "address": {
+          "street": "1633 Broadway",
+          "cross_street": "50th Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10019",
+          "full_address": "1633 Broadway, New York, NY 10019"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Theater District",
+          "coordinates": {
+            "latitude": 40.7605,
+            "longitude": -73.9857
+          }
+        },
+        "theater_type": "Broadway",
+        "capacity": 776,
+        "opened": 1972,
+        "current_show": "Just in Time",
+        "notable_productions": ["Godspell", "Sweeney Todd", "Three Tall Women"],
+        "architect": "Allen Sayles",
+        "website": "https://circleinthesquare.org",
+        "box_office": "(212) 239-6200",
+        "note": "Only Broadway theater-in-the-round"
+      },
+      {
+        "id": 11,
+        "name": "Music Box Theatre",
+        "address": {
+          "street": "239 West 45th Street",
+          "cross_street": "7th & 8th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10036",
+          "full_address": "239 West 45th Street, New York, NY 10036"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Theater District",
+          "coordinates": {
+            "latitude": 40.7572,
+            "longitude": -73.9868
+          }
+        },
+        "theater_type": "Broadway",
+        "capacity": 1025,
+        "opened": 1921,
+        "current_show": "Art",
+        "notable_productions": ["Of Thee I Sing", "Harvey", "Dear Evan Hansen"],
+        "architect": "C. Howard Crane",
+        "website": "https://musicboxtheatre.com",
+        "box_office": "(212) 239-6200",
+        "note": "Built by Irving Berlin"
+      },
+      {
+        "id": 12,
+        "name": "Eugene O'Neill Theatre",
+        "address": {
+          "street": "230 West 49th Street",
+          "cross_street": "7th & 8th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10019",
+          "full_address": "230 West 49th Street, New York, NY 10019"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Theater District",
+          "coordinates": {
+            "latitude": 40.7596,
+            "longitude": -73.9868
+          }
+        },
+        "theater_type": "Broadway",
+        "capacity": 1108,
+        "opened": 1925,
+        "current_show": "The Book of Mormon",
+        "notable_productions": ["Hair", "Grease", "Annie"],
+        "architect": "Herbert J. Krapp",
+        "website": "https://eugeneoneilltheatre.com",
+        "box_office": "(212) 239-6200"
+      },
+      {
+        "id": 13,
+        "name": "Ethel Barrymore Theatre",
+        "address": {
+          "street": "243 West 47th Street",
+          "cross_street": "7th & 8th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10036",
+          "full_address": "243 West 47th Street, New York, NY 10036"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Theater District",
+          "coordinates": {
+            "latitude": 40.7585,
+            "longitude": -73.9868
+          }
+        },
+        "theater_type": "Broadway",
+        "capacity": 1058,
+        "opened": 1928,
+        "current_show": "McNeal",
+        "notable_productions": ["The Corn Is Green", "A Streetcar Named Desire", "Spirited Away"],
+        "architect": "Herbert J. Krapp",
+        "website": "https://ethelbarrymoretheatre.com",
+        "box_office": "(212) 239-6200"
+      },
+      {
+        "id": 14,
+        "name": "Nederlander Theatre",
+        "address": {
+          "street": "208 West 41st Street",
+          "cross_street": "7th & 8th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10036",
+          "full_address": "208 West 41st Street, New York, NY 10036"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Theater District",
+          "coordinates": {
+            "latitude": 40.7544,
+            "longitude": -73.9868
+          }
+        },
+        "theater_type": "Broadway",
+        "capacity": 1232,
+        "opened": 1921,
+        "current_show": "Jeff Ross: Take A Banana For The Ride",
+        "notable_productions": ["Rent", "Annie Get Your Gun", "Jesus Christ Superstar"],
+        "architect": "William Neil Smith",
+        "website": "https://nederlandertheatre.com",
+        "box_office": "(212) 239-6200"
+      },
+      {
+        "id": 15,
+        "name": "Booth Theatre",
+        "address": {
+          "street": "222 West 45th Street",
+          "cross_street": "7th & 8th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10036",
+          "full_address": "222 West 45th Street, New York, NY 10036"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Theater District",
+          "coordinates": {
+            "latitude": 40.7572,
+            "longitude": -73.9868
+          }
+        },
+        "theater_type": "Broadway",
+        "capacity": 766,
+        "opened": 1913,
+        "current_show": "Little Bear Ridge Road",
+        "notable_productions": ["Sunday in the Park with George", "That Championship Season", "Next to Normal"],
+        "architect": "Henry B. Herts",
+        "website": "https://booththeatre.com",
+        "box_office": "(212) 239-6200",
+        "note": "Named after actor Edwin Booth"
+      },
+      {
+        "id": 16,
+        "name": "Broadhurst Theatre",
+        "address": {
+          "street": "235 West 44th Street",
+          "cross_street": "7th & 8th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10036",
+          "full_address": "235 West 44th Street, New York, NY 10036"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Theater District",
+          "coordinates": {
+            "latitude": 40.7566,
+            "longitude": -73.9868
+          }
+        },
+        "theater_type": "Broadway",
+        "capacity": 1186,
+        "opened": 1917,
+        "current_show": "Sunset Boulevard",
+        "notable_productions": ["Cabaret", "Kismet", "Mamma Mia!"],
+        "architect": "Herbert J. Krapp",
+        "website": "https://broadhursttheatre.com",
+        "box_office": "(212) 239-6200"
+      },
+      {
+        "id": 17,
+        "name": "Vivian Beaumont Theater",
+        "address": {
+          "street": "150 West 65th Street",
+          "cross_street": "Broadway & Amsterdam",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10023",
+          "full_address": "150 West 65th Street, New York, NY 10023"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Lincoln Center",
+          "coordinates": {
+            "latitude": 40.7737,
+            "longitude": -73.9851
+          }
+        },
+        "theater_type": "Broadway",
+        "capacity": 1080,
+        "opened": 1965,
+        "current_show": "Ragtime",
+        "notable_productions": ["A Chorus Line", "The King and I", "South Pacific"],
+        "architect": "Eero Saarinen",
+        "website": "https://lct.org",
+        "box_office": "(212) 362-7600",
+        "note": "Part of Lincoln Center"
+      },
+      {
+        "id": 18,
+        "name": "Hudson Theatre",
+        "address": {
+          "street": "141 West 44th Street",
+          "cross_street": "6th & 7th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10036",
+          "full_address": "141 West 44th Street, New York, NY 10036"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Theater District",
+          "coordinates": {
+            "latitude": 40.7566,
+            "longitude": -73.9855
+          }
+        },
+        "theater_type": "Broadway",
+        "capacity": 968,
+        "opened": 1903,
+        "current_show": "Waiting for Godot",
+        "notable_productions": ["A View from the Bridge", "Sunday in the Park with George"],
+        "architect": "J.B. McElfatrick & Son",
+        "website": "https://hudsontheatrenyc.com",
+        "box_office": "(212) 239-6200",
+        "note": "Oldest operating Broadway theater"
+      },
+      {
+        "id": 19,
+        "name": "Samuel J. Friedman Theatre",
+        "address": {
+          "street": "261 West 47th Street",
+          "cross_street": "7th & 8th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10036",
+          "full_address": "261 West 47th Street, New York, NY 10036"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Theater District",
+          "coordinates": {
+            "latitude": 40.7585,
+            "longitude": -73.9875
+          }
+        },
+        "theater_type": "Broadway",
+        "capacity": 650,
+        "opened": 1925,
+        "current_show": "Punch",
+        "notable_productions": ["Steel Magnolias", "Rabbit Hole", "The Realistic Joneses"],
+        "architect": "Herbert J. Krapp",
+        "website": "https://manhattantheatreclub.com",
+        "box_office": "(212) 581-1212",
+        "note": "Home of Manhattan Theatre Club"
+      },
+      {
+        "id": 20,
+        "name": "Apollo Theater",
+        "address": {
+          "street": "253 West 125th Street",
+          "cross_street": "7th & 8th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10027",
+          "full_address": "253 West 125th Street, New York, NY 10027"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Harlem",
+          "coordinates": {
+            "latitude": 40.8099,
+            "longitude": -73.9501
+          }
+        },
+        "theater_type": "Historic Performance Venue",
+        "capacity": 1506,
+        "opened": 1914,
+        "current_show": "Various performances",
+        "notable_productions": ["Amateur Night", "Showtime at the Apollo"],
+        "architect": "George Keister",
+        "website": "https://apollotheater.org",
+        "box_office": "(212) 531-5305",
+        "note": "Historic Harlem venue, not technically Broadway"
+      }
+    ],
+    "statistics": {
+      "neighborhoods_represented": [
+        "Theater District",
+        "Lincoln Center",
+        "Harlem"
+      ],
+      "theater_types": [
+        "Broadway",
+        "Historic Performance Venue"
+      ],
+      "capacity_ranges": {
+        "small": "650-999 seats (5 theaters)",
+        "medium": "1000-1499 seats (9 theaters)",
+        "large": "1500+ seats (6 theaters)"
+      },
+      "opening_decades": {
+        "1900s": 4,
+        "1910s": 5,
+        "1920s": 8,
+        "1960s": 1,
+        "1970s": 2
+      },
+      "notable_architects": [
+        "Herbert J. Krapp (8 theaters)",
+        "Herts & Tallant (2 theaters)",
+        "Warren and Wetmore",
+        "Thomas Lamb",
+        "C. Howard Crane"
+      ]
+    },
+    "notable_features": {
+      "historic_significance": [
+        "Lyceum Theatre (1903) - Oldest continuously operating Broadway theater",
+        "Hudson Theatre (1903) - Oldest operating Broadway theater", 
+        "Apollo Theater (1914) - Historic Harlem venue",
+        "Palace Theatre (1913) - Former vaudeville palace"
+      ],
+      "architectural_highlights": [
+        "Circle in the Square - Only Broadway theater-in-the-round",
+        "Gershwin Theatre - Largest Broadway theater (1933 seats)",
+        "Vivian Beaumont - Part of Lincoln Center complex",
+        "Minskoff Theatre - Located on third floor of office building"
+      ],
+      "long_running_shows": [
+        "The Lion King (Minskoff Theatre)",
+        "Wicked (Gershwin Theatre)",
+        "Hamilton (Richard Rodgers Theatre)",
+        "The Book of Mormon (Eugene O'Neill Theatre)"
+      ],
+      "current_notable_productions": [
+        "Hamilton",
+        "Wicked", 
+        "The Lion King",
+        "The Book of Mormon",
+        "Aladdin"
+      ]
+    },
+    "theater_district_info": {
+      "boundaries": "41st to 54th Streets, 6th to 8th Avenues",
+      "total_broadway_theaters": 41,
+      "definition": "500+ seat capacity and located in Theater District",
+      "subway_access": "Times Square-42nd Street (multiple lines)",
+      "peak_performance_times": "Tuesday-Saturday evenings, Wednesday & weekend matinees"
+    },
+    "usage_notes": {
+      "address_format": "All addresses follow standard US format: Street, City, State ZIP",
+      "coordinates": "Provided in decimal degrees (latitude, longitude)",
+      "current_shows": "Shows current as of August 2025; subject to change",
+      "box_office": "Most theaters use centralized Broadway box office number",
+      "accessibility": "All Broadway theaters are ADA compliant",
+      "ticket_info": "Advance booking recommended; same-day lottery tickets often available",
+      "performance_schedule": "Most shows: Tue-Sat evenings, Wed & weekend matinees"
+    }
+  }
+}

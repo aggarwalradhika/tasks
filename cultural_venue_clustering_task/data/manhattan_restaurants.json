@@ -1,0 +1,671 @@
+{
+  "manhattan_restaurants": {
+    "description": "Directory of 20 notable restaurants in Manhattan with complete address information",
+    "last_updated": "2025-08-12",
+    "total_restaurants": 20,
+    "restaurants": [
+      {
+        "id": 1,
+        "name": "Le Bernardin",
+        "address": {
+          "street": "155 West 51st Street",
+          "cross_street": "7th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10019",
+          "full_address": "155 West 51st Street, New York, NY 10019"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Midtown/Theater District",
+          "coordinates": {
+            "latitude": 40.7614,
+            "longitude": -73.9776
+          }
+        },
+        "cuisine_type": "French Seafood",
+        "price_range": "$$$$",
+        "specialties": ["Seafood", "French cuisine", "Tasting menus"],
+        "atmosphere": "Elegant fine dining",
+        "website": "https://le-bernardin.com",
+        "founded": 1986,
+        "accolades": ["3 Michelin Stars", "4 NY Times Stars"],
+        "chef": "Eric Ripert",
+        "dress_code": "Business Casual (jacket required for men)"
+      },
+      {
+        "id": 2,
+        "name": "Eleven Madison Park",
+        "address": {
+          "street": "11 Madison Avenue",
+          "cross_street": "24th Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10010",
+          "full_address": "11 Madison Avenue, New York, NY 10010"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Flatiron District",
+          "coordinates": {
+            "latitude": 40.7416,
+            "longitude": -73.9870
+          }
+        },
+        "cuisine_type": "Contemporary American",
+        "price_range": "$$$$",
+        "specialties": ["Plant-based tasting menu", "Innovative cuisine", "Local ingredients"],
+        "atmosphere": "Art Deco elegance",
+        "website": "https://elevenmadisonpark.com",
+        "founded": 1998,
+        "accolades": ["3 Michelin Stars", "World's 50 Best"],
+        "chef": "Daniel Humm",
+        "dress_code": "Smart Casual"
+      },
+      {
+        "id": 3,
+        "name": "Katz's Delicatessen",
+        "address": {
+          "street": "205 East Houston Street",
+          "cross_street": "Ludlow Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10002",
+          "full_address": "205 East Houston Street, New York, NY 10002"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Lower East Side",
+          "coordinates": {
+            "latitude": 40.7223,
+            "longitude": -73.9872
+          }
+        },
+        "cuisine_type": "Jewish Deli",
+        "price_range": "$$",
+        "specialties": ["Pastrami sandwich", "Corned beef", "Traditional deli"],
+        "atmosphere": "Historic NYC institution",
+        "website": "https://katzsdelicatessen.com",
+        "founded": 1888,
+        "accolades": ["NYC landmark", "Cultural icon"],
+        "chef": "N/A",
+        "dress_code": "Casual"
+      },
+      {
+        "id": 4,
+        "name": "Gramercy Tavern",
+        "address": {
+          "street": "42 East 20th Street",
+          "cross_street": "Broadway & Park Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10003",
+          "full_address": "42 East 20th Street, New York, NY 10003"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Flatiron District",
+          "coordinates": {
+            "latitude": 40.7386,
+            "longitude": -73.9899
+          }
+        },
+        "cuisine_type": "American",
+        "price_range": "$$$",
+        "specialties": ["Seasonal American", "Farm-to-table", "Contemporary dining"],
+        "atmosphere": "Warm, welcoming tavern",
+        "website": "https://gramercytavern.com",
+        "founded": 1994,
+        "accolades": ["1 Michelin Star", "James Beard Awards"],
+        "chef": "Michael Anthony",
+        "dress_code": "Smart Casual"
+      },
+      {
+        "id": 5,
+        "name": "Via Carota",
+        "address": {
+          "street": "51 Grove Street",
+          "cross_street": "7th Avenue & Bleecker Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10014",
+          "full_address": "51 Grove Street, New York, NY 10014"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "West Village",
+          "coordinates": {
+            "latitude": 40.7316,
+            "longitude": -74.0037
+          }
+        },
+        "cuisine_type": "Italian",
+        "price_range": "$$$",
+        "specialties": ["Cacio e pepe", "Italian classics", "Seasonal ingredients"],
+        "atmosphere": "Charming village restaurant",
+        "website": "https://viacarota.com",
+        "founded": 2014,
+        "accolades": ["NYC favorite", "Critics' choice"],
+        "chef": "Jody Williams & Rita Sodi",
+        "dress_code": "Casual"
+      },
+      {
+        "id": 6,
+        "name": "The Corner Store",
+        "address": {
+          "street": "95 7th Avenue South",
+          "cross_street": "Grove Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10014",
+          "full_address": "95 7th Avenue South, New York, NY 10014"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "West Village",
+          "coordinates": {
+            "latitude": 40.7318,
+            "longitude": -74.0029
+          }
+        },
+        "cuisine_type": "Modern American",
+        "price_range": "$$$",
+        "specialties": ["Tapas-style plates", "Creative cocktails", "Sharing plates"],
+        "atmosphere": "Trendy, intimate",
+        "website": "https://thecornerstorenyc.com",
+        "founded": 2024,
+        "accolades": ["Hottest reservation in NYC", "Celebrity favorite"],
+        "chef": "TK",
+        "dress_code": "Casual"
+      },
+      {
+        "id": 7,
+        "name": "Semma",
+        "address": {
+          "street": "60 Greenwich Avenue",
+          "cross_street": "7th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10011",
+          "full_address": "60 Greenwich Avenue, New York, NY 10011"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "West Village",
+          "coordinates": {
+            "latitude": 40.7357,
+            "longitude": -74.0024
+          }
+        },
+        "cuisine_type": "South Indian",
+        "price_range": "$$$",
+        "specialties": ["Regional South Indian", "Gunpowder dosa", "Goanese oxtail"],
+        "atmosphere": "Narrow, charming village space",
+        "website": "https://semmanyc.com",
+        "founded": 2021,
+        "accolades": ["1 Michelin Star", "James Beard nominee"],
+        "chef": "Vijay Kumar",
+        "dress_code": "Casual"
+      },
+      {
+        "id": 8,
+        "name": "Carbone",
+        "address": {
+          "street": "181 Thompson Street",
+          "cross_street": "Bleecker & Houston",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10012",
+          "full_address": "181 Thompson Street, New York, NY 10012"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Greenwich Village",
+          "coordinates": {
+            "latitude": 40.7279,
+            "longitude": -74.0023
+          }
+        },
+        "cuisine_type": "Italian-American",
+        "price_range": "$$$$",
+        "specialties": ["Classic Italian-American", "Tableside Caesar", "Veal parmigiana"],
+        "atmosphere": "Retro glamour, theatrical",
+        "website": "https://carbonenewyork.com",
+        "founded": 2013,
+        "accolades": ["Celebrity hotspot", "Major Food Group"],
+        "chef": "Mario Carbone",
+        "dress_code": "Smart Casual"
+      },
+      {
+        "id": 9,
+        "name": "Jean-Georges",
+        "address": {
+          "street": "1 Central Park West",
+          "cross_street": "60th Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10023",
+          "full_address": "1 Central Park West, New York, NY 10023"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Upper West Side",
+          "coordinates": {
+            "latitude": 40.7690,
+            "longitude": -73.9810
+          }
+        },
+        "cuisine_type": "French",
+        "price_range": "$$$$",
+        "specialties": ["Modern French", "Seasonal tasting menus", "Central Park views"],
+        "atmosphere": "Sophisticated, park views",
+        "website": "https://jean-georgesrestaurant.com",
+        "founded": 1997,
+        "accolades": ["3 Michelin Stars", "4 NY Times Stars"],
+        "chef": "Jean-Georges Vongerichten",
+        "dress_code": "Jacket Required"
+      },
+      {
+        "id": 10,
+        "name": "Peter Luger Steak House",
+        "address": {
+          "street": "178 Broadway",
+          "cross_street": "Driggs Avenue",
+          "city": "Brooklyn",
+          "state": "NY",
+          "zip_code": "11211",
+          "full_address": "178 Broadway, Brooklyn, NY 11211"
+        },
+        "location": {
+          "borough": "Brooklyn",
+          "neighborhood": "Williamsburg",
+          "coordinates": {
+            "latitude": 40.7107,
+            "longitude": -73.9637
+          }
+        },
+        "cuisine_type": "Steakhouse",
+        "price_range": "$$$$",
+        "specialties": ["Porterhouse steak", "German potatoes", "Cash only"],
+        "atmosphere": "Historic, no-frills steakhouse",
+        "website": "https://peterluger.com",
+        "founded": 1887,
+        "accolades": ["James Beard Award", "NYC institution"],
+        "chef": "N/A",
+        "dress_code": "Casual",
+        "note": "Brooklyn location - included for historic significance"
+      },
+      {
+        "id": 11,
+        "name": "Tatiana",
+        "address": {
+          "street": "10 Lincoln Center Plaza",
+          "cross_street": "Broadway & 65th Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10023",
+          "full_address": "10 Lincoln Center Plaza, New York, NY 10023"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Lincoln Center",
+          "coordinates": {
+            "latitude": 40.7737,
+            "longitude": -73.9851
+          }
+        },
+        "cuisine_type": "Afro-Caribbean Contemporary",
+        "price_range": "$$$$",
+        "specialties": ["Short rib pastrami suya", "NYC-inspired dishes", "Creative cocktails"],
+        "atmosphere": "Blue-lit nightclub vibes",
+        "website": "https://tatiananyc.com",
+        "founded": 2022,
+        "accolades": ["Hardest reservation in NYC", "Revolutionary cuisine"],
+        "chef": "Kwame Onwuachi",
+        "dress_code": "Smart Casual"
+      },
+      {
+        "id": 12,
+        "name": "Don Angie",
+        "address": {
+          "street": "103 Greenwich Avenue",
+          "cross_street": "12th & 13th Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10014",
+          "full_address": "103 Greenwich Avenue, New York, NY 10014"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "West Village",
+          "coordinates": {
+            "latitude": 40.7378,
+            "longitude": -74.0021
+          }
+        },
+        "cuisine_type": "Italian-American",
+        "price_range": "$$$",
+        "specialties": ["Chrysanthemum salad", "Lobster fra diavolo", "Creative Italian-American"],
+        "atmosphere": "Cozy, neighborhood favorite",
+        "website": "https://donangie.com",
+        "founded": 2017,
+        "accolades": ["Eater favorite", "Innovative Italian-American"],
+        "chef": "Angie Rito & Scott Tacinelli",
+        "dress_code": "Casual"
+      },
+      {
+        "id": 13,
+        "name": "Thai Diner",
+        "address": {
+          "street": "186 Mott Street",
+          "cross_street": "Kenmare & Broome",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10012",
+          "full_address": "186 Mott Street, New York, NY 10012"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Nolita",
+          "coordinates": {
+            "latitude": 40.7221,
+            "longitude": -73.9956
+          }
+        },
+        "cuisine_type": "Thai-American",
+        "price_range": "$$",
+        "specialties": ["Pad Thai", "Thai-American fusion", "Retro diner vibes"],
+        "atmosphere": "50s American diner meets Thailand",
+        "website": "https://thaidiner.com",
+        "founded": 2021,
+        "accolades": ["Time Out 5-star review", "Unique concept"],
+        "chef": "Ann Redding & Matt Danzer",
+        "dress_code": "Casual"
+      },
+      {
+        "id": 14,
+        "name": "Russ & Daughters",
+        "address": {
+          "street": "179 East Houston Street",
+          "cross_street": "Orchard Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10002",
+          "full_address": "179 East Houston Street, New York, NY 10002"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Lower East Side",
+          "coordinates": {
+            "latitude": 40.7225,
+            "longitude": -73.9875
+          }
+        },
+        "cuisine_type": "Jewish Appetizing",
+        "price_range": "$$",
+        "specialties": ["Bagels & lox", "Smoked fish", "Traditional appetizing"],
+        "atmosphere": "Historic Lower East Side shop",
+        "website": "https://russanddaughters.com",
+        "founded": 1914,
+        "accolades": ["4th generation family business", "NYC landmark"],
+        "chef": "N/A",
+        "dress_code": "Casual"
+      },
+      {
+        "id": 15,
+        "name": "Balthazar",
+        "address": {
+          "street": "80 Spring Street",
+          "cross_street": "Broadway & Crosby",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10012",
+          "full_address": "80 Spring Street, New York, NY 10012"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "SoHo",
+          "coordinates": {
+            "latitude": 40.7238,
+            "longitude": -73.9969
+          }
+        },
+        "cuisine_type": "French Brasserie",
+        "price_range": "$$$",
+        "specialties": ["French onion soup", "Steak frites", "Raw bar"],
+        "atmosphere": "Parisian brasserie in SoHo",
+        "website": "https://balthazarny.com",
+        "founded": 1997,
+        "accolades": ["SoHo institution", "Keith McNally restaurant"],
+        "chef": "Shane McBride",
+        "dress_code": "Casual"
+      },
+      {
+        "id": 16,
+        "name": "Joe's Pizza",
+        "address": {
+          "street": "7 Carmine Street",
+          "cross_street": "6th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10014",
+          "full_address": "7 Carmine Street, New York, NY 10014"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Greenwich Village",
+          "coordinates": {
+            "latitude": 40.7304,
+            "longitude": -74.0018
+          }
+        },
+        "cuisine_type": "Pizza",
+        "price_range": "$",
+        "specialties": ["New York-style pizza", "By the slice", "Classic margherita"],
+        "atmosphere": "Casual NYC pizza joint",
+        "website": "https://joespizzanyc.com",
+        "founded": 1975,
+        "accolades": ["NYC pizza institution", "Celebrity favorite"],
+        "chef": "N/A",
+        "dress_code": "Casual"
+      },
+      {
+        "id": 17,
+        "name": "The Spotted Pig",
+        "address": {
+          "street": "314 West 11th Street",
+          "cross_street": "Greenwich Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10014",
+          "full_address": "314 West 11th Street, New York, NY 10014"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "West Village",
+          "coordinates": {
+            "latitude": 40.7356,
+            "longitude": -74.0067
+          }
+        },
+        "cuisine_type": "Gastropub",
+        "price_range": "$$",
+        "specialties": ["Burger", "British-Italian", "Pub fare"],
+        "atmosphere": "Cozy village gastropub",
+        "website": "https://thespottedpig.com",
+        "founded": 2004,
+        "accolades": ["1 Michelin Star", "Gastropub pioneer"],
+        "chef": "April Bloomfield",
+        "dress_code": "Casual",
+        "note": "Status may vary - check current operations"
+      },
+      {
+        "id": 18,
+        "name": "Minetta Tavern",
+        "address": {
+          "street": "113 MacDougal Street",
+          "cross_street": "Minetta Lane",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10012",
+          "full_address": "113 MacDougal Street, New York, NY 10012"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Greenwich Village",
+          "coordinates": {
+            "latitude": 40.7298,
+            "longitude": -74.0016
+          }
+        },
+        "cuisine_type": "French Bistro",
+        "price_range": "$$$",
+        "specialties": ["Black label burger", "Côte de boeuf", "Historic tavern"],
+        "atmosphere": "Historic village tavern",
+        "website": "https://minettatavern.com",
+        "founded": 1937,
+        "accolades": ["Village institution", "Keith McNally restaurant"],
+        "chef": "William Brasher",
+        "dress_code": "Smart Casual"
+      },
+      {
+        "id": 19,
+        "name": "Xi'an Famous Foods",
+        "address": {
+          "street": "81 St Marks Place",
+          "cross_street": "1st Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10003",
+          "full_address": "81 St Marks Place, New York, NY 10003"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "East Village",
+          "coordinates": {
+            "latitude": 40.7281,
+            "longitude": -73.9857
+          }
+        },
+        "cuisine_type": "Chinese (Xi'an)",
+        "price_range": "$",
+        "specialties": ["Hand-pulled noodles", "Spicy cumin lamb", "Xi'an street food"],
+        "atmosphere": "Casual, authentic Chinese",
+        "website": "https://xianfoods.com",
+        "founded": 2005,
+        "accolades": ["Cult following", "Anthony Bourdain favorite"],
+        "chef": "Jason Wang",
+        "dress_code": "Casual"
+      },
+      {
+        "id": 20,
+        "name": "Babbo",
+        "address": {
+          "street": "110 Waverly Place",
+          "cross_street": "MacDougal & 6th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10011",
+          "full_address": "110 Waverly Place, New York, NY 10011"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Greenwich Village",
+          "coordinates": {
+            "latitude": 40.7322,
+            "longitude": -74.0009
+          }
+        },
+        "cuisine_type": "Italian",
+        "price_range": "$$$",
+        "specialties": ["Pasta", "Offal", "Italian wine"],
+        "atmosphere": "Lively village restaurant",
+        "website": "https://babbonyc.com",
+        "founded": 1998,
+        "accolades": ["1 Michelin Star", "James Beard Awards"],
+        "chef": "Mario Batali (former), current team",
+        "dress_code": "Smart Casual"
+      }
+    ],
+    "statistics": {
+      "neighborhoods_represented": [
+        "Midtown/Theater District",
+        "Flatiron District",
+        "Lower East Side",
+        "West Village",
+        "Greenwich Village",
+        "Upper West Side",
+        "Lincoln Center",
+        "Nolita",
+        "SoHo",
+        "East Village"
+      ],
+      "cuisine_types": [
+        "French Seafood",
+        "Contemporary American",
+        "Jewish Deli",
+        "Italian",
+        "Modern American",
+        "South Indian",
+        "Italian-American",
+        "Afro-Caribbean Contemporary",
+        "Thai-American",
+        "Jewish Appetizing",
+        "French Brasserie",
+        "Pizza",
+        "Gastropub",
+        "Chinese (Xi'an)"
+      ],
+      "price_ranges": {
+        "$": 3,
+        "$$": 3,
+        "$$$": 8,
+        "$$$$": 6
+      },
+      "michelin_stars": {
+        "3_stars": 3,
+        "1_star": 4,
+        "bib_gourmand": 0,
+        "no_stars": 13
+      }
+    },
+    "notable_features": {
+      "historic_institutions": [
+        "Katz's Delicatessen (1888)",
+        "Russ & Daughters (1914)",
+        "Minetta Tavern (1937)",
+        "Peter Luger Steak House (1887)"
+      ],
+      "michelin_starred": [
+        "Le Bernardin (3 stars)",
+        "Eleven Madison Park (3 stars)",
+        "Jean-Georges (3 stars)",
+        "Gramercy Tavern (1 star)",
+        "Semma (1 star)",
+        "The Spotted Pig (1 star)",
+        "Babbo (1 star)"
+      ],
+      "celebrity_hotspots": [
+        "The Corner Store",
+        "Carbone",
+        "Tatiana",
+        "Balthazar"
+      ],
+      "iconic_nyc_foods": [
+        "Pastrami sandwich (Katz's)",
+        "Bagels & lox (Russ & Daughters)",
+        "New York pizza (Joe's Pizza)",
+        "Hand-pulled noodles (Xi'an Famous Foods)"
+      ]
+    },
+    "usage_notes": {
+      "address_format": "All addresses follow standard US format: Street, City, State ZIP",
+      "coordinates": "Provided in decimal degrees (latitude, longitude)",
+      "price_ranges": "$ = Under $30, $$ = $30-60, $$$ = $60-100, $$$$ = Over $100 per person",
+      "reservations": "Most fine dining restaurants require advance reservations",
+      "dress_codes": "Range from casual to jacket required; check individual requirements",
+      "hours": "Vary by restaurant; many closed on Mondays",
+      "current_status": "All information current as of August 2025; verify operations before visiting"
+    }
+  }
+}

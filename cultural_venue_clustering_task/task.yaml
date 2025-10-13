@@ -1,0 +1,71 @@
+prompt: |
+  ## Manhattan Cultural Venue Clustering Analysis
+
+  **THE MAIN GOAL IS TO FIND THE OPTIMAL 3-VENUE CLUSTER THAT MAXIMIZES CULTURAL DENSITY WHILE MINIMIZING CLUSTER DIAMETER**
+
+  ### Step-by-Step Instructions:
+
+  1. **Load and Parse Data**
+     - Read `/workdir/data/manhattan_theaters.json`
+     - Read `/workdir/data/manhattan_bookstores.json` 
+     - Read `/workdir/data/manhattan_restaurants.json`
+     - Read `/workdir/data/manhattan_coffee_shops.json`
+     - Read `/workdir/data/manhattan_museums_json.json`
+
+  2. **Cluster Analysis Requirements**
+     - **EVALUATE** all possible 3-venue combinations from all venue types
+     - **CALCULATE** cluster diameter IN MILES (maximum distance between any 2 venues in cluster)
+     - **MEASURE** cultural density score based on venue types and attributes
+     - **ENSURE** all 3 venues are from different neighborhoods
+     - **REQUIRE** at least 2 different venue types in each cluster
+
+  3. **Scoring Algorithm**
+     ```
+     Cluster Score = cultural_density - (diameter_penalty × 50)
+     
+     Where:
+     - cultural_density = (base_value_sum × diversity_multiplier) + quality_bonus
+     - base_value_sum = sum of venue base values (Theater:30, Restaurant:25, Museum:40, Bookstore:20, Coffee:15)
+     - diversity_multiplier = 1.5 if all 3 venue types different, else 1.0
+     - quality_bonus = (michelin_stars × 5) + (historic_venues × 8)
+     - diameter_penalty = cluster diameter IN MILES
+     ```
+
+  4. **Cluster Requirements**
+     - **ANALYZE** combinations where cluster diameter ≤ 1.5 miles
+     - **CALCULATE** geographic center of each 3-venue cluster
+     - **VERIFY** all venues are from different neighborhoods
+     - **MAXIMIZE** cluster score using the formula above
+
+  **Output Requirements**
+  ```csv
+  venue_1_name,venue_1_type,venue_1_neighborhood,venue_2_name,venue_2_type,venue_2_neighborhood,venue_3_name,venue_3_type,venue_3_neighborhood,cluster_center_lat,cluster_center_lon,cluster_diameter_miles,cultural_density,quality_bonus,cluster_score
+  theater_example,theater,Theater District,restaurant_example,restaurant,Greenwich Village,museum_example,museum,Upper East Side,40.7580,-73.9750,1.25,127.5,18,65.0
+  ```
+
+  **IMPORTANT**:
+  - DON'T TAKE TOO MUCH TIME OPTIMIZING, PROVIDE THE FIRST SOLUTION THAT YOU FIND
+  - **YOUR FINAL CSV MUST HAVE EXACTLY 1 DATA ROW** - the optimal cluster only
+  - Use haversine distance formula for accurate distance calculations IN MILES
+  - ALL 3 venues must be from DIFFERENT neighborhoods
+  - Round cluster_score to 1 decimal place
+
+  **Success Criteria**:
+  - Complete cluster analysis of valid 3-venue combinations
+  - Accurate diameter and scoring calculations
+  - Optimal cultural cluster identification
+  - Results saved to `/workdir/sol.csv`
+
+  **Libraries**: pandas, numpy, json, math, itertools
+
+metadata:
+  difficulty: hard
+  category: clustering_optimization
+  required_tools:
+    - str_replace_editor
+  tags:
+    - cluster_analysis
+    - venue_optimization
+    - cultural_density
+  time_limit: 2400
+  memory_limit: 2048
