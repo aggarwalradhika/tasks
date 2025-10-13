@@ -51,7 +51,7 @@ prompt: |
 
   Selection & ordering:
   • Consider only eligible campaigns.
-  • Sort by fraud_score descending; tie-break by campaign.account_id, campaign.campaign_id.
+  • Sort by fraud_score descending; then account_id (ascending), then campaign_id (ascending).
   • Take top 5; assign rank=1..5 (1 highest fraud_score).
 
   Output (CSV → /workdir/sol.csv; exact header & order):
