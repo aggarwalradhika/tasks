@@ -10,7 +10,7 @@ prompt: |
   Load these JSON files from `/workdir/data/`:
   - `manhattan_theaters.json`
   - `manhattan_restaurants.json`
-  - `manhattan_museums_json.json`
+  - `manhattan_museums.json`
   - `manhattan_bookstores.json`
   - `manhattan_coffee_shops.json`
 
@@ -93,6 +93,24 @@ prompt: |
   - Otherwise: 0 stars
   
   Note: Check for "3 Michelin Star" or "2 Michelin Star" first (highest to lowest) to avoid mismatches.
+
+  ## Success Criteria
+
+  Your solution will be graded as PASS (1.0) if:
+  1. Your sol.csv has exactly 1 data row (the optimal cluster)
+  2. All required columns are present
+  3. All venue names, types, and neighborhoods match the data exactly
+  4. All 3 venues are from different neighborhoods
+  5. At least 2 different venue types are present
+  6. Cluster diameter is ≤ 1.5 miles and calculated correctly
+  7. Quality bonus is calculated correctly
+  8. Cultural density is calculated correctly
+  9. Cluster score is calculated correctly
+  10. Your cluster score is within 10 points of the optimal solution (≥ optimal_score - 10)
+  
+  The 10-point tolerance accounts for different optimization strategies (greedy vs exhaustive) while still requiring a high-quality solution.
+
+  Otherwise, you will receive FAIL (0.0) with a specific error message.
 
 metadata:
   difficulty: hard

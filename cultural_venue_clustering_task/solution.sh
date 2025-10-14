@@ -99,7 +99,7 @@ def load_venues():
             })
 
     # Museums (Manhattan only)
-    with open('/workdir/data/manhattan_museums_json.json', 'r') as f:
+    with open('/workdir/data/manhattan_museums.json', 'r') as f:
         data = json.load(f)
         for m in data['nyc_museums']['museums']:
             if m['location']['borough'] == 'Manhattan':
