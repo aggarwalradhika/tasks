@@ -1,0 +1,285 @@
+{
+  "nyc_museums": {
+    "description": "Collection of 10 major museums in New York City with complete address information",
+    "last_updated": "2025-08-12",
+    "total_museums": 10,
+    "museums": [
+      {
+        "id": 1,
+        "name": "The Metropolitan Museum of Art",
+        "short_name": "The Met",
+        "address": {
+          "street": "1000 Fifth Avenue",
+          "cross_street": "82nd Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10028",
+          "full_address": "1000 Fifth Avenue, New York, NY 10028"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Upper East Side",
+          "coordinates": {
+            "latitude": 40.7794,
+            "longitude": -73.9632
+          }
+        },
+        "type": "Art Museum",
+        "phone": "(212) 535-7710",
+        "website": "https://www.metmuseum.org"
+      },
+      {
+        "id": 2,
+        "name": "Museum of Modern Art",
+        "short_name": "MoMA",
+        "address": {
+          "street": "11 West 53rd Street",
+          "cross_street": "Between Fifth and Sixth Avenues",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10019",
+          "full_address": "11 West 53rd Street, New York, NY 10019"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Midtown",
+          "coordinates": {
+            "latitude": 40.7614,
+            "longitude": -73.9776
+          }
+        },
+        "type": "Modern and Contemporary Art",
+        "phone": "(212) 708-9400",
+        "website": "https://www.moma.org"
+      },
+      {
+        "id": 3,
+        "name": "American Museum of Natural History",
+        "short_name": "AMNH",
+        "address": {
+          "street": "200 Central Park West",
+          "cross_street": "79th Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10024",
+          "full_address": "200 Central Park West, New York, NY 10024"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Upper West Side",
+          "coordinates": {
+            "latitude": 40.7813,
+            "longitude": -73.9740
+          }
+        },
+        "type": "Natural History",
+        "phone": "(212) 769-5100",
+        "website": "https://www.amnh.org"
+      },
+      {
+        "id": 4,
+        "name": "Solomon R. Guggenheim Museum",
+        "short_name": "Guggenheim",
+        "address": {
+          "street": "1071 Fifth Avenue",
+          "cross_street": "89th Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10128",
+          "full_address": "1071 Fifth Avenue, New York, NY 10128"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Upper East Side",
+          "coordinates": {
+            "latitude": 40.7829,
+            "longitude": -73.9590
+          }
+        },
+        "type": "Modern and Contemporary Art",
+        "phone": "(212) 423-3500",
+        "website": "https://www.guggenheim.org"
+      },
+      {
+        "id": 5,
+        "name": "Whitney Museum of American Art",
+        "short_name": "Whitney",
+        "address": {
+          "street": "99 Gansevoort Street",
+          "cross_street": "Washington Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10014",
+          "full_address": "99 Gansevoort Street, New York, NY 10014"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Meatpacking District",
+          "coordinates": {
+            "latitude": 40.7396,
+            "longitude": -74.0089
+          }
+        },
+        "type": "American Art",
+        "phone": "(212) 570-3600",
+        "website": "https://whitney.org"
+      },
+      {
+        "id": 6,
+        "name": "The Frick Collection",
+        "short_name": "Frick",
+        "address": {
+          "street": "1 East 70th Street",
+          "cross_street": "Fifth Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10021",
+          "full_address": "1 East 70th Street, New York, NY 10021"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Upper East Side",
+          "coordinates": {
+            "latitude": 40.7718,
+            "longitude": -73.9668
+          }
+        },
+        "type": "Fine Arts",
+        "phone": "(212) 288-0700",
+        "website": "https://www.frick.org",
+        "note": "Reopening in April 2025 after renovations"
+      },
+      {
+        "id": 7,
+        "name": "Museum of the City of New York",
+        "short_name": "MCNY",
+        "address": {
+          "street": "1220 Fifth Avenue",
+          "cross_street": "103rd Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10029",
+          "full_address": "1220 Fifth Avenue, New York, NY 10029"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "East Harlem",
+          "coordinates": {
+            "latitude": 40.7917,
+            "longitude": -73.9517
+          }
+        },
+        "type": "City History",
+        "phone": "(212) 534-1672",
+        "website": "https://www.mcny.org"
+      },
+      {
+        "id": 8,
+        "name": "Brooklyn Museum",
+        "short_name": "Brooklyn Museum",
+        "address": {
+          "street": "200 Eastern Parkway",
+          "cross_street": "Washington Avenue",
+          "city": "Brooklyn",
+          "state": "NY",
+          "zip_code": "11238",
+          "full_address": "200 Eastern Parkway, Brooklyn, NY 11238"
+        },
+        "location": {
+          "borough": "Brooklyn",
+          "neighborhood": "Prospect Heights",
+          "coordinates": {
+            "latitude": 40.6712,
+            "longitude": -73.9636
+          }
+        },
+        "type": "Art and Culture",
+        "phone": "(718) 638-5000",
+        "website": "https://www.brooklynmuseum.org"
+      },
+      {
+        "id": 9,
+        "name": "The Tenement Museum",
+        "short_name": "Tenement Museum",
+        "address": {
+          "street": "103 Orchard Street",
+          "cross_street": "Delancey Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10002",
+          "full_address": "103 Orchard Street, New York, NY 10002"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Lower East Side",
+          "coordinates": {
+            "latitude": 40.7188,
+            "longitude": -73.9899
+          }
+        },
+        "type": "Immigration History",
+        "phone": "(877) 975-3786",
+        "website": "https://www.tenement.org"
+      },
+      {
+        "id": 10,
+        "name": "National September 11 Memorial & Museum",
+        "short_name": "9/11 Memorial & Museum",
+        "address": {
+          "street": "180 Greenwich Street",
+          "cross_street": "Fulton Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10007",
+          "full_address": "180 Greenwich Street, New York, NY 10007"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Financial District",
+          "coordinates": {
+            "latitude": 40.7116,
+            "longitude": -74.0134
+          }
+        },
+        "type": "Memorial and History",
+        "phone": "(212) 312-8800",
+        "website": "https://www.911memorial.org"
+      }
+    ],
+    "statistics": {
+      "boroughs_represented": [
+        "Manhattan",
+        "Brooklyn"
+      ],
+      "neighborhoods": [
+        "Upper East Side",
+        "Upper West Side",
+        "Midtown",
+        "Meatpacking District",
+        "East Harlem",
+        "Prospect Heights",
+        "Lower East Side",
+        "Financial District"
+      ],
+      "museum_types": [
+        "Art Museum",
+        "Modern and Contemporary Art",
+        "Natural History",
+        "American Art",
+        "Fine Arts",
+        "City History",
+        "Art and Culture",
+        "Immigration History",
+        "Memorial and History"
+      ]
+    },
+    "usage_notes": {
+      "address_format": "All addresses follow standard US format: Street, City, State ZIP",
+      "coordinates": "Provided in decimal degrees (latitude, longitude)",
+      "phone_numbers": "All phone numbers in (XXX) XXX-XXXX format",
+      "websites": "Current official museum websites as of August 2025",
+      "accessibility": "Most museums offer wheelchair accessibility and special programs",
+      "admission": "Admission policies vary; some offer free admission days or pay-what-you-wish hours"
+    }
+  }
+}

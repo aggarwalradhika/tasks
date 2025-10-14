@@ -1,0 +1,518 @@
+{
+  "manhattan_coffee_shops": {
+    "description": "Directory of 20 popular coffee shops in Manhattan with complete address information",
+    "last_updated": "2025-08-12",
+    "total_shops": 20,
+    "coffee_shops": [
+      {
+        "id": 1,
+        "name": "Joe Coffee Company",
+        "original_location": true,
+        "address": {
+          "street": "141 Waverly Place",
+          "cross_street": "Gay Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10014",
+          "full_address": "141 Waverly Place, New York, NY 10014"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Greenwich Village",
+          "coordinates": {
+            "latitude": 40.7348,
+            "longitude": -74.0020
+          }
+        },
+        "specialties": ["Thoughtfully sourced coffee", "French pastries", "Outdoor seating"],
+        "atmosphere": "Iconic village corner shop",
+        "website": "https://joecoffeecompany.com",
+        "founded": 2003
+      },
+      {
+        "id": 2,
+        "name": "Devoción",
+        "address": {
+          "street": "25 East 20th Street",
+          "cross_street": "Broadway",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10003",
+          "full_address": "25 East 20th Street, New York, NY 10003"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Flatiron District",
+          "coordinates": {
+            "latitude": 40.7386,
+            "longitude": -73.9899
+          }
+        },
+        "specialties": ["Colombian coffee", "10-day origin to cup", "Croissants"],
+        "atmosphere": "Airy, plant-filled space",
+        "website": "https://devocion.com",
+        "note": "Also has Brooklyn locations"
+      },
+      {
+        "id": 3,
+        "name": "Blue Bottle Coffee",
+        "address": {
+          "street": "54 West 40th Street",
+          "cross_street": "Broadway",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10018",
+          "full_address": "54 West 40th Street, New York, NY 10018"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Midtown",
+          "coordinates": {
+            "latitude": 40.7540,
+            "longitude": -73.9857
+          }
+        },
+        "specialties": ["Single-origin coffee", "New Orleans iced coffee", "Minimalist aesthetic"],
+        "atmosphere": "Clean, modern California-style",
+        "website": "https://bluebottlecoffee.com"
+      },
+      {
+        "id": 4,
+        "name": "Stumptown Coffee Roasters",
+        "address": {
+          "street": "18 West 29th Street",
+          "cross_street": "Broadway",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10001",
+          "full_address": "18 West 29th Street, New York, NY 10001"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "NoMad",
+          "coordinates": {
+            "latitude": 40.7456,
+            "longitude": -73.9883
+          }
+        },
+        "specialties": ["Portland-style coffee", "Craft roasting", "Industrial chic"],
+        "atmosphere": "Ace Hotel lobby aesthetic",
+        "website": "https://stumptowncoffee.com",
+        "note": "Located inside Ace Hotel"
+      },
+      {
+        "id": 5,
+        "name": "Abraço",
+        "address": {
+          "street": "81 East 7th Street",
+          "cross_street": "1st Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10003",
+          "full_address": "81 East 7th Street, New York, NY 10003"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "East Village",
+          "coordinates": {
+            "latitude": 40.7265,
+            "longitude": -73.9878
+          }
+        },
+        "specialties": ["In-house roasted espresso", "European-inspired", "Almond croissants"],
+        "atmosphere": "Cozy hole-in-the-wall",
+        "website": "https://abraconyc.com",
+        "founded": 2007
+      },
+      {
+        "id": 6,
+        "name": "La Colombe Coffee",
+        "address": {
+          "street": "319 Church Street",
+          "cross_street": "Canal Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10013",
+          "full_address": "319 Church Street, New York, NY 10013"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Tribeca",
+          "coordinates": {
+            "latitude": 40.7203,
+            "longitude": -74.0070
+          }
+        },
+        "specialties": ["Draft lattes", "Philadelphia roaster", "Canned coffee"],
+        "atmosphere": "Bright and airy",
+        "website": "https://lacolombe.com"
+      },
+      {
+        "id": 7,
+        "name": "Birch Coffee",
+        "address": {
+          "street": "171 East 88th Street",
+          "cross_street": "Lexington Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10128",
+          "full_address": "171 East 88th Street, New York, NY 10128"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Upper East Side",
+          "coordinates": {
+            "latitude": 40.7831,
+            "longitude": -73.9537
+          }
+        },
+        "specialties": ["No WiFi policy", "Community building", "Cold brew"],
+        "atmosphere": "Library-like, conversation-focused",
+        "website": "https://birchcoffee.com",
+        "note": "Multiple Manhattan locations"
+      },
+      {
+        "id": 8,
+        "name": "Everyman Espresso",
+        "address": {
+          "street": "136 East 13th Street",
+          "cross_street": "3rd Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10003",
+          "full_address": "136 East 13th Street, New York, NY 10003"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "East Village",
+          "coordinates": {
+            "latitude": 40.7328,
+            "longitude": -73.9890
+          }
+        },
+        "specialties": ["Specialty coffee pioneer", "Single-origin beans", "Coffee education"],
+        "atmosphere": "Intimate, coffee nerd paradise",
+        "website": "https://everymanespresso.com"
+      },
+      {
+        "id": 9,
+        "name": "Ninth Street Espresso",
+        "address": {
+          "street": "700 East 9th Street",
+          "cross_street": "Avenue C",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10009",
+          "full_address": "700 East 9th Street, New York, NY 10009"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "East Village",
+          "coordinates": {
+            "latitude": 40.7258,
+            "longitude": -73.9777
+          }
+        },
+        "specialties": ["Serious espresso", "Own roasting", "Minimal aesthetic"],
+        "atmosphere": "Bare-bones, pure coffee focus",
+        "website": "https://ninthstreetespresso.com"
+      },
+      {
+        "id": 10,
+        "name": "Gregorys Coffee",
+        "address": {
+          "street": "2 Hanover Square",
+          "cross_street": "Pearl Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10005",
+          "full_address": "2 Hanover Square, New York, NY 10005"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Financial District",
+          "coordinates": {
+            "latitude": 40.7043,
+            "longitude": -74.0094
+          }
+        },
+        "specialties": ["NYC-based roaster", "Healthy bakery items", "Dietitian-created menu"],
+        "atmosphere": "Clean, reliable chain",
+        "website": "https://gregorys.com",
+        "note": "20+ locations in Manhattan"
+      },
+      {
+        "id": 11,
+        "name": "Culture Espresso",
+        "address": {
+          "street": "72 West 38th Street",
+          "cross_street": "6th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10018",
+          "full_address": "72 West 38th Street, New York, NY 10018"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Midtown",
+          "coordinates": {
+            "latitude": 40.7539,
+            "longitude": -73.9848
+          }
+        },
+        "specialties": ["Australian-style coffee", "Flat whites", "Avocado toast"],
+        "atmosphere": "Modern Australian cafe vibe",
+        "website": "https://cultureespresso.com"
+      },
+      {
+        "id": 12,
+        "name": "Porto Rico Importing Company",
+        "address": {
+          "street": "201 Bleecker Street",
+          "cross_street": "6th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10012",
+          "full_address": "201 Bleecker Street, New York, NY 10012"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Greenwich Village",
+          "coordinates": {
+            "latitude": 40.7297,
+            "longitude": -74.0007
+          }
+        },
+        "specialties": ["130 coffee varieties", "Bulk coffee sales", "Historic institution"],
+        "atmosphere": "Old-world charm, vintage signs",
+        "website": "https://portorico.com",
+        "founded": 1907
+      },
+      {
+        "id": 13,
+        "name": "Irving Farm Coffee Roasters",
+        "address": {
+          "street": "79 University Place",
+          "cross_street": "11th Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10003",
+          "full_address": "79 University Place, New York, NY 10003"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Greenwich Village",
+          "coordinates": {
+            "latitude": 40.7340,
+            "longitude": -73.9962
+          }
+        },
+        "specialties": ["Farm-to-cup coffee", "Seasonal blends", "Local roasting"],
+        "atmosphere": "Rustic, farmhouse-inspired",
+        "website": "https://irvingfarm.com"
+      },
+      {
+        "id": 14,
+        "name": "Café Grumpy",
+        "address": {
+          "street": "224 West 20th Street",
+          "cross_street": "7th Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10011",
+          "full_address": "224 West 20th Street, New York, NY 10011"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Chelsea",
+          "coordinates": {
+            "latitude": 40.7431,
+            "longitude": -73.9973
+          }
+        },
+        "specialties": ["Small-batch roasting", "Specialty coffee", "Local NYC roaster"],
+        "atmosphere": "Quirky, Brooklyn-originated",
+        "website": "https://cafegrumpy.com"
+      },
+      {
+        "id": 15,
+        "name": "Little Collins",
+        "address": {
+          "street": "667 Lexington Avenue",
+          "cross_street": "55th Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10022",
+          "full_address": "667 Lexington Avenue, New York, NY 10022"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Midtown East",
+          "coordinates": {
+            "latitude": 40.7590,
+            "longitude": -73.9701
+          }
+        },
+        "specialties": ["Australian coffee culture", "Flat whites", "All-day breakfast"],
+        "atmosphere": "Melbourne-inspired cafe",
+        "website": "https://littlecollinsnyc.com"
+      },
+      {
+        "id": 16,
+        "name": "Felix Roasting Co.",
+        "address": {
+          "street": "450 Park Avenue South",
+          "cross_street": "31st Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10016",
+          "full_address": "450 Park Avenue South, New York, NY 10016"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "NoMad",
+          "coordinates": {
+            "latitude": 40.7444,
+            "longitude": -73.9827
+          }
+        },
+        "specialties": ["Design-focused", "Fashion-inspired aesthetics", "Innovative coffee menu"],
+        "atmosphere": "High-end, curated experience",
+        "website": "https://felixroasting.com"
+      },
+      {
+        "id": 17,
+        "name": "Variety Coffee Roasters",
+        "address": {
+          "street": "1269 Lexington Avenue",
+          "cross_street": "85th Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10028",
+          "full_address": "1269 Lexington Avenue, New York, NY 10028"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Upper East Side",
+          "coordinates": {
+            "latitude": 40.7801,
+            "longitude": -73.9553
+          }
+        },
+        "specialties": ["Mid-century modern design", "Bubble chandelier", "Specialty roasting"],
+        "atmosphere": "Sleek, minimalist",
+        "website": "https://varietycoffeeroasters.com"
+      },
+      {
+        "id": 18,
+        "name": "Coffee Project NY",
+        "address": {
+          "street": "239 East 5th Street",
+          "cross_street": "2nd Avenue",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10003",
+          "full_address": "239 East 5th Street, New York, NY 10003"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "East Village",
+          "coordinates": {
+            "latitude": 40.7253,
+            "longitude": -73.9847
+          }
+        },
+        "specialties": ["Asian-influenced drinks", "Pandan and ube flavors", "AAPI-owned"],
+        "atmosphere": "Inclusive, community-driven",
+        "website": "https://coffeeprojectny.com"
+      },
+      {
+        "id": 19,
+        "name": "Zibetto Espresso Bar",
+        "address": {
+          "street": "1385 6th Avenue",
+          "cross_street": "56th Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10019",
+          "full_address": "1385 6th Avenue, New York, NY 10019"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Midtown",
+          "coordinates": {
+            "latitude": 40.7644,
+            "longitude": -73.9776
+          }
+        },
+        "specialties": ["Italian espresso", "Standing bar style", "Quick service"],
+        "atmosphere": "Authentic Italian bar experience",
+        "website": "https://zibettoespresso.com"
+      },
+      {
+        "id": 20,
+        "name": "Caffe Reggio",
+        "address": {
+          "street": "119 MacDougal Street",
+          "cross_street": "3rd Street",
+          "city": "New York",
+          "state": "NY",
+          "zip_code": "10012",
+          "full_address": "119 MacDougal Street, New York, NY 10012"
+        },
+        "location": {
+          "borough": "Manhattan",
+          "neighborhood": "Greenwich Village",
+          "coordinates": {
+            "latitude": 40.7296,
+            "longitude": -74.0014
+          }
+        },
+        "specialties": ["First cappuccino in America", "Historic landmark", "Traditional Italian"],
+        "atmosphere": "Old-world Italian coffeehouse",
+        "website": "https://caffereggio.com",
+        "founded": 1927,
+        "note": "Oldest coffee shop in Manhattan"
+      }
+    ],
+    "statistics": {
+      "neighborhoods_represented": [
+        "Greenwich Village",
+        "East Village",
+        "Midtown",
+        "Upper East Side",
+        "Flatiron District",
+        "NoMad",
+        "Tribeca",
+        "Chelsea",
+        "Midtown East",
+        "Financial District"
+      ],
+      "coffee_styles": [
+        "Third-wave specialty",
+        "Australian-style",
+        "Italian traditional",
+        "Colombian single-origin",
+        "Portland craft",
+        "NYC local roasters",
+        "Historic institutions"
+      ],
+      "founding_decades": {
+        "1900s": 1,
+        "1920s": 1,
+        "2000s": 2,
+        "2010s": 16
+      }
+    },
+    "usage_notes": {
+      "address_format": "All addresses follow standard US format: Street, City, State ZIP",
+      "coordinates": "Provided in decimal degrees (latitude, longitude)",
+      "specialties": "Lists unique features, signature drinks, or standout characteristics",
+      "atmosphere": "Describes the vibe and aesthetic of each location",
+      "wifi_policy": "Some shops like Birch Coffee specifically do not offer WiFi",
+      "seating": "Many locations have limited seating; some are grab-and-go focused",
+      "hours": "Most coffee shops open early (7-8 AM) and close in early evening",
+      "multiple_locations": "Several chains have additional Manhattan locations not listed here"
+    }
+  }
+}
