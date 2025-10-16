@@ -368,7 +368,14 @@ def grade(transcript: str) -> GradingResult:
     """
     Grade the GPU scheduling submission with dependencies.
     
-    This grader is significantly more sophisticated and uses a tighter tolerance (1.15x).
+    GRADING CRITERIA (all must pass):
+    1. Files exist: schedule.txt, ans.txt, data/requests.txt
+    2. Schedule format is valid (req_id GPU_id per line)
+    3. All requests scheduled exactly once
+    4. GPU assignments are valid (request can run on that GPU)
+    5. Dependencies respected (prerequisites appear before dependents)
+    6. Claimed answer matches computed score
+    7. Solution is near-optimal: score ≤ 1.15 × baseline_score
     """
     feedback_messages: List[str] = []
     subscores = {"correct_answer": 0.0}
@@ -379,10 +386,10 @@ def grade(transcript: str) -> GradingResult:
         answer_path = Path("/workdir/ans.txt")
         data_path = Path("/workdir/data/requests.txt")
 
-        # Check files
+        # ===== CHECK 1: Files exist =====
         for p, name in [(data_path, "Input"), (schedule_path, "Schedule"), (answer_path, "Answer")]:
             if not p.exists():
-                feedback_messages.append(f"{name} file {p} does not exist")
+                feedback_messages.append(f"FAIL: {name} file {p} does not exist")
                 return GradingResult(score=0.0, subscores=subscores, weights=weights,
                                      feedback="; ".join(feedback_messages))
 
@@ -390,102 +397,108 @@ def grade(transcript: str) -> GradingResult:
         n_gpus, n_requests, n_deps, requests, dependencies = parse_requests_file(data_path)
         feedback_messages.append(f"Problem: {n_requests} requests, {n_gpus} GPUs, {n_deps} dependencies")
 
-        # Validate dependencies form DAG
+        # ===== CHECK 2: Dependencies form DAG =====
         is_dag, err = validate_dependencies_dag(dependencies, set(requests.keys()))
         if not is_dag:
-            feedback_messages.append(f"Invalid dependencies: {err}")
+            feedback_messages.append(f"FAIL: Invalid dependencies - {err}")
             return GradingResult(score=0.0, subscores=subscores, weights=weights,
                                  feedback="; ".join(feedback_messages))
+        feedback_messages.append("Dependencies form a valid DAG (no cycles)")
 
-        # Parse schedule
+        # ===== CHECK 3: Parse and validate schedule format =====
         schedule_lines = []
         seen = set()
         with open(schedule_path) as f:
-            for line in f:
+            for line_num, line in enumerate(f, 1):
                 line = line.strip()
                 if not line:
                     continue
                 parts = line.split()
                 if len(parts) != 2:
-                    feedback_messages.append(f"Invalid schedule line: {line}")
+                    feedback_messages.append(f"FAIL: Invalid schedule format at line {line_num}: '{line}' (expected: request_id GPU_id)")
                     return GradingResult(score=0.0, subscores=subscores, weights=weights,
                                          feedback="; ".join(feedback_messages))
                 req_id, gpu_id = parts
                 if req_id in seen:
-                    feedback_messages.append(f"Duplicate request in schedule: {req_id}")
+                    feedback_messages.append(f"FAIL: Duplicate request in schedule: {req_id}")
                     return GradingResult(score=0.0, subscores=subscores, weights=weights,
                                          feedback="; ".join(feedback_messages))
                 seen.add(req_id)
                 schedule_lines.append((req_id, gpu_id))
 
-        feedback_messages.append(f"Schedule contains {len(schedule_lines)} assignments")
+        feedback_messages.append(f"Schedule format valid: {len(schedule_lines)} assignments")
 
-        # Validate schedule
+        # ===== CHECK 4: All requests scheduled exactly once =====
         if len(schedule_lines) != n_requests:
-            feedback_messages.append(f"Schedule has {len(schedule_lines)} assignments, expected {n_requests}")
+            feedback_messages.append(f"FAIL: Schedule has {len(schedule_lines)} assignments, expected {n_requests}")
             return GradingResult(score=0.0, subscores=subscores, weights=weights,
                                  feedback="; ".join(feedback_messages))
 
-        # Check all requests scheduled
         scheduled_requests = {req_id for req_id, _ in schedule_lines}
         all_requests = set(requests.keys())
         if scheduled_requests != all_requests:
             missing = all_requests - scheduled_requests
             extra = scheduled_requests - all_requests
-            msg = []
+            msg_parts = []
             if missing:
-                msg.append(f"Missing: {sorted(missing)}")
+                msg_parts.append(f"Missing requests: {sorted(missing)}")
             if extra:
-                msg.append(f"Unknown: {sorted(extra)}")
-            feedback_messages.append("; ".join(msg))
+                msg_parts.append(f"Unknown requests: {sorted(extra)}")
+            feedback_messages.append(f"FAIL: {'; '.join(msg_parts)}")
             return GradingResult(score=0.0, subscores=subscores, weights=weights,
                                  feedback="; ".join(feedback_messages))
+        
+        feedback_messages.append("All requests scheduled exactly once")
 
-        # Validate GPU assignments
+        # ===== CHECK 5: GPU assignments are valid =====
         valid_gpus = {f"GPU{i+1}" for i in range(n_gpus)}
         for req_id, assigned_gpu in schedule_lines:
             if assigned_gpu not in valid_gpus:
-                feedback_messages.append(f"Invalid GPU '{assigned_gpu}' for {req_id}")
+                feedback_messages.append(f"FAIL: Invalid GPU '{assigned_gpu}' for {req_id} (valid: {sorted(valid_gpus)})")
                 return GradingResult(score=0.0, subscores=subscores, weights=weights,
                                      feedback="; ".join(feedback_messages))
             available_gpus = {gpu for gpu, _, _ in requests[req_id]}
             if assigned_gpu not in available_gpus:
-                feedback_messages.append(f"GPU '{assigned_gpu}' not available for {req_id}")
+                feedback_messages.append(f"FAIL: GPU '{assigned_gpu}' not available for {req_id} (available: {sorted(available_gpus)})")
                 return GradingResult(score=0.0, subscores=subscores, weights=weights,
                                      feedback="; ".join(feedback_messages))
 
-        feedback_messages.append("Schedule is feasible")
+        feedback_messages.append("All GPU assignments are valid")
 
-        # Parse claimed answer
+        # ===== CHECK 6: Parse claimed answer =====
         try:
             with open(answer_path, "r") as f:
                 claimed_answer = int(f.read().strip())
             feedback_messages.append(f"Claimed answer: {claimed_answer}")
         except Exception as e:
-            feedback_messages.append(f"Invalid ans.txt: {e}")
+            feedback_messages.append(f"FAIL: Invalid ans.txt format - {e}")
             return GradingResult(score=0.0, subscores=subscores, weights=weights,
                                  feedback="; ".join(feedback_messages))
 
-        # Compute actual score
+        # ===== CHECK 7: Compute actual score and verify dependencies =====
         try:
             actual_score = compute_schedule_score(schedule_lines, requests, dependencies, n_gpus)
             feedback_messages.append(f"Actual computed score: {actual_score}")
         except ValueError as e:
-            feedback_messages.append(f"Dependency violation in schedule: {e}")
+            feedback_messages.append(f"FAIL: Dependency violation - {e}")
             return GradingResult(score=0.0, subscores=subscores, weights=weights,
                                  feedback="; ".join(feedback_messages))
 
-        # Check claimed vs actual
+        feedback_messages.append("Dependencies respected (prerequisites complete before dependents)")
+
+        # ===== CHECK 8: Claimed vs actual match =====
         if claimed_answer != actual_score:
-            feedback_messages.append(f"Claimed ({claimed_answer}) != actual ({actual_score})")
+            feedback_messages.append(f"FAIL: Claimed answer ({claimed_answer}) != actual score ({actual_score})")
             return GradingResult(score=0.0, subscores=subscores, weights=weights,
                                  feedback="; ".join(feedback_messages))
+        
+        feedback_messages.append("Claimed answer matches computed score")
 
-        # Sophisticated baseline
+        # ===== CHECK 9: Near-optimality check =====
         baseline_score, baseline_schedule = sophisticated_baseline(requests, dependencies, n_gpus)
-        feedback_messages.append(f"Sophisticated baseline score: {baseline_score}")
+        feedback_messages.append(f"Baseline score: {baseline_score}")
 
-        # Tolerance: TIGHTENED to 1.15
+        # Tolerance: 1.15x
         try:
             tol_env = os.getenv("GRADER_NEAR_OPT_TOL")
             tolerance = float(tol_env) if tol_env is not None else 1.15
@@ -494,31 +507,35 @@ def grade(transcript: str) -> GradingResult:
         except Exception:
             tolerance = 1.15
 
-        feedback_messages.append(f"Near-optimality tolerance: {tolerance:.2f}x (tighter than before!)")
+        feedback_messages.append(f"Near-optimality tolerance: {tolerance:.2f}x baseline (solution must be ≤ {baseline_score * tolerance:.1f})")
 
         # Check near-optimality
         if baseline_score == 0:
             if actual_score != 0:
-                feedback_messages.append("Baseline is 0 but actual > 0")
+                feedback_messages.append("FAIL: Baseline is 0 but your solution has score > 0")
                 return GradingResult(score=0.0, subscores=subscores, weights=weights,
                                      feedback="; ".join(feedback_messages))
         else:
-            if actual_score > baseline_score * tolerance:
+            threshold = baseline_score * tolerance
+            if actual_score > threshold:
                 feedback_messages.append(
-                    f"Not near-optimal: {actual_score} > {tolerance:.2f} × {baseline_score} = {baseline_score * tolerance:.1f}"
+                    f"FAIL: Not near-optimal: {actual_score} > {tolerance:.2f} × {baseline_score} = {threshold:.1f}"
                 )
+                feedback_messages.append(f"Your solution is {(actual_score/baseline_score):.2f}x baseline (needs to be ≤ {tolerance:.2f}x)")
                 return GradingResult(score=0.0, subscores=subscores, weights=weights,
                                      feedback="; ".join(feedback_messages))
 
-        # Success!
+        feedback_messages.append(f"Solution is near-optimal ({(actual_score/baseline_score):.3f}x baseline ≤ {tolerance:.2f}x)")
+
+        # ===== SUCCESS! =====
         subscores["correct_answer"] = 1.0
-        feedback_messages.append("Solution is valid and near-optimal!")
+        feedback_messages.append("ALL CHECKS PASSED - Solution is valid and near-optimal!")
         return GradingResult(score=1.0, subscores=subscores, weights=weights,
                              feedback="; ".join(feedback_messages))
 
     except Exception as e:
         import traceback
-        feedback_messages.append(f"Error: {e}")
+        feedback_messages.append(f"UNEXPECTED ERROR: {e}")
         feedback_messages.append(traceback.format_exc())
         return GradingResult(score=0.0, subscores=subscores, weights=weights,
                              feedback="; ".join(feedback_messages))

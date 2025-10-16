@@ -124,11 +124,11 @@ prompt: |
   
   ## Constraints
   
-  - 3 ≤ n ≤ 10 (number of GPUs) - INCREASED
-  - 20 ≤ m ≤ 100 (number of requests) - INCREASED
+  - 3 ≤ n ≤ 10 (number of GPUs)
+  - 20 ≤ m ≤ 100 (number of requests)
   - 0 ≤ d ≤ min(50, m*(m-1)/4) (number of dependencies)
-  - 1 ≤ execution_time ≤ 200 seconds - INCREASED
-  - priority ∈ {1, 2, 3, 4, 5} - INCREASED
+  - 1 ≤ execution_time ≤ 200 seconds
+  - priority ∈ {1, 2, 3, 4, 5}
   - Dependencies form a DAG (no cycles)
   - You do NOT have internet access
   - Python 3 is available
@@ -142,35 +142,50 @@ prompt: |
      - Verify the schedule is feasible (respects dependencies)
      - Compute the actual max weighted CT from your schedule
      - Check that it matches your claimed answer in ans.txt
-     - Verify your solution is near-optimal (within 1.15x of a sophisticated baseline) - TIGHTENED
+     - Verify your solution is near-optimal (within 1.15x of a sophisticated baseline)
   
   3. **Think algorithmically**: Consider approaches like:
-     - Topological sorting for dependencies
-     - Critical path analysis
-     - List scheduling with priority queues
-     - Dynamic programming (if feasible)
-     - Local search / simulated annealing
-     - Branch and bound with pruning
-     - Genetic algorithms
+     - **Topological sorting for dependencies** (essential for correctness)
+     - **Critical path analysis**: Identify requests on the longest dependency chains - these should be prioritized
+     - **Priority-aware scheduling**: High-priority requests should generally complete earlier
+     - **Greedy heuristics**: Balance priority/execution_time ratios when selecting GPUs
+     - **Load balancing**: Consider distributing work across GPUs to avoid bottlenecks
+     - **Local search optimization**: After building an initial schedule, try swapping assignments to improve the solution
+     - Dynamic programming (if problem size permits)
+     - Simulated annealing or genetic algorithms for larger instances
   
-  4. **Be deterministic**: If your algorithm has ties, break them consistently.
+  4. **Algorithm Design Guidance**:
+     - Start with requests that have no dependencies
+     - Consider both the request's own priority AND its position in the dependency graph
+     - When choosing which GPU to assign a request to, consider:
+       * The execution time on that specific GPU
+       * The current load/availability of that GPU
+       * The weighted completion time that would result
+     - You may want to combine multiple factors (priority, execution time, critical path length, load balance) into a scoring function
   
-  5. **Test your solution**: Manually verify a small example to ensure dependency handling is correct.
+  5. **Be deterministic**: If your algorithm has ties, break them consistently (e.g., by request ID).
   
-  6. **Near-optimality tolerance**: Your solution must achieve a score within 1.15x (115%) of a sophisticated baseline. This is tighter than before - you need a really good algorithm!
+  6. **Test your solution**: Manually verify a small example to ensure dependency handling is correct.
+  
+  7. **Near-optimality tolerance**: Your solution must achieve a score within 1.15x (115%) of a sophisticated baseline. This tolerance accounts for the NP-hard nature of the problem - you need a good heuristic algorithm that performs well in practice!
 
 metadata:
-  difficulty: very_hard
-  category: optimization algorithms
+  difficulty: hard
+  category: optimization_algorithms
   tags:
     - scheduling
-    - greedy algorithms
-    - resource allocation
-    - NP-hard optimization
-    - weighted completion time
-    - dependency graphs
-    - topological sorting
+    - greedy_algorithms
+    - resource_allocation
+    - np_hard_optimization
+    - dependency_graphs
+    - topological_sorting
+  estimated_time_minutes: 90
   references:
     - "Inspired by weighted completion time minimization with precedence constraints"
     - "Related to RCPSP (Resource-Constrained Project Scheduling Problem)"
     - "Connection to critical path method (CPM) and PERT"
+  time_limit: 300              # seconds (5 minutes is typical for hard tasks)
+  memory_limit: 1024           # MB
+  max_agent_timeout_sec: 600   # hard cap for agent execution (10 minutes)
+  expert_time_estimate_min: 30 # expected time for an expert
+  junior_time_estimate_min: 120 # expected time for a junior engineer
