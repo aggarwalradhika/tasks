@@ -1,0 +1,49 @@
+prompt: |
+  Okay for this task you're going to be building deterministic web sessions from raw Apache access logs and they will be in a combined log format.
+
+  ## Input (read-only)
+  - /workdir/data/access.log  (plain text; Apache **Combined Log Format** + extra field)
+    Each line matches:
+      %h %l %u [%t] "%r" %>s %b "%{Referer}i" "%{User-Agent}i" "%{extra}i"
+    Where:
+      - %h is client IP
+      - %t is timestamp like [22/Jan/2019:03:56:14 +0330]
+      - %r is the request line: METHOD SP PATH SP HTTP/VERSION
+      - %{User-Agent}i is the full UA
+    Timestamp format: %d/%b/%Y:%H:%M:%S %z (e.g., 22/Jan/2019:03:56:14 +0330)
+
+  - /workdir/data/policy.json
+      {
+        "timeout_minutes": 30,
+        "maintenance_windows": [
+          {"start": "2025-08-16T12:20:00Z", "end": "2025-08-16T12:40:00Z"}
+        ]
+      }
+
+  ## Parsing → normalized row
+  So, for each logline, you need to  produce fields.
+    For each log line, produce fields:
+      - timestamp: convert [%t] to ISO-8601 UTC with 'Z'. Preserve subsecond precision if it is present. (Format in log = %d/%b/%Y:%H:%M:%S %z)
+      - ip: %h
+      - ua: %{User-Agent}i (emit exactly as seen; no normalization)
+      - path: from "%r", take the second token (between METHOD and HTTP/version). Keep percent-encoding; do not modify.
+
+  You should drop the lines that fail to parse strictly.
+
+  These are the sessionization rules that need to apply exactly. 
+  Number one is keying that sessions are formed per exact (IP, UA). Number two is that the time zone, you need to convert all timestamps to UTC before you do any logic and you need to preserve fractional seconds if present.
+  3. Drop any hit with ts_utc inc[start to end) for any window that's (closed - open).
+  4. For ordering, you need to sort by kept hits by utc, ASC, then original line indexes ASC. 
+  Number five is that sessionization per (IP , UA), you need to start a session on first kept hit for that key, and if the gap to the previous hit for that key is >= the timeout_minutes, start a new session and then compare that to the time deltas exactly, no float rounding.
+    6) Output ordering & tie-breakers (deterministic):
+      - Sort sessions by start ASC; on ties, lexicographically by (ip, ua).
+      - Assign session_id sequentially: s000001, s000002, …
+  7)
+  CSV formatting:
+  - you should write to /workdir/out/sessions.csv with header:
+  session_id,ip,ua,start,end,hits
+  -      - UA exactly as read (quote if needed by CSV).
+      - start/end in UTC with 'Z'; include fractional seconds only when non-zero (strip trailing zeros).
+      - also Ensure a final newline at EOF.
+
+  Now I'm going to tell you about the constraints and the environment. You won't have access to the internet at all. You can only use standard tools available inside the container. You can only write your output to /workdir/out/sessions.csv. And, finally, you can only write helper scripts, but only /workdir/out/sessions.csv will be graded.
