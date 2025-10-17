@@ -1,25 +1,20 @@
 FROM apex_arena:base
 
-# --- Root: grader & tests (kept private) ---
-USER root
-WORKDIR /
+# -------------- Placeholder for additional dependencies --------------
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Grader + expected file(s) live under /tests and are root-only
-COPY grader.py /tests/grader.py
-COPY tests/ /tests/
-RUN chmod -R 700 /tests
+# -------------- Placeholder ends -------------------------------------
 
-# --- Model: workspace (visible to agent) ---
-USER model
-WORKDIR /workdir
+# -------------- Placeholder for operations ---------------------------
+# (nothing needed)
+# -------------- Placeholder for operations ---------------------------
 
-# Create writable dirs as model so no chown is required
-RUN mkdir -p /workdir/data /workdir/out
+# -------------------- DO NOT CHANGE BELOW ----------------------------
+COPY ./solution.sh /tests/
+COPY ./grader.py /tests/    
+COPY ./tests/ /tests/
 
-# Inputs visible to the agent
-COPY --chown=model:model task.yaml /workdir/task.yaml
-COPY --chown=model:model data/access.log /workdir/data/access.log
-COPY --chown=model:model data/policy.json /workdir/data/policy.json
-
-# Stay as rootcle for runtime
-USER root
+COPY --chown=model:model ./data /workdir/data
+RUN chmod -R 755 /workdir/data

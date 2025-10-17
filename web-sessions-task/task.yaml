@@ -11,39 +11,94 @@ prompt: |
       - %r is the request line: METHOD SP PATH SP HTTP/VERSION
       - %{User-Agent}i is the full UA
     Timestamp format: %d/%b/%Y:%H:%M:%S %z (e.g., 22/Jan/2019:03:56:14 +0330)
+    May optionally include fractional seconds: 22/Jan/2019:03:56:14.123456 +0330
 
   - /workdir/data/policy.json
-      {
-        "timeout_minutes": 30,
-        "maintenance_windows": [
-          {"start": "2025-08-16T12:20:00Z", "end": "2025-08-16T12:40:00Z"}
-        ]
-      }
+    ```json
+    {
+      "timeout_minutes": 30,
+      "maintenance_windows": [
+        {"start": "2025-08-16T12:20:00Z", "end": "2025-08-16T12:40:00Z"}
+      ]
+    }
+    ```
 
-  ## Parsing → normalized row
-  So, for each logline, you need to  produce fields.
-    For each log line, produce fields:
-      - timestamp: convert [%t] to ISO-8601 UTC with 'Z'. Preserve subsecond precision if it is present. (Format in log = %d/%b/%Y:%H:%M:%S %z)
-      - ip: %h
-      - ua: %{User-Agent}i (emit exactly as seen; no normalization)
-      - path: from "%r", take the second token (between METHOD and HTTP/version). Keep percent-encoding; do not modify.
+  ## Parsing Requirements
+  For each log line, extract these fields:
+  1. **timestamp**: Convert [%t] to ISO-8601 UTC with 'Z'. Preserve subsecond precision if present in the log.
+  2. **ip**: Extract %h (client IP address)
+  3. **ua**: Extract %{User-Agent}i exactly as seen; no normalization
+  4. **path**: From "%r" request line, extract the second token (the path between METHOD and HTTP/version)
 
-  You should drop the lines that fail to parse strictly.
+  **Drop lines that fail to parse strictly:**
+  - Invalid log format (doesn't match pattern)
+  - Unparseable timestamp
+  - Malformed request line (fewer than 3 tokens: METHOD PATH HTTP/VERSION)
 
-  These are the sessionization rules that need to apply exactly. 
-  Number one is keying that sessions are formed per exact (IP, UA). Number two is that the time zone, you need to convert all timestamps to UTC before you do any logic and you need to preserve fractional seconds if present.
-  3. Drop any hit with ts_utc inc[start to end) for any window that's (closed - open).
-  4. For ordering, you need to sort by kept hits by utc, ASC, then original line indexes ASC. 
-  Number five is that sessionization per (IP , UA), you need to start a session on first kept hit for that key, and if the gap to the previous hit for that key is >= the timeout_minutes, start a new session and then compare that to the time deltas exactly, no float rounding.
-    6) Output ordering & tie-breakers (deterministic):
-      - Sort sessions by start ASC; on ties, lexicographically by (ip, ua).
-      - Assign session_id sequentially: s000001, s000002, …
-  7)
-  CSV formatting:
-  - you should write to /workdir/out/sessions.csv with header:
+  ## Sessionization Rules
+  Apply these rules in exact order:
+  
+  1. **Session Key**: Sessions are keyed by exact (IP, User-Agent) pair. Each unique combination maintains its own session stream.
+  
+  2. **Timezone Normalization**: Convert all timestamps to UTC before applying any logic. Preserve fractional seconds throughout.
+  
+  3. **Maintenance Window Filtering**: Drop any hit where ts_utc falls in [start, end) for any maintenance window. This is a closed-open interval: hits at exactly start are dropped, hits at exactly end are kept.
+  
+  4. **Hit Ordering**: Sort all kept hits by:
+     - Primary: UTC timestamp (ascending)
+     - Secondary: Original line index (ascending) - for stable ordering when timestamps are identical
+  
+  5. **Sessionization per (IP, UA)**:
+     - Start a new session on the first kept hit for each key
+     - For subsequent hits with the same key:
+       - If time gap from previous hit's end timestamp >= timeout_minutes: start NEW session
+       - Otherwise: extend current session (update end time, increment hit count)
+     - Use exact timedelta comparison - no float rounding
+     - Each hit extends the session's end time to that hit's timestamp
+  
+  6. **Output Ordering and Session IDs**:
+     - Sort all sessions by start time (ascending)
+     - Break ties lexicographically by (ip, ua) - compare ip first, then ua
+     - Assign session_id sequentially: s000001, s000002, s000003, ... (zero-padded to 6 digits)
+
+  ## CSV Output Format
+  Write to **/workdir/out/sessions.csv** with exact header:
+  ```
   session_id,ip,ua,start,end,hits
-  -      - UA exactly as read (quote if needed by CSV).
-      - start/end in UTC with 'Z'; include fractional seconds only when non-zero (strip trailing zeros).
-      - also Ensure a final newline at EOF.
+  ```
+  
+  **Field specifications:**
+  - **session_id**: Format s000001, s000002, etc. (lowercase 's', zero-padded to 6 digits)
+  - **ip**: IP address as extracted from log
+  - **ua**: User agent string exactly as read (CSV library will handle quoting if needed)
+  - **start**: Session start timestamp in ISO-8601 UTC format with 'Z'
+  - **end**: Session end timestamp in ISO-8601 UTC format with 'Z'
+  - **hits**: Integer count of hits in this session
+  
+  **Timestamp formatting rules:**
+  - Use 'Z' suffix for UTC (not +00:00)
+  - Include fractional seconds ONLY when the microseconds value is non-zero
+  - Strip trailing zeros from fractional part
+  - Examples:
+    - 2019-01-22T00:26:20Z (no fractional seconds)
+    - 2019-01-22T00:26:20.5Z (0.5 seconds, not 0.500000)
+    - 2019-01-22T00:26:20.123Z (0.123 seconds, not 0.123000)
+  - Ensure final newline at EOF
 
-  Now I'm going to tell you about the constraints and the environment. You won't have access to the internet at all. You can only use standard tools available inside the container. You can only write your output to /workdir/out/sessions.csv. And, finally, you can only write helper scripts, but only /workdir/out/sessions.csv will be graded.
+  ## Constraints
+  - No internet access
+  - Only /workdir/out/sessions.csv will be graded
+  - You may write helper scripts, but output must be at exact path above
+  - Read-only access to input files
+
+metadata:
+  difficulty: hard
+  category: "data-engineering"
+  tags: ["log-parsing", "sessionization", "web-analytics", "data-processing", "timestamp-handling"]
+  references: ["N/A"]
+
+time_limit: 900          # seconds
+memory_limit: 1024       # MB
+max_agent_timeout_sec: 600
+expert_time_estimate_min: 45
+junior_time_estimate_min: 120
