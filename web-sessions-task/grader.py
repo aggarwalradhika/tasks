@@ -9,7 +9,7 @@ from typing import List, Tuple, Dict
 from collections import defaultdict
 from apex_arena._types import GradingResult
 
-CANDIDATE = Path("/workdir/out/sessions.csv")
+CANDIDATE = Path("/workdir/sessions.csv")
 ACCESS_LOG = Path("/workdir/data/access.log")
 POLICY_JSON = Path("/workdir/data/policy.json")
 
@@ -254,7 +254,7 @@ def grade(transcript: str) -> GradingResult:
             subscores=subscores,
             weights=weights,
             feedback=(
-                "FAIL: Output file /workdir/out/sessions.csv not found.\n"
+                "FAIL: Output file /workdir/sessions.csv not found.\n"
                 "Ensure your solution writes to this exact path."
             ),
         )

@@ -221,7 +221,7 @@ def format_timestamp(dt: datetime) -> str:
 
 
 # Write output CSV
-output_path = root / "out/sessions.csv"
+output_path = root / "sessions.csv"
 with output_path.open("w", newline="", encoding="utf-8") as f:
     writer = csv.writer(f)
     writer.writerow(["session_id", "ip", "ua", "start", "end", "hits"])
@@ -239,4 +239,4 @@ with output_path.open("w", newline="", encoding="utf-8") as f:
 
 PY
 
-echo "Successfully wrote /workdir/out/sessions.csv"
+echo "Successfully wrote /workdir/sessions.csv"

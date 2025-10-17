@@ -1,30 +1,60 @@
-54.36.149.41 - - [22/Jan/2019:03:56:14 +0330] "GET /filter/27|13%20%D9%85%DA%AF%D8%A7%D9%BE%DB%8C%DA%A9%D8%B3%D9%84,27|%DA%A9%D9%85%D8%AA%D8%B1%20%D8%A7%D8%B2%205%20%D9%85%DA%AF%D8%A7%D9%BE%DB%8C%DA%A9%D8%B3%D9%84,p53 HTTP/1.1" 200 30577 "-" "Mozilla/5.0 (compatible; AhrefsBot/6.1; +http://ahrefs.com/robot/)" "-"
-31.56.96.51 - - [22/Jan/2019:03:56:16 +0330] "GET /image/60844/productModel/200x200 HTTP/1.1" 200 5667 "https://www.zanbil.ir/m/filter/b113" "Mozilla/5.0 (Linux; Android 6.0; ALE-L21 Build/HuaweiALE-L21) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.158 Mobile Safari/537.36" "-"
-31.56.96.51 - - [22/Jan/2019:03:56:16 +0330] "GET /image/61474/productModel/200x200 HTTP/1.1" 200 5379 "https://www.zanbil.ir/m/filter/b113" "Mozilla/5.0 (Linux; Android 6.0; ALE-L21 Build/HuaweiALE-L21) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.158 Mobile Safari/537.36" "-"
+54.36.149.41 - - [22/Jan/2019:03:56:14 +0330] "GET /filter/27|13%20test HTTP/1.1" 200 30577 "-" "Mozilla/5.0 (compatible; AhrefsBot/6.1; +http://ahrefs.com/robot/)" "-"
+31.56.96.51 - - [22/Jan/2019:03:56:16 +0330] "GET /image/60844/productModel/200x200 HTTP/1.1" 200 5667 "https://www.zanbil.ir/m/filter/b113" "Mozilla/5.0 (Linux; Android 6.0; ALE-L21) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.158 Mobile Safari/537.36" "-"
+31.56.96.51 - - [22/Jan/2019:03:56:16.123456 +0330] "GET /image/61474/productModel/200x200 HTTP/1.1" 200 5379 "https://www.zanbil.ir/m/filter/b113" "Mozilla/5.0 (Linux; Android 6.0; ALE-L21) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.158 Mobile Safari/537.36" "-"
 40.77.167.129 - - [22/Jan/2019:03:56:17 +0330] "GET /image/14925/productModel/100x100 HTTP/1.1" 200 1696 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)" "-"
-91.99.72.15 - - [22/Jan/2019:03:56:17 +0330] "GET /product/31893/62100/%D8%B3%D8%B4%D9%88%D8%A7%D8%B1-%D8%AE%D8%A7%D9%86%DA%AF%DB%8C-%D9%BE%D8%B1%D9%86%D8%B3%D9%84%DB%8C-%D9%85%D8%AF%D9%84-PR257AT HTTP/1.1" 200 41483 "-" "Mozilla/5.0 (Windows NT 6.2; Win64; x64; rv:16.0)Gecko/16.0 Firefox/16.0" "-"
+# Malformed line - missing closing bracket
+91.99.72.15 - - [22/Jan/2019:03:56:17 +0330 "GET /product/31893 HTTP/1.1" 200 41483 "-" "Mozilla/5.0 (Windows NT 6.2; Win64; x64)" "-"
 40.77.167.129 - - [22/Jan/2019:03:56:17 +0330] "GET /image/23488/productModel/150x150 HTTP/1.1" 200 2654 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)" "-"
 40.77.167.129 - - [22/Jan/2019:03:56:18 +0330] "GET /image/45437/productModel/150x150 HTTP/1.1" 200 3688 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)" "-"
-40.77.167.129 - - [22/Jan/2019:03:56:18 +0330] "GET /image/576/article/100x100 HTTP/1.1" 200 14776 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)" "-"
-66.249.66.194 - - [22/Jan/2019:03:56:18 +0330] "GET /filter/b41,b665,c150%7C%D8%A8%D8%AE%D8%A7%D8%B1%D9%BE%D8%B2,p56 HTTP/1.1" 200 34277 "-" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" "-"
+40.77.167.129 - - [22/Jan/2019:03:56:18.500000 +0330] "GET /image/576/article/100x100 HTTP/1.1" 200 14776 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)" "-"
+66.249.66.194 - - [22/Jan/2019:03:56:18 +0330] "GET /filter/b41,b665 HTTP/1.1" 200 34277 "-" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" "-"
 40.77.167.129 - - [22/Jan/2019:03:56:18 +0330] "GET /image/57710/productModel/100x100 HTTP/1.1" 200 1695 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)" "-"
 207.46.13.136 - - [22/Jan/2019:03:56:18 +0330] "GET /product/10214 HTTP/1.1" 200 39677 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)" "-"
-40.77.167.129 - - [22/Jan/2019:03:56:19 +0330] "GET /image/578/article/100x100 HTTP/1.1" 200 9831 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)" "-"
-178.253.33.51 - - [22/Jan/2019:03:56:19 +0330] "GET /m/product/32574/62991/%D9%85%D8%A7%D8%B4%DB%8C%D9%86-%D8%A7%D8%B5%D9%84%D8%A7%D8%AD-%D8%B5%D9%88%D8%B1%D8%AA-%D9%BE%D8%B1%D9%86%D8%B3%D9%84%DB%8C-%D9%85%D8%AF%D9%84-PR465AT HTTP/1.1" 200 20406 "https://www.zanbil.ir/m/filter/p5767%2Ct156?name=%D9%85%D8%A7%D8%B4%DB%8C%D9%86-%D8%A7%D8%B5%D9%84%D8%A7%D8%AD&productType=electric-shavers" "Mozilla/5.0 (Linux; Android 5.1; HTC Desire 728 dual sim) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.83 Mobile Safari/537.36" "-"
+# Line in maintenance window - should be dropped
+40.77.167.129 - - [22/Jan/2019:04:25:00 +0330] "GET /maintenance/test HTTP/1.1" 200 9831 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)" "-"
+178.253.33.51 - - [22/Jan/2019:03:56:19 +0330] "GET /m/product/32574 HTTP/1.1" 200 20406 "https://www.zanbil.ir/m/filter/p5767" "Mozilla/5.0 (Linux; Android 5.1; HTC Desire 728) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.83 Mobile Safari/537.36" "-"
 40.77.167.129 - - [22/Jan/2019:03:56:19 +0330] "GET /image/6229/productModel/100x100 HTTP/1.1" 200 1796 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)" "-"
-91.99.72.15 - - [22/Jan/2019:03:56:19 +0330] "GET /product/10075/13903/%D9%85%D8%A7%DB%8C%DA%A9%D8%B1%D9%88%D9%81%D8%B1-%D8%B1%D9%88%D9%85%DB%8C%D8%B2%DB%8C-%D8%B3%D8%A7%D9%85%D8%B3%D9%88%D9%86%DA%AF-%D9%85%D8%AF%D9%84-CE288 HTTP/1.1" 200 41725 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.92 Safari/537.36" "-"
+91.99.72.15 - - [22/Jan/2019:03:56:19 +0330] "GET /product/10075 HTTP/1.1" 200 41725 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.92 Safari/537.36" "-"
 40.77.167.129 - - [22/Jan/2019:03:56:19 +0330] "GET /image/6229/productModel/150x150 HTTP/1.1" 200 2739 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)" "-"
 207.46.13.136 - - [22/Jan/2019:03:56:19 +0330] "GET /product/14926 HTTP/1.1" 404 33617 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)" "-"
 40.77.167.129 - - [22/Jan/2019:03:56:19 +0330] "GET /image/6248/productModel/150x150 HTTP/1.1" 200 2788 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)" "-"
 40.77.167.129 - - [22/Jan/2019:03:56:20 +0330] "GET /image/64815/productModel/150x150 HTTP/1.1" 200 3481 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)" "-"
-66.249.66.194 - - [22/Jan/2019:03:56:20 +0330] "GET /m/filter/b2,p6 HTTP/1.1" 200 19451 "-" "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.96 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" "-"
-91.99.72.15 - - [22/Jan/2019:03:56:20 +0330] "GET /product/32798/63266/%DB%8C%D8%AE%DA%86%D8%A7%D9%84-%D9%81%D8%B1%DB%8C%D8%B2%D8%B1-%D8%B3%DB%8C%D9%86%D8%AC%D8%B1-%D9%85%D8%AF%D9%84-pearl-SR7 HTTP/1.1" 200 40250 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.92 Safari/537.36" "-"
+66.249.66.194 - - [22/Jan/2019:03:56:20 +0330] "GET /m/filter/b2,p6 HTTP/1.1" 200 19451 "-" "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.96 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" "-"
+91.99.72.15 - - [22/Jan/2019:03:56:20 +0330] "GET /product/32798 HTTP/1.1" 200 40250 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.92 Safari/537.36" "-"
 54.36.149.41 - - [22/Jan/2019:03:56:20.250 +0330] "GET /m/filter/b2,p6?q=microwave HTTP/1.1" 200 1234 "-" "Mozilla/5.0 (compatible; AhrefsBot/6.1; +http://ahrefs.com/robot/)" "-"
 54.36.149.41 - - [22/Jan/2019:03:56:20.500 +0330] "GET /m/filter/b2,p6?q=toaster HTTP/1.1" 200 1256 "-" "Mozilla/5.0 (compatible; AhrefsBot/6.1; +http://ahrefs.com/robot/)" "-"
-91.99.72.15 - - [22/Jan/2019:03:57:00 +0330] "GET /tie-breaker/first HTTP/1.1" 200 2048 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.92 Safari/537.36" "-"
-91.99.72.15 - - [22/Jan/2019:03:57:00 +0330] "GET /tie-breaker/second HTTP/1.1" 200 2050 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.92 Safari/537.36" "-"
-91.99.72.15 - - [22/Jan/2019:04:00:00 +0330] "GET /exact-30/a HTTP/1.1" 200 2100 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.92 Safari/537.36" "-"
-91.99.72.15 - - [22/Jan/2019:04:30:00 +0330] "GET /exact-30/b HTTP/1.1" 200 2105 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.92 Safari/537.36" "-"
+# Exact timeout boundary test - 30 minutes exactly
+91.99.72.15 - - [22/Jan/2019:03:56:20 +0330] "GET /boundary/start HTTP/1.1" 200 2048 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.92 Safari/537.36" "-"
+91.99.72.15 - - [22/Jan/2019:04:26:20 +0330] "GET /boundary/exactly-30min HTTP/1.1" 200 2050 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.92 Safari/537.36" "-"
+# Just under 30 minutes - should extend session
+91.99.72.15 - - [22/Jan/2019:04:26:19 +0330] "GET /boundary/under-30min HTTP/1.1" 200 2055 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.92 Safari/537.36" "-"
+# Same timestamp as previous - line index tie-breaker
+91.99.72.15 - - [22/Jan/2019:04:26:19 +0330] "GET /tie/first HTTP/1.1" 200 2060 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.92 Safari/537.36" "-"
+91.99.72.15 - - [22/Jan/2019:04:26:19 +0330] "GET /tie/second HTTP/1.1" 200 2065 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.92 Safari/537.36" "-"
+# Malformed request - only 2 tokens
 207.46.13.136 - - [22/Jan/2019:03:58:00 +0330] "GET /broken/no-http" 200 111 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)" "-"
-31.56.96.51 - - [22/Jan/2019:03:58:10 +0330] "GET /percent-encoded/%D9%85%D8%AD%D8%B5%D9%88%D9%84%20%D8%AC%D8%AF%DB%8C%D8%AF HTTP/1.1" 200 1900 "-" "Mozilla/5.0 (Linux; Android 6.0; ALE-L21 Build/HuaweiALE-L21) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.158 Mobile Safari/537.36" "-"
-31.56.96.51 - - [22/Jan/2019:03:58:12 +0330] "GET /search?q=hair%20dryer&sort=desc&page=1 HTTP/1.1" 200 1950 "-" "Mozilla/5.0 (Linux; Android 6.0; ALE-L21 Build/HuaweiALE-L21) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.158 Mobile Safari/537.36" "-"
+# Invalid timestamp format
+31.56.96.51 - - [22/Jan/2019:99:99:99 +0330] "GET /bad/timestamp HTTP/1.1" 200 1900 "-" "Mozilla/5.0 (Linux; Android 6.0; ALE-L21) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.158 Mobile Safari/537.36" "-"
+31.56.96.51 - - [22/Jan/2019:03:58:10 +0330] "GET /percent-encoded/%D9%85%D8%AD%D8%B5%D9%88%D9%84 HTTP/1.1" 200 1900 "-" "Mozilla/5.0 (Linux; Android 6.0; ALE-L21) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.158 Mobile Safari/537.36" "-"
+31.56.96.51 - - [22/Jan/2019:03:58:12 +0330] "GET /search?q=hair%20dryer&sort=desc HTTP/1.1" 200 1950 "-" "Mozilla/5.0 (Linux; Android 6.0; ALE-L21) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.158 Mobile Safari/537.36" "-"
+# Edge case: fractional seconds with exactly .000000 (should format without decimals)
+31.56.96.51 - - [22/Jan/2019:03:58:13.000000 +0330] "GET /search?page=2 HTTP/1.1" 200 1955 "-" "Mozilla/5.0 (Linux; Android 6.0; ALE-L21) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.158 Mobile Safari/537.36" "-"
+# Different IP, same UA as above - should be different session
+192.168.1.100 - - [22/Jan/2019:03:58:14 +0330] "GET /different/ip HTTP/1.1" 200 2000 "-" "Mozilla/5.0 (Linux; Android 6.0; ALE-L21) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.158 Mobile Safari/537.36" "-"
+# Same IP, different UA as above - should be different session
+31.56.96.51 - - [22/Jan/2019:03:58:15 +0330] "GET /different/ua HTTP/1.1" 200 2005 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" "-"
+# Session ordering tie-breaker test - same start time, different (ip,ua)
+10.0.0.1 - - [22/Jan/2019:04:00:00 +0330] "GET /tie/session/a HTTP/1.1" 200 3000 "-" "UserAgent-A" "-"
+10.0.0.2 - - [22/Jan/2019:04:00:00 +0330] "GET /tie/session/b HTTP/1.1" 200 3001 "-" "UserAgent-A" "-"
+10.0.0.1 - - [22/Jan/2019:04:00:00 +0330] "GET /tie/session/c HTTP/1.1" 200 3002 "-" "UserAgent-B" "-"
+# Maintenance window boundary tests
+40.77.167.129 - - [22/Jan/2019:04:24:59.999999 +0330] "GET /just-before-window HTTP/1.1" 200 4000 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)" "-"
+40.77.167.129 - - [22/Jan/2019:04:25:00 +0330] "GET /window-start-exact HTTP/1.1" 200 4001 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)" "-"
+40.77.167.129 - - [22/Jan/2019:04:54:59.999999 +0330] "GET /window-end-almost HTTP/1.1" 200 4002 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)" "-"
+40.77.167.129 - - [22/Jan/2019:04:55:00 +0330] "GET /window-end-exact HTTP/1.1" 200 4003 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)" "-"
+# Very long user agent string
+10.0.0.5 - - [22/Jan/2019:04:10:00 +0330] "GET /long/ua HTTP/1.1" 200 5000 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59 OPR/77.0.4054.203 Vivaldi/4.0.2312.38" "-"
+# User agent with comma (CSV edge case)
+10.0.0.6 - - [22/Jan/2019:04:11:00 +0330] "GET /comma/ua HTTP/1.1" 200 5001 "-" "Mozilla/5.0 (compatible; Bot/1.0; +http://example.com, info@example.com)" "-"
+# User agent with quotes (CSV edge case)
+10.0.0.7 - - [22/Jan/2019:04:12:00 +0330] "GET /quote/ua HTTP/1.1" 200 5002 "-" "Mozilla/5.0 (compatible; \"Bot\"/1.0)" "-"

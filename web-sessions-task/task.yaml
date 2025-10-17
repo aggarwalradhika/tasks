@@ -1,104 +1,182 @@
 prompt: |
-  Okay for this task you're going to be building deterministic web sessions from raw Apache access logs and they will be in a combined log format.
+  Build deterministic web sessions from raw Apache access logs in Combined Log Format with an extra field.
 
-  ## Input (read-only)
-  - /workdir/data/access.log  (plain text; Apache **Combined Log Format** + extra field)
-    Each line matches:
-      %h %l %u [%t] "%r" %>s %b "%{Referer}i" "%{User-Agent}i" "%{extra}i"
-    Where:
-      - %h is client IP
-      - %t is timestamp like [22/Jan/2019:03:56:14 +0330]
-      - %r is the request line: METHOD SP PATH SP HTTP/VERSION
-      - %{User-Agent}i is the full UA
-    Timestamp format: %d/%b/%Y:%H:%M:%S %z (e.g., 22/Jan/2019:03:56:14 +0330)
-    May optionally include fractional seconds: 22/Jan/2019:03:56:14.123456 +0330
+  ## Input Files (read-only)
+  
+  ### /workdir/data/access.log
+  Apache Combined Log Format + extra field:
+  ```
+  %h %l %u [%t] "%r" %>s %b "%{Referer}i" "%{User-Agent}i" "%{extra}i"
+  ```
+  
+  Fields:
+  - `%h`: Client IP address
+  - `%l`: Remote logname (usually `-`)
+  - `%u`: Remote user (usually `-`)
+  - `%t`: Timestamp in brackets, format: `%d/%b/%Y:%H:%M:%S %z`
+    - May include fractional seconds: `22/Jan/2019:03:56:14.123456 +0330`
+    - Timezone offset: `+HHMM` or `-HHMM`
+  - `"%r"`: Request line (quoted): `METHOD PATH HTTP/VERSION`
+  - `%>s`: HTTP status code
+  - `%b`: Response size in bytes
+  - `"%{Referer}i"`: Referer header (quoted, may be `-`)
+  - `"%{User-Agent}i"`: User-Agent header (quoted)
+  - `"%{extra}i"`: Extra field (quoted, may be `-`)
 
-  - /workdir/data/policy.json
-    ```json
-    {
-      "timeout_minutes": 30,
-      "maintenance_windows": [
-        {"start": "2025-08-16T12:20:00Z", "end": "2025-08-16T12:40:00Z"}
-      ]
-    }
-    ```
+  ### /workdir/data/policy.json
+  ```json
+  {
+    "timeout_minutes": 30,
+    "maintenance_windows": [
+      {"start": "2019-01-22T00:55:00Z", "end": "2019-01-22T01:25:00Z"}
+    ]
+  }
+  ```
 
   ## Parsing Requirements
-  For each log line, extract these fields:
-  1. **timestamp**: Convert [%t] to ISO-8601 UTC with 'Z'. Preserve subsecond precision if present in the log.
-  2. **ip**: Extract %h (client IP address)
-  3. **ua**: Extract %{User-Agent}i exactly as seen; no normalization
-  4. **path**: From "%r" request line, extract the second token (the path between METHOD and HTTP/version)
 
-  **Drop lines that fail to parse strictly:**
-  - Invalid log format (doesn't match pattern)
-  - Unparseable timestamp
-  - Malformed request line (fewer than 3 tokens: METHOD PATH HTTP/VERSION)
+  ### 1. Log Format Matching
+  Each line must match the exact Apache Combined Log Format pattern above. **Drop any line that doesn't match**, including:
+  - Missing fields
+  - Malformed brackets around timestamp
+  - Missing quotes around request/referer/ua/extra
+  - Any deviation from the pattern
 
-  ## Sessionization Rules
-  Apply these rules in exact order:
+  ### 2. Request Line Validation
+  The request line (`"%r"`) must contain exactly 3 space-separated tokens:
+  - Token 1: HTTP method (e.g., GET, POST)
+  - Token 2: Request path (e.g., `/product/123`)
+  - Token 3: HTTP version (e.g., HTTP/1.1)
   
-  1. **Session Key**: Sessions are keyed by exact (IP, User-Agent) pair. Each unique combination maintains its own session stream.
-  
-  2. **Timezone Normalization**: Convert all timestamps to UTC before applying any logic. Preserve fractional seconds throughout.
-  
-  3. **Maintenance Window Filtering**: Drop any hit where ts_utc falls in [start, end) for any maintenance window. This is a closed-open interval: hits at exactly start are dropped, hits at exactly end are kept.
-  
-  4. **Hit Ordering**: Sort all kept hits by:
-     - Primary: UTC timestamp (ascending)
-     - Secondary: Original line index (ascending) - for stable ordering when timestamps are identical
-  
-  5. **Sessionization per (IP, UA)**:
-     - Start a new session on the first kept hit for each key
-     - For subsequent hits with the same key:
-       - If time gap from previous hit's end timestamp >= timeout_minutes: start NEW session
-       - Otherwise: extend current session (update end time, increment hit count)
-     - Use exact timedelta comparison - no float rounding
-     - Each hit extends the session's end time to that hit's timestamp
-  
-  6. **Output Ordering and Session IDs**:
-     - Sort all sessions by start time (ascending)
-     - Break ties lexicographically by (ip, ua) - compare ip first, then ua
-     - Assign session_id sequentially: s000001, s000002, s000003, ... (zero-padded to 6 digits)
+  **Drop any line where the request doesn't have exactly 3 tokens.**
 
-  ## CSV Output Format
-  Write to **/workdir/out/sessions.csv** with exact header:
+  ### 3. Timestamp Parsing
+  - Parse timestamp from Apache format `%d/%b/%Y:%H:%M:%S %z`
+  - Support optional fractional seconds (microseconds): `.ffffff`
+  - Convert to UTC immediately
+  - Preserve full microsecond precision throughout all processing
+  - **Drop any line with unparseable timestamp** (invalid date, invalid timezone, etc.)
+
+  ### 4. Field Extraction
+  Extract:
+  - **ip**: Client IP (`%h`)
+  - **ua**: User-Agent string (`%{User-Agent}i`) - preserve exactly as-is, including any special characters
+  - **ts_utc**: Timestamp converted to UTC
+  - **path**: Second token from request line (keep percent-encoding, query strings, etc.)
+
+  ## Sessionization Algorithm
+
+  Apply these steps in exact order:
+
+  ### Step 1: Maintenance Window Filtering
+  - For each maintenance window `[start, end)`:
+    - start and end are ISO-8601 UTC timestamps
+    - This is a closed-open interval: `[start, end)`
+    - **Drop any hit where** `start <= ts_utc < end`
+    - Hits at exactly `start` are dropped
+    - Hits at exactly `end` are kept
+  - Check all windows (hit is dropped if it falls in ANY window)
+
+  ### Step 2: Hit Sorting
+  Sort all kept hits by:
+  1. **Primary**: UTC timestamp (ascending)
+  2. **Secondary**: Original line number (ascending) - for deterministic tie-breaking
+
+  ### Step 3: Sessionization by (IP, UA)
+  - Session key: Exact tuple `(ip, user_agent)`
+  - Each unique `(ip, ua)` combination maintains independent session(s)
+  
+  For each hit in sorted order:
+  - If this is the first hit for this `(ip, ua)`: Create new session
+  - Else:
+    - Get the last session for this `(ip, ua)`
+    - Calculate time gap: `current_hit_time - last_session_end_time`
+    - If `gap >= timeout_minutes`: Create new session
+    - Else: Extend current session:
+      - Update `session.end` to `current_hit_time`
+      - Increment `session.hits` by 1
+
+  **Critical**: Use exact timedelta comparison. If gap is exactly 30 minutes (1800 seconds), it equals the timeout, so start a new session.
+
+  ### Step 4: Session Ordering
+  Sort all sessions by:
+  1. **Primary**: Session start time (ascending)
+  2. **Secondary**: Lexicographic comparison of `(ip, ua)` tuple
+     - Compare `ip` first (string comparison)
+     - If `ip` equal, compare `ua` (string comparison)
+
+  ### Step 5: Session ID Assignment
+  Assign sequential IDs: `s000001`, `s000002`, `s000003`, ...
+  - Format: lowercase 's' + 6-digit zero-padded number
+  - Start from 1
+
+  ## Output Format
+
+  ### File Path
+  `/workdir/sessions.csv`
+
+  ### CSV Structure
+  **Header** (exact, case-sensitive):
   ```
   session_id,ip,ua,start,end,hits
   ```
-  
-  **Field specifications:**
-  - **session_id**: Format s000001, s000002, etc. (lowercase 's', zero-padded to 6 digits)
-  - **ip**: IP address as extracted from log
-  - **ua**: User agent string exactly as read (CSV library will handle quoting if needed)
-  - **start**: Session start timestamp in ISO-8601 UTC format with 'Z'
-  - **end**: Session end timestamp in ISO-8601 UTC format with 'Z'
-  - **hits**: Integer count of hits in this session
-  
-  **Timestamp formatting rules:**
-  - Use 'Z' suffix for UTC (not +00:00)
-  - Include fractional seconds ONLY when the microseconds value is non-zero
-  - Strip trailing zeros from fractional part
-  - Examples:
-    - 2019-01-22T00:26:20Z (no fractional seconds)
-    - 2019-01-22T00:26:20.5Z (0.5 seconds, not 0.500000)
-    - 2019-01-22T00:26:20.123Z (0.123 seconds, not 0.123000)
-  - Ensure final newline at EOF
+
+  **Columns**:
+  1. `session_id`: Format `s000001`, `s000002`, etc.
+  2. `ip`: IP address string
+  3. `ua`: User-Agent string (CSV escaping handled automatically by csv module)
+  4. `start`: Session start timestamp (ISO-8601 UTC with 'Z')
+  5. `end`: Session end timestamp (ISO-8601 UTC with 'Z')
+  6. `hits`: Integer count of hits in session
+
+  ### Timestamp Formatting
+  **Requirements**:
+  - Use UTC timezone with 'Z' suffix (not `+00:00`)
+  - Include fractional seconds ONLY if microseconds != 0
+  - Strip ALL trailing zeros from fractional part
+  - Never output `.0` - if result would be `.0`, omit decimals entirely
+
+  **Examples**:
+  - `2019-01-22T00:26:20Z` - no fractional seconds
+  - `2019-01-22T00:26:20.5Z` - 0.5 seconds (not `.500000`)
+  - `2019-01-22T00:26:20.123456Z` - full precision
+  - `2019-01-22T00:26:20.1Z` - single digit (not `.100000`)
+
+  **Edge case**: If timestamp has exactly `.000000` microseconds, output with NO decimal point.
+
+  ### CSV Requirements
+  - Use Python's `csv` module for proper escaping
+  - User-Agent strings may contain commas, quotes, newlines - let csv handle it
+  - Ensure final newline at EOF (csv.writer does this automatically)
+
+  ## Edge Cases to Handle
+
+  1. **Malformed lines**: Comments, blank lines, incorrect format → drop
+  2. **Invalid timestamps**: Bad dates (99:99:99), invalid timezone → drop
+  3. **Malformed requests**: Missing HTTP version, only 2 tokens → drop
+  4. **Maintenance windows**: Boundary conditions at exact start/end times
+  5. **Timeout boundaries**: Exactly 30:00 minutes → new session
+  6. **Identical timestamps**: Multiple hits at same time → sort by line number
+  7. **Session start tie-breaking**: Multiple sessions start at same time → sort by (ip, ua)
+  8. **Fractional seconds**: Various formats (.5, .123456, .000000)
+  9. **Special characters in UA**: Commas, quotes, unicode
+  10. **Different timezones**: +0330, -0500, etc. → all convert to UTC
 
   ## Constraints
   - No internet access
-  - Only /workdir/out/sessions.csv will be graded
-  - You may write helper scripts, but output must be at exact path above
-  - Read-only access to input files
+  - No package installation
+  - Only standard Python 3.11 libraries
+  - Only `/workdir/sessions.csv` is graded
+  - Input files are read-only
 
 metadata:
   difficulty: hard
   category: "data-engineering"
-  tags: ["log-parsing", "sessionization", "web-analytics", "data-processing", "timestamp-handling"]
+  tags: ["log-parsing", "sessionization", "web-analytics", "data-processing", "timestamp-handling", "edge-cases"]
   references: ["N/A"]
 
-time_limit: 900          # seconds
-memory_limit: 1024       # MB
+time_limit: 900
+memory_limit: 1024
 max_agent_timeout_sec: 600
-expert_time_estimate_min: 45
-junior_time_estimate_min: 120
+expert_time_estimate_min: 60
+junior_time_estimate_min: 150
