@@ -70,9 +70,15 @@ prompt: |
   - Venue types must be lowercase: "theater", "restaurant", "museum", "bookstore", "coffee"
   - Neighborhoods must match exactly as written in the source data files
 
-  ## Museum Founding Dates
+  ## Founding/Opening Date Extraction
 
-  Use these founding years for museums (from their 'name' field):
+  To determine if a venue is historic (founded/opened before 1950):
+
+  **Theaters**: Use the 'opened' field directly. If missing, default to 1950.
+  
+  **Restaurants**: Use the 'founded' field directly. If missing, default to 1980.
+  
+  **Museums**: Extract from the 'name' field using these rules:
   - "Metropolitan Museum of Art" or contains "Metropolitan Museum": 1870
   - "Museum of Modern Art" or contains "MoMA" or "Modern Art": 1929
   - Contains "Natural History": 1869
@@ -83,6 +89,10 @@ prompt: |
   - Contains "Tenement": 1988
   - Contains "City of New York": 1923
   - All other museums: 1900 (default)
+  
+  **Bookstores**: Use the 'founded' field directly. If missing, default to 1980.
+  
+  **Coffee shops**: Use the 'founded' field directly. If missing, default to 2010.
 
   ## Michelin Stars Extraction
 
