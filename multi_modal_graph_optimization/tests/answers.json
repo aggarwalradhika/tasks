@@ -1,6 +1,0 @@
-{
-  "path_nodes": ["A", "C", "F", "I", "L", "N", "Z"],
-  "path_modes": ["road", "sea", "rail", "road", "air", "road"],
-  "expected_cost": 607.875,
-  "p_delay": 0.0
-}
