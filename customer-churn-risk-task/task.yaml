@@ -1,0 +1,215 @@
+prompt: |
+  Customer Churn Risk Segmentation - Identify the 10 highest-risk customer segments
+
+  You are inside a Linux container without internet access.
+
+  Input files (JSON, read-only) under /workdir/data/:
+    - customers.json: customer profiles with demographic and account info
+    - transactions.json: transaction history for past 90 days
+    - support_tickets.json: customer support interactions
+    - usage_metrics.json: product usage statistics per customer
+    - cohort_benchmarks.json: historical benchmark data by cohort
+
+  ## Your Task
+
+  Identify the 10 customer segments with the highest churn risk scores by combining 
+  behavioral, transactional, and engagement metrics with cohort-relative analysis.
+
+  ## Eligibility Criteria (all must be true for a customer)
+
+  1. Account age >= 180 days (from account_created_date to analysis date: 2025-09-01)
+  2. At least 1 transaction in the past 90 days
+  3. Account status == "active"
+  4. Customer tier in ["bronze", "silver", "gold", "platinum"]
+  5. lifetime_value >= 100.00 (from customers.json)
+
+  ## Segment Definition
+
+  Group customers by: customer_tier + region + cohort_quarter (concatenated with underscore)
+  - customer_tier: from customers.json (bronze/silver/gold/platinum)
+  - region: from customers.json (north/south/east/west/central)
+  - cohort_quarter: derived from account_created_date
+    - Format: "Q{quarter}_{year}" where quarter = ceil(month/3)
+    - Example: 2024-02-15 → "Q1_2024", 2023-11-20 → "Q4_2023"
+
+  ## Churn Risk Score Calculation
+
+  For each eligible customer, calculate 5 risk components:
+
+  ### 1. Transaction Decline Score (TDS) - Weight: 0.25
+  ```
+  recent_avg = mean(transaction_amount) for last 30 days
+  prior_avg = mean(transaction_amount) for days 31-90
+  
+  if prior_avg == 0: decline_ratio = 0.0
+  else: decline_ratio = max(0, (prior_avg - recent_avg) / prior_avg)
+  
+  # Apply cohort normalization
+  cohort_benchmark = get from cohort_benchmarks.json for this customer's cohort_quarter
+  expected_decline = cohort_benchmark["expected_transaction_decline"]
+  
+  excess_decline = max(0, decline_ratio - expected_decline)
+  TDS = (decline_ratio * 60) + (excess_decline * 40)
+  ```
+
+  ### 2. Engagement Drop Score (EDS) - Weight: 0.20
+  ```
+  recent_sessions = sum(daily_sessions) for last 30 days from usage_metrics
+  prior_sessions = sum(daily_sessions) for days 31-90
+  
+  if prior_sessions == 0: drop_ratio = 0.0
+  else: drop_ratio = max(0, (prior_sessions - recent_sessions) / prior_sessions)
+  
+  # Calculate session volatility (standard deviation of weekly sessions)
+  weekly_sessions = [sum of sessions for each 7-day period in past 90 days]
+  session_volatility = population_stddev(weekly_sessions) / (mean(weekly_sessions) + 1)
+  
+  EDS = (drop_ratio * 70) + (session_volatility * 30)
+  ```
+
+  ### 3. Support Burden Score (SBS) - Weight: 0.25
+  ```
+  total_tickets = count of support_tickets for this customer in past 90 days
+  unresolved_tickets = count where status != "resolved"
+  critical_tickets = count where priority == "critical"
+  avg_resolution_days = mean(resolution_days) for resolved tickets
+                        (if no resolved tickets: use 0.0)
+  
+  ticket_score = (total_tickets * 1.5) + (unresolved_tickets * 4.0) + (critical_tickets * 6.0)
+  resolution_penalty = min(avg_resolution_days * 2.0, 30.0)
+  
+  SBS = ticket_score + resolution_penalty
+  ```
+
+  ### 4. Feature Adoption Gap (FAG) - Weight: 0.15
+  ```
+  features_available = from customers.json: feature_access array length
+  features_used = count of unique features in usage_metrics.feature_usage (past 90 days)
+  
+  if features_available == 0: adoption_rate = 1.0
+  else: adoption_rate = features_used / features_available
+  
+  # Check for tier-appropriate feature usage
+  tier_expected_features = {
+    "bronze": 2, "silver": 3, "gold": 4, "platinum": 5
+  }
+  expected_for_tier = tier_expected_features[customer_tier]
+  tier_gap = max(0, expected_for_tier - features_used)
+  
+  FAG = ((1.0 - adoption_rate) * 70) + (tier_gap * 10)
+  ```
+
+  ### 5. Payment Health Score (PHS) - Weight: 0.15
+  ```
+  # Calculate from transactions in past 90 days
+  late_payments = count where payment_status == "late"
+  failed_payments = count where payment_status == "failed"
+  total_payments = count of all transactions
+  
+  if total_payments == 0: payment_issue_rate = 0.0
+  else: payment_issue_rate = (late_payments + failed_payments * 2) / total_payments
+  
+  # Calculate payment frequency decline
+  recent_payment_count = count of transactions in last 30 days
+  prior_payment_count = count of transactions in days 31-90
+  
+  if prior_payment_count == 0: frequency_decline = 0.0
+  else: frequency_decline = max(0, (prior_payment_count - recent_payment_count) / prior_payment_count)
+  
+  PHS = (payment_issue_rate * 50) + (frequency_decline * 50)
+  ```
+
+  ### Individual Churn Risk Score
+  ```
+  churn_risk_score = (TDS * 0.25) + (EDS * 0.20) + (SBS * 0.25) + (FAG * 0.15) + (PHS * 0.15)
+  ```
+
+  ## Segment Aggregation
+
+  For each segment (tier_region_cohort combination):
+  1. Calculate weighted_mean_risk: 
+     - For each customer, weight = lifetime_value from customers.json
+     - weighted_mean_risk = sum(churn_risk * lifetime_value) / sum(lifetime_value)
+  2. Count total eligible customers in segment (segment_size)
+  3. Calculate at_risk_count: customers with individual churn_risk_score > 50.0
+  4. Calculate at_risk_percentage: (at_risk_count / segment_size) * 100
+  5. Calculate cohort_risk_multiplier:
+     - Get cohort_risk_factor from cohort_benchmarks.json for this cohort_quarter
+     - cohort_risk_multiplier = cohort_risk_factor (already a multiplier)
+  6. Calculate segment_churn_risk:
+     - segment_churn_risk = weighted_mean_risk * cohort_risk_multiplier
+
+  ## Selection & Ranking
+
+  1. Filter: Only include segments with segment_size >= 2
+  2. Sort segments by:
+     - segment_churn_risk (mean score) descending
+     - at_risk_percentage descending  
+     - segment_size descending
+     - segment_name ascending (case-insensitive)
+  3. Take top 10 segments
+  4. Assign rank 1-10 in order
+
+  ## Output Format
+
+  Write CSV to /workdir/sol.csv with exact header:
+  ```
+  segment_name,customer_tier,region,cohort_quarter,segment_size,at_risk_count,at_risk_percentage,weighted_mean_risk,cohort_risk_multiplier,segment_churn_risk,rank
+  ```
+
+  ### Column Specifications
+  - segment_name: "{tier}_{region}_{cohort}" (e.g., "bronze_north_Q1_2024")
+  - customer_tier: original tier value
+  - region: original region value
+  - cohort_quarter: Q{1-4}_{year} format
+  - segment_size: integer count
+  - at_risk_count: integer count
+  - at_risk_percentage: exactly 2 decimals (e.g., 45.67)
+  - weighted_mean_risk: exactly 3 decimals (e.g., 52.345)
+  - cohort_risk_multiplier: exactly 3 decimals (e.g., 1.250)
+  - segment_churn_risk: exactly 3 decimals (e.g., 65.431)
+  - rank: integer 1-10
+
+  ## Important Notes
+
+  - Analysis date for age calculation: September 1, 2025 (2025-09-01)
+  - Transaction windows: last 30 days = days 1-30, prior 60 days = days 31-90 (from analysis date backward)
+  - All date strings in format "YYYY-MM-DD"
+  - Handle division by zero as specified in formulas
+  - Weekly sessions: group by 7-day periods starting from analysis date backward
+  - Population standard deviation: sqrt(sum((x - mean)^2) / N)
+  - Exactly 10 output rows (header + 10 data rows)
+  - Case-insensitive tier/region matching for segment grouping
+  - No extra columns, no index column
+  - cohort_benchmarks.json provides expected_transaction_decline and cohort_risk_factor per cohort_quarter
+
+  ## Success Criteria
+
+  Your solution passes if:
+  1. Exactly 10 data rows in sol.csv
+  2. Header matches exactly (order and names)
+  3. All segment names, tiers, regions, cohorts match data
+  4. segment_size >= 2 for all segments and counts are correct
+  5. at_risk_count and at_risk_percentage calculated correctly
+  6. weighted_mean_risk uses lifetime_value weights correctly
+  7. cohort_risk_multiplier matches cohort_benchmarks.json
+  8. segment_churn_risk = weighted_mean_risk * cohort_risk_multiplier
+  9. All numeric columns have exact decimal places specified
+  10. Ranking is correct (1-10 in sorted order by all sort keys)
+  11. Rows are sorted correctly by the specified criteria
+
+metadata:
+  difficulty: hard
+  category: data-science
+  tags:
+    - customer-analytics
+    - churn-prediction
+    - segmentation
+    - risk-scoring
+    - time-series
+    - cohort-analysis
+  time_limit: 600
+  memory_limit: 2048
+  max_agent_timeout_sec: 900
+  expert_time_estimate_min: 45
+  junior_time_estimate_min: 90

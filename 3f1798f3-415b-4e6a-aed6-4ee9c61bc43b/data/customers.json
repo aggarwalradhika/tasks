@@ -1,0 +1,566 @@
+[
+  {
+    "customer_id": "C001",
+    "customer_tier": "bronze",
+    "region": "north",
+    "account_status": "active",
+    "account_created_date": "2024-02-01",
+    "lifetime_value": 450.5,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c"
+    ]
+  },
+  {
+    "customer_id": "C002",
+    "customer_tier": "silver",
+    "region": "south",
+    "account_status": "active",
+    "account_created_date": "2024-01-15",
+    "lifetime_value": 1250.75,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d"
+    ]
+  },
+  {
+    "customer_id": "C003",
+    "customer_tier": "gold",
+    "region": "east",
+    "account_status": "active",
+    "account_created_date": "2023-11-20",
+    "lifetime_value": 3200,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d",
+      "feature_e"
+    ]
+  },
+  {
+    "customer_id": "C004",
+    "customer_tier": "platinum",
+    "region": "west",
+    "account_status": "active",
+    "account_created_date": "2023-10-01",
+    "lifetime_value": 6500.25,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d",
+      "feature_e",
+      "feature_f"
+    ]
+  },
+  {
+    "customer_id": "C005",
+    "customer_tier": "bronze",
+    "region": "central",
+    "account_status": "active",
+    "account_created_date": "2024-01-10",
+    "lifetime_value": 380,
+    "feature_access": [
+      "feature_a",
+      "feature_b"
+    ]
+  },
+  {
+    "customer_id": "C006",
+    "customer_tier": "bronze",
+    "region": "north",
+    "account_status": "active",
+    "account_created_date": "2024-02-10",
+    "lifetime_value": 520.3,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c"
+    ]
+  },
+  {
+    "customer_id": "C007",
+    "customer_tier": "silver",
+    "region": "south",
+    "account_status": "active",
+    "account_created_date": "2023-12-20",
+    "lifetime_value": 1450,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d"
+    ]
+  },
+  {
+    "customer_id": "C008",
+    "customer_tier": "gold",
+    "region": "east",
+    "account_status": "active",
+    "account_created_date": "2023-10-14",
+    "lifetime_value": 3850.5,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d",
+      "feature_e"
+    ]
+  },
+  {
+    "customer_id": "C009",
+    "customer_tier": "platinum",
+    "region": "west",
+    "account_status": "active",
+    "account_created_date": "2023-09-05",
+    "lifetime_value": 7200,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d",
+      "feature_e",
+      "feature_f"
+    ]
+  },
+  {
+    "customer_id": "C010",
+    "customer_tier": "bronze",
+    "region": "central",
+    "account_status": "active",
+    "account_created_date": "2024-01-30",
+    "lifetime_value": 420.75,
+    "feature_access": [
+      "feature_a",
+      "feature_b"
+    ]
+  },
+  {
+    "customer_id": "C011",
+    "customer_tier": "silver",
+    "region": "north",
+    "account_status": "active",
+    "account_created_date": "2024-01-12",
+    "lifetime_value": 1320.5,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d"
+    ]
+  },
+  {
+    "customer_id": "C012",
+    "customer_tier": "gold",
+    "region": "south",
+    "account_status": "active",
+    "account_created_date": "2023-11-08",
+    "lifetime_value": 3450.25,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d",
+      "feature_e"
+    ]
+  },
+  {
+    "customer_id": "C013",
+    "customer_tier": "platinum",
+    "region": "east",
+    "account_status": "active",
+    "account_created_date": "2023-08-20",
+    "lifetime_value": 7850,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d",
+      "feature_e",
+      "feature_f"
+    ]
+  },
+  {
+    "customer_id": "C014",
+    "customer_tier": "bronze",
+    "region": "west",
+    "account_status": "active",
+    "account_created_date": "2024-02-25",
+    "lifetime_value": 490,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c"
+    ]
+  },
+  {
+    "customer_id": "C015",
+    "customer_tier": "silver",
+    "region": "central",
+    "account_status": "active",
+    "account_created_date": "2024-01-05",
+    "lifetime_value": 1180.75,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d"
+    ]
+  },
+  {
+    "customer_id": "C016",
+    "customer_tier": "gold",
+    "region": "north",
+    "account_status": "active",
+    "account_created_date": "2023-12-28",
+    "lifetime_value": 3650.5,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d",
+      "feature_e"
+    ]
+  },
+  {
+    "customer_id": "C017",
+    "customer_tier": "platinum",
+    "region": "south",
+    "account_status": "active",
+    "account_created_date": "2023-10-15",
+    "lifetime_value": 6950.25,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d",
+      "feature_e",
+      "feature_f"
+    ]
+  },
+  {
+    "customer_id": "C018",
+    "customer_tier": "bronze",
+    "region": "east",
+    "account_status": "active",
+    "account_created_date": "2024-02-10",
+    "lifetime_value": 410,
+    "feature_access": [
+      "feature_a",
+      "feature_b"
+    ]
+  },
+  {
+    "customer_id": "C019",
+    "customer_tier": "silver",
+    "region": "west",
+    "account_status": "active",
+    "account_created_date": "2024-01-01",
+    "lifetime_value": 1550.3,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d"
+    ]
+  },
+  {
+    "customer_id": "C020",
+    "customer_tier": "gold",
+    "region": "central",
+    "account_status": "active",
+    "account_created_date": "2023-11-18",
+    "lifetime_value": 3280,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d",
+      "feature_e"
+    ]
+  },
+  {
+    "customer_id": "C021",
+    "customer_tier": "bronze",
+    "region": "north",
+    "account_status": "active",
+    "account_created_date": "2024-02-20",
+    "lifetime_value": 540.5,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c"
+    ]
+  },
+  {
+    "customer_id": "C022",
+    "customer_tier": "silver",
+    "region": "south",
+    "account_status": "active",
+    "account_created_date": "2024-01-25",
+    "lifetime_value": 1220.75,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d"
+    ]
+  },
+  {
+    "customer_id": "C023",
+    "customer_tier": "gold",
+    "region": "east",
+    "account_status": "active",
+    "account_created_date": "2023-11-30",
+    "lifetime_value": 3520,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d",
+      "feature_e"
+    ]
+  },
+  {
+    "customer_id": "C024",
+    "customer_tier": "platinum",
+    "region": "west",
+    "account_status": "active",
+    "account_created_date": "2023-09-22",
+    "lifetime_value": 7450.25,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d",
+      "feature_e",
+      "feature_f"
+    ]
+  },
+  {
+    "customer_id": "C025",
+    "customer_tier": "bronze",
+    "region": "central",
+    "account_status": "active",
+    "account_created_date": "2024-02-15",
+    "lifetime_value": 395,
+    "feature_access": [
+      "feature_a",
+      "feature_b"
+    ]
+  },
+  {
+    "customer_id": "C026",
+    "customer_tier": "silver",
+    "region": "north",
+    "account_status": "active",
+    "account_created_date": "2024-01-10",
+    "lifetime_value": 1380.5,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d"
+    ]
+  },
+  {
+    "customer_id": "C027",
+    "customer_tier": "gold",
+    "region": "south",
+    "account_status": "active",
+    "account_created_date": "2023-12-05",
+    "lifetime_value": 3380.75,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d",
+      "feature_e"
+    ]
+  },
+  {
+    "customer_id": "C028",
+    "customer_tier": "platinum",
+    "region": "east",
+    "account_status": "active",
+    "account_created_date": "2023-08-08",
+    "lifetime_value": 8100,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d",
+      "feature_e",
+      "feature_f"
+    ]
+  },
+  {
+    "customer_id": "C029",
+    "customer_tier": "bronze",
+    "region": "west",
+    "account_status": "active",
+    "account_created_date": "2024-01-18",
+    "lifetime_value": 470.25,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c"
+    ]
+  },
+  {
+    "customer_id": "C030",
+    "customer_tier": "silver",
+    "region": "central",
+    "account_status": "active",
+    "account_created_date": "2024-01-08",
+    "lifetime_value": 1290,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d"
+    ]
+  },
+  {
+    "customer_id": "C031",
+    "customer_tier": "bronze",
+    "region": "north",
+    "account_status": "inactive",
+    "account_created_date": "2024-09-10",
+    "lifetime_value": 50,
+    "feature_access": [
+      "feature_a"
+    ]
+  },
+  {
+    "customer_id": "C032",
+    "customer_tier": "silver",
+    "region": "south",
+    "account_status": "active",
+    "account_created_date": "2025-05-01",
+    "lifetime_value": 80,
+    "feature_access": [
+      "feature_a",
+      "feature_b"
+    ]
+  },
+  {
+    "customer_id": "C033",
+    "customer_tier": "gold",
+    "region": "east",
+    "account_status": "active",
+    "account_created_date": "2023-11-10",
+    "lifetime_value": 3680.5,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d",
+      "feature_e"
+    ]
+  },
+  {
+    "customer_id": "C034",
+    "customer_tier": "platinum",
+    "region": "west",
+    "account_status": "active",
+    "account_created_date": "2023-07-15",
+    "lifetime_value": 8500,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d",
+      "feature_e",
+      "feature_f"
+    ]
+  },
+  {
+    "customer_id": "C035",
+    "customer_tier": "bronze",
+    "region": "central",
+    "account_status": "active",
+    "account_created_date": "2024-02-05",
+    "lifetime_value": 360.75,
+    "feature_access": [
+      "feature_a",
+      "feature_b"
+    ]
+  },
+  {
+    "customer_id": "C036",
+    "customer_tier": "silver",
+    "region": "north",
+    "account_status": "active",
+    "account_created_date": "2024-01-22",
+    "lifetime_value": 1420.5,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d"
+    ]
+  },
+  {
+    "customer_id": "C037",
+    "customer_tier": "gold",
+    "region": "south",
+    "account_status": "active",
+    "account_created_date": "2023-11-15",
+    "lifetime_value": 3590.25,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d",
+      "feature_e"
+    ]
+  },
+  {
+    "customer_id": "C038",
+    "customer_tier": "platinum",
+    "region": "east",
+    "account_status": "active",
+    "account_created_date": "2023-09-30",
+    "lifetime_value": 7680,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d",
+      "feature_e",
+      "feature_f"
+    ]
+  },
+  {
+    "customer_id": "C039",
+    "customer_tier": "bronze",
+    "region": "west",
+    "account_status": "active",
+    "account_created_date": "2024-02-08",
+    "lifetime_value": 510,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c"
+    ]
+  },
+  {
+    "customer_id": "C040",
+    "customer_tier": "silver",
+    "region": "central",
+    "account_status": "active",
+    "account_created_date": "2024-01-28",
+    "lifetime_value": 1160.75,
+    "feature_access": [
+      "feature_a",
+      "feature_b",
+      "feature_c",
+      "feature_d"
+    ]
+  }
+]
