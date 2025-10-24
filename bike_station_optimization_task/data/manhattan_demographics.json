@@ -1,0 +1,404 @@
+{
+  "census_tracts": [
+    {
+      "census_tract_id": "CT_001",
+      "population_density": 28520,
+      "commuter_density": 7219,
+      "density_category": "Medium Density",
+      "median_income": 131961,
+      "bike_ownership_rate": 0.41
+    },
+    {
+      "census_tract_id": "CT_002",
+      "population_density": 16218,
+      "commuter_density": 2922,
+      "density_category": "Low Density",
+      "median_income": 77954,
+      "bike_ownership_rate": 0.16
+    },
+    {
+      "census_tract_id": "CT_003",
+      "population_density": 19317,
+      "commuter_density": 2036,
+      "density_category": "Low Density",
+      "median_income": 53130,
+      "bike_ownership_rate": 0.2
+    },
+    {
+      "census_tract_id": "CT_004",
+      "population_density": 57571,
+      "commuter_density": 10482,
+      "density_category": "High Density",
+      "median_income": 130899,
+      "bike_ownership_rate": 0.34
+    },
+    {
+      "census_tract_id": "CT_005",
+      "population_density": 48272,
+      "commuter_density": 14275,
+      "density_category": "High Density",
+      "median_income": 130611,
+      "bike_ownership_rate": 0.35
+    },
+    {
+      "census_tract_id": "CT_006",
+      "population_density": 21205,
+      "commuter_density": 6387,
+      "density_category": "Medium Density",
+      "median_income": 77057,
+      "bike_ownership_rate": 0.34
+    },
+    {
+      "census_tract_id": "CT_007",
+      "population_density": 18372,
+      "commuter_density": 2286,
+      "density_category": "Low Density",
+      "median_income": 117151,
+      "bike_ownership_rate": 0.18
+    },
+    {
+      "census_tract_id": "CT_008",
+      "population_density": 21764,
+      "commuter_density": 7561,
+      "density_category": "Medium Density",
+      "median_income": 147718,
+      "bike_ownership_rate": 0.44
+    },
+    {
+      "census_tract_id": "CT_009",
+      "population_density": 15645,
+      "commuter_density": 3580,
+      "density_category": "Low Density",
+      "median_income": 52558,
+      "bike_ownership_rate": 0.29
+    },
+    {
+      "census_tract_id": "CT_010",
+      "population_density": 13089,
+      "commuter_density": 2532,
+      "density_category": "Low Density",
+      "median_income": 73862,
+      "bike_ownership_rate": 0.37
+    },
+    {
+      "census_tract_id": "CT_011",
+      "population_density": 10711,
+      "commuter_density": 4759,
+      "density_category": "Low Density",
+      "median_income": 147047,
+      "bike_ownership_rate": 0.35
+    },
+    {
+      "census_tract_id": "CT_012",
+      "population_density": 36239,
+      "commuter_density": 14050,
+      "density_category": "High Density",
+      "median_income": 133530,
+      "bike_ownership_rate": 0.36
+    },
+    {
+      "census_tract_id": "CT_013",
+      "population_density": 45769,
+      "commuter_density": 11027,
+      "density_category": "High Density",
+      "median_income": 148852,
+      "bike_ownership_rate": 0.29
+    },
+    {
+      "census_tract_id": "CT_014",
+      "population_density": 29666,
+      "commuter_density": 7214,
+      "density_category": "Medium Density",
+      "median_income": 59737,
+      "bike_ownership_rate": 0.22
+    },
+    {
+      "census_tract_id": "CT_015",
+      "population_density": 33009,
+      "commuter_density": 7800,
+      "density_category": "Medium Density",
+      "median_income": 85338,
+      "bike_ownership_rate": 0.33
+    },
+    {
+      "census_tract_id": "CT_016",
+      "population_density": 36429,
+      "commuter_density": 10277,
+      "density_category": "High Density",
+      "median_income": 60613,
+      "bike_ownership_rate": 0.15
+    },
+    {
+      "census_tract_id": "CT_017",
+      "population_density": 19503,
+      "commuter_density": 4473,
+      "density_category": "Low Density",
+      "median_income": 124776,
+      "bike_ownership_rate": 0.32
+    },
+    {
+      "census_tract_id": "CT_018",
+      "population_density": 25843,
+      "commuter_density": 7308,
+      "density_category": "Medium Density",
+      "median_income": 66089,
+      "bike_ownership_rate": 0.27
+    },
+    {
+      "census_tract_id": "CT_019",
+      "population_density": 25572,
+      "commuter_density": 5460,
+      "density_category": "Medium Density",
+      "median_income": 149845,
+      "bike_ownership_rate": 0.22
+    },
+    {
+      "census_tract_id": "CT_020",
+      "population_density": 36942,
+      "commuter_density": 11549,
+      "density_category": "High Density",
+      "median_income": 139708,
+      "bike_ownership_rate": 0.16
+    },
+    {
+      "census_tract_id": "CT_021",
+      "population_density": 50530,
+      "commuter_density": 9003,
+      "density_category": "High Density",
+      "median_income": 58701,
+      "bike_ownership_rate": 0.2
+    },
+    {
+      "census_tract_id": "CT_022",
+      "population_density": 59089,
+      "commuter_density": 14844,
+      "density_category": "High Density",
+      "median_income": 40707,
+      "bike_ownership_rate": 0.34
+    },
+    {
+      "census_tract_id": "CT_023",
+      "population_density": 30572,
+      "commuter_density": 5258,
+      "density_category": "Medium Density",
+      "median_income": 75658,
+      "bike_ownership_rate": 0.17
+    },
+    {
+      "census_tract_id": "CT_024",
+      "population_density": 24487,
+      "commuter_density": 5730,
+      "density_category": "Medium Density",
+      "median_income": 130208,
+      "bike_ownership_rate": 0.31
+    },
+    {
+      "census_tract_id": "CT_025",
+      "population_density": 41312,
+      "commuter_density": 14886,
+      "density_category": "High Density",
+      "median_income": 148878,
+      "bike_ownership_rate": 0.17
+    },
+    {
+      "census_tract_id": "CT_026",
+      "population_density": 24301,
+      "commuter_density": 5265,
+      "density_category": "Medium Density",
+      "median_income": 107139,
+      "bike_ownership_rate": 0.38
+    },
+    {
+      "census_tract_id": "CT_027",
+      "population_density": 45810,
+      "commuter_density": 12475,
+      "density_category": "High Density",
+      "median_income": 144549,
+      "bike_ownership_rate": 0.3
+    },
+    {
+      "census_tract_id": "CT_028",
+      "population_density": 28046,
+      "commuter_density": 6228,
+      "density_category": "Medium Density",
+      "median_income": 92581,
+      "bike_ownership_rate": 0.27
+    },
+    {
+      "census_tract_id": "CT_029",
+      "population_density": 49738,
+      "commuter_density": 8596,
+      "density_category": "High Density",
+      "median_income": 81601,
+      "bike_ownership_rate": 0.23
+    },
+    {
+      "census_tract_id": "CT_030",
+      "population_density": 12169,
+      "commuter_density": 2304,
+      "density_category": "Low Density",
+      "median_income": 97884,
+      "bike_ownership_rate": 0.27
+    },
+    {
+      "census_tract_id": "CT_031",
+      "population_density": 34941,
+      "commuter_density": 6816,
+      "density_category": "Medium Density",
+      "median_income": 51039,
+      "bike_ownership_rate": 0.23
+    },
+    {
+      "census_tract_id": "CT_032",
+      "population_density": 39374,
+      "commuter_density": 10282,
+      "density_category": "High Density",
+      "median_income": 137742,
+      "bike_ownership_rate": 0.31
+    },
+    {
+      "census_tract_id": "CT_033",
+      "population_density": 23983,
+      "commuter_density": 5141,
+      "density_category": "Medium Density",
+      "median_income": 131926,
+      "bike_ownership_rate": 0.22
+    },
+    {
+      "census_tract_id": "CT_034",
+      "population_density": 21196,
+      "commuter_density": 7065,
+      "density_category": "Medium Density",
+      "median_income": 75615,
+      "bike_ownership_rate": 0.41
+    },
+    {
+      "census_tract_id": "CT_035",
+      "population_density": 39573,
+      "commuter_density": 11707,
+      "density_category": "High Density",
+      "median_income": 72778,
+      "bike_ownership_rate": 0.19
+    },
+    {
+      "census_tract_id": "CT_036",
+      "population_density": 46985,
+      "commuter_density": 12321,
+      "density_category": "High Density",
+      "median_income": 54792,
+      "bike_ownership_rate": 0.25
+    },
+    {
+      "census_tract_id": "CT_037",
+      "population_density": 34964,
+      "commuter_density": 7033,
+      "density_category": "Medium Density",
+      "median_income": 59067,
+      "bike_ownership_rate": 0.42
+    },
+    {
+      "census_tract_id": "CT_038",
+      "population_density": 16647,
+      "commuter_density": 4600,
+      "density_category": "Low Density",
+      "median_income": 129562,
+      "bike_ownership_rate": 0.36
+    },
+    {
+      "census_tract_id": "CT_039",
+      "population_density": 26260,
+      "commuter_density": 7355,
+      "density_category": "Medium Density",
+      "median_income": 122884,
+      "bike_ownership_rate": 0.37
+    },
+    {
+      "census_tract_id": "CT_040",
+      "population_density": 51633,
+      "commuter_density": 11678,
+      "density_category": "High Density",
+      "median_income": 68798,
+      "bike_ownership_rate": 0.22
+    },
+    {
+      "census_tract_id": "CT_041",
+      "population_density": 39836,
+      "commuter_density": 14027,
+      "density_category": "High Density",
+      "median_income": 40668,
+      "bike_ownership_rate": 0.25
+    },
+    {
+      "census_tract_id": "CT_042",
+      "population_density": 18776,
+      "commuter_density": 4855,
+      "density_category": "Low Density",
+      "median_income": 67770,
+      "bike_ownership_rate": 0.33
+    },
+    {
+      "census_tract_id": "CT_043",
+      "population_density": 13079,
+      "commuter_density": 4226,
+      "density_category": "Low Density",
+      "median_income": 42050,
+      "bike_ownership_rate": 0.17
+    },
+    {
+      "census_tract_id": "CT_044",
+      "population_density": 16412,
+      "commuter_density": 4185,
+      "density_category": "Low Density",
+      "median_income": 105723,
+      "bike_ownership_rate": 0.17
+    },
+    {
+      "census_tract_id": "CT_045",
+      "population_density": 26599,
+      "commuter_density": 5525,
+      "density_category": "Medium Density",
+      "median_income": 76821,
+      "bike_ownership_rate": 0.43
+    },
+    {
+      "census_tract_id": "CT_046",
+      "population_density": 40298,
+      "commuter_density": 13561,
+      "density_category": "High Density",
+      "median_income": 121159,
+      "bike_ownership_rate": 0.36
+    },
+    {
+      "census_tract_id": "CT_047",
+      "population_density": 28878,
+      "commuter_density": 7431,
+      "density_category": "Medium Density",
+      "median_income": 81783,
+      "bike_ownership_rate": 0.44
+    },
+    {
+      "census_tract_id": "CT_048",
+      "population_density": 44460,
+      "commuter_density": 8133,
+      "density_category": "High Density",
+      "median_income": 44481,
+      "bike_ownership_rate": 0.39
+    },
+    {
+      "census_tract_id": "CT_049",
+      "population_density": 13192,
+      "commuter_density": 2065,
+      "density_category": "Low Density",
+      "median_income": 61733,
+      "bike_ownership_rate": 0.17
+    },
+    {
+      "census_tract_id": "CT_050",
+      "population_density": 38790,
+      "commuter_density": 14443,
+      "density_category": "High Density",
+      "median_income": 60668,
+      "bike_ownership_rate": 0.42
+    }
+  ]
+}
