@@ -1,0 +1,183 @@
+prompt: |
+  You are given a single input file at /workdir/data/events.jsonl.
+
+  ## Accepted line formats (either form may appear; lines are independent)
+  1) Object line (structured):
+     {
+       "event_id": <int>,                # if missing or invalid, auto-assigned in arrival order
+       "type": "event" | "merge" | "snapshot" | "reorder",
+       // if type == "event":
+       "entries": [
+         {"stream": "<str>", "seq": <int>, "op": "<str>", "value": <any>, "clock": <int, optional>},
+         ...
+       ],
+       "metadata": {"reliability": <float, optional>=1.0, "source": "<str, optional>"}
+       
+       // if type == "merge":
+       "primary_stream": <str>,
+       "secondary_streams": [<str>, ...],  # merge these streams into primary
+       "strategy": "latest" | "unanimous" | "majority"  # conflict resolution
+       
+       // if type == "snapshot":
+       "snapshot_id": <str>,
+       "action": "save" | "restore"  # save current state or restore to saved snapshot
+       
+       // if type == "reorder":
+       "stream": <str>,
+       "new_offset": <int>  # shift all sequence numbers by this offset (can be negative)
+     }
+
+  2) Array line (compact):
+     [{"op": "<str>", "value": <any>}, ...]
+     - Interpreted as an "event" for a single synthetic stream "default".
+     - Each entry gets auto-assigned sequential seq numbers starting from 1.
+     - An event_id is auto-assigned for this line.
+
+  3) CSV line (legacy format):
+     stream1:seq1:op1:val1,stream2:seq2:op2:val2,...
+     - Colon-separated stream:seq:op:value tuples, comma-delimited
+     - Clock is not supported in CSV format (defaults to None)
+     - Example: "A:1:SET:100,B:2:DELETE:foo,C:3:UPDATE:42"
+
+  ## Normalization & tolerance rules (applied to each line before processing)
+  - Missing/invalid "event_id" → auto-assign an increasing integer in arrival order (1, 2, 3, ...).
+  - For "event" lines:
+      * "entries" not present or not a list → treated as empty.
+      * Each entry must be an object with "stream" (string), "seq" (int), and "op" (string); otherwise it is ignored.
+      * "value" can be any JSON type; defaults to null if missing.
+      * "clock" (logical clock / lamport timestamp) is optional; if present, used for ordering and conflict detection.
+      * "metadata.reliability" affects conflict resolution (0.0-1.0, higher = more trustworthy).
+  - For "merge" lines:
+      * All listed secondary streams are merged into primary stream
+      * Conflicts resolved according to strategy
+      * After merge, secondary streams are marked as aliases
+  - For "reorder" lines:
+      * All sequence numbers in the specified stream are shifted by new_offset
+      * This affects both past and future entries
+  - Lines that cannot be parsed as JSON/CSV, or that do not match any line format, are ignored.
+  - Lines starting with '#' and blank lines are ignored.
+
+  ## Fixed parameters for this task
+  - consistency_modes = ["eventual", "causal", "linearizable"]  # analyzed separately
+  - causality_window_size = 5                                   # events to check for causal violations
+  - conflict_threshold = 0.3                                    # reliability difference to auto-resolve conflicts
+  - min_reliability = 0.1                                       # entries with reliability < this are flagged
+
+  ## Advanced Semantics
+
+  ### 1. Stream Merging
+  When type="merge" is encountered:
+    - Combine all entries from secondary_streams into primary_stream
+    - Apply conflict resolution strategy:
+      * "latest": Use entry with highest clock value (or latest arrival if no clock)
+      * "unanimous": Only keep entries where all streams agree on value
+      * "majority": Use value that appears in >50% of streams
+    - Mark secondary streams as aliases of primary
+    - All subsequent entries to secondary streams are redirected to primary
+
+  ### 2. State Snapshotting
+  When type="snapshot" with action="save":
+    - Save the complete current state (all stream data, merged aliases, sequence offsets) with snapshot_id
+    - Multiple snapshots can exist simultaneously
+  
+  When type="snapshot" with action="restore":
+    - Restore to the saved snapshot_id state
+    - All events/merges/reorders after that snapshot are discarded
+    - If snapshot_id doesn't exist, this is a no-op
+    - After restore, continue processing from the next line
+
+  ### 3. Sequence Reordering
+  For type="reorder":
+    - Add new_offset to all sequence numbers in the specified stream
+    - This applies retroactively to already-processed entries
+    - Useful for correcting out-of-order arrivals or merging distributed logs
+    - May cause sequence number collisions (handled by keeping earliest arrival)
+
+  ### 4. Logical Clock Ordering (Vector Clocks)
+  If any entry has a "clock" field (integer, lamport timestamp):
+    - Detect causal ordering violations within causality_window
+    - Flag entries that arrive with clock < max_clock_seen_in_window - window_size
+    - Calculate happens-before relationships between concurrent entries
+    - Use clock for tie-breaking when resolving conflicts
+
+  ### 5. Reliability-Based Weighting
+  If metadata.reliability is present (0.0-1.0):
+    - Weight entries by reliability during conflict resolution
+    - If reliability difference > conflict_threshold, auto-resolve to higher reliability source
+    - Flag low-reliability entries (< min_reliability) in output
+
+  ### 6. Consistency Analysis
+  For each stream, compute three consistency modes:
+    - EVENTUAL: Count total entries, unique operations
+    - CAUSAL: Detect violations where op depends on missing prior op
+    - LINEARIZABLE: Check if global ordering exists that respects all local orders
+
+  ### 7. Conflict Detection
+  For overlapping sequence numbers in same stream:
+    - If operations differ → conflict requiring resolution
+    - If values differ but ops match → version conflict
+    - Track conflict count and resolution method used
+
+  ## Aggregations (per stream, per consistency mode)
+  For each stream s and consistency mode m:
+    - total_entries: count of entries in stream
+    - unique_ops: count of distinct operation types
+    - seq_gaps: count of gaps in sequence number continuity
+    - conflicts: count of sequence number collisions
+    - causal_violations: count of detected ordering violations (causal/linearizable only)
+    - avg_clock_delta: average difference between successive clocks (if clocks present)
+    
+  ## Output
+  Write /workdir/sol.csv after processing all events. For each event i (1..T), append rows in this order:
+    1) GLOBAL row (stream="GLOBAL", consistency="EVENTUAL")
+    2) Per-STREAM rows (stream="<stream>", consistency="EVENTUAL"), sorted lexicographically
+    3) GLOBAL row (stream="GLOBAL", consistency="CAUSAL")
+    4) Per-STREAM rows (stream="<stream>", consistency="CAUSAL"), sorted lexicographically
+    5) GLOBAL row (stream="GLOBAL", consistency="LINEARIZABLE")
+    6) Per-STREAM rows (stream="<stream>", consistency="LINEARIZABLE"), sorted lexicographically
+    
+  Skip any stream with 0 entries after processing.
+
+  ## CSV schema (strict column order)
+  event_index,window_start,window_end,stream,consistency,total_entries,unique_ops,seq_gaps,conflicts,causal_violations,avg_clock_delta,flags
+
+  Where:
+    - event_index: 1-indexed arrival order
+    - window_start, window_end: causality window boundaries (event indices)
+    - stream: stream name or "GLOBAL"
+    - consistency: "EVENTUAL" | "CAUSAL" | "LINEARIZABLE"
+    - total_entries: count of entries in stream within window
+    - unique_ops: count of distinct operation types
+    - seq_gaps: count of discontinuities in sequence numbers
+    - conflicts: count of sequence collisions requiring resolution
+    - causal_violations: count of ordering violations (0 for EVENTUAL)
+    - avg_clock_delta: mean clock difference between entries (empty string if no clocks)
+    - flags: comma-separated list of issues ("LOW_RELIABILITY", "MERGE_CONFLICT", etc.)
+
+  ## Additional Complexity Notes
+  - Handle nested snapshots (snapshot within snapshot state)
+  - Stream merges persist through snapshot restores
+  - Sequence reordering affects historical data retroactively
+  - Clock-based ordering must handle missing clocks gracefully
+  - Empty streams should be omitted from output
+  - Reliability ties are broken by arrival order
+  - CSV legacy format must be normalized to standard object format
+  - Malformed merge strategies default to "latest"
+
+  ## Notes
+  - Sequence numbers may be negative after reordering. Empty EVENT batches are allowed.
+  - No network access. Deterministic output only.
+  - The file must be written to /workdir/sol.csv with the exact header and ordering above.
+  - All floating-point calculations must be rounded to 2 decimal places
+
+metadata:
+  difficulty: hard
+  category: algorithms
+  tags: [distributed-systems, event-sourcing, consistency, conflict-resolution, causal-ordering, csv]
+  references: []
+
+time_limit: 3600
+memory_limit: 1024
+max_agent_timeout_sec: 2400
+expert_time_estimate_min: 180
+junior_time_estimate_min: 360

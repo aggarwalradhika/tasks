@@ -1,0 +1,27 @@
+{"event_id": 1, "type": "event", "entries": [{"stream": "A", "seq": 1, "op": "SET", "value": 100, "clock": 1000}, {"stream": "B", "seq": 1, "op": "SET", "value": 200, "clock": 1000}, {"stream": "A", "seq": 2, "op": "UPDATE", "value": 150, "clock": 1005}], "metadata": {"reliability": 1.0, "source": "node1"}}
+{"event_id": 2, "type": "event", "entries": [{"stream": "C", "seq": 1, "op": "DELETE", "value": "foo", "clock": 1002}, {"stream": "B", "seq": 2, "op": "UPDATE", "value": 250}, {"stream": "A", "seq": 3, "op": "SET", "value": 175, "clock": 1010}]}
+[{"op": "INSERT", "value": 42}, {"op": "UPDATE", "value": 43}]
+# This is a comment line that should be ignored
+{"event_id": 4, "type": "event", "entries": [{"stream": "C", "seq": 2, "op": "SET", "value": "bar", "clock": 1015}, {"stream": "D", "seq": 1, "op": "CREATE", "value": null}]}
+A:4:DELETE:999,B:3:SET:300,C:3:UPDATE:baz
+{"event_id": 6, "type": "snapshot", "snapshot_id": "sp1", "action": "save"}
+{"event_id": 7, "type": "event", "entries": [{"stream": "A", "seq": 5, "op": "MERGE", "value": 200, "clock": 1020}], "metadata": {"reliability": 0.95}}
+{"event_id": 8, "type": "merge", "primary_stream": "A", "secondary_streams": ["B"], "strategy": "latest"}
+{"event_id": 9, "type": "event", "entries": [{"stream": "B", "seq": 4, "op": "SET", "value": 400}]}
+{"event_id": 10, "type": "reorder", "stream": "C", "new_offset": 10}
+{"event_id": 11, "type": "event", "entries": [{"stream": "A", "seq": 6, "op": "SET", "value": 500, "clock": 1025}, {"stream": "A", "seq": 3, "op": "UPDATE", "value": 180, "clock": 1012}]}
+{"event_id": 12, "type": "event", "entries": [{"stream": "C", "seq": 15, "op": "SET", "value": "updated"}, {"stream": "D", "seq": 2, "op": "DELETE", "value": null}]}
+{"event_id": 13, "type": "snapshot", "snapshot_id": "sp2", "action": "save"}
+{"event_id": 14, "type": "event", "entries": [{"stream": "E", "seq": 1, "op": "CREATE", "value": {"nested": "data"}, "clock": 1030}], "metadata": {"reliability": 0.2}}
+{"event_id": 15, "type": "snapshot", "snapshot_id": "sp1", "action": "restore"}
+{"event_id": 16, "type": "event", "entries": [{"stream": "D", "seq": 2, "op": "UPDATE", "value": 123}]}
+{"event_id": 17, "type": "reorder", "stream": "A", "new_offset": -1}
+{"event_id": 18, "type": "event", "entries": [{"stream": "A", "seq": 7, "op": "SET", "value": 600, "clock": 1035}, {"stream": "B", "seq": 5, "op": "UPDATE", "value": 450}]}
+{"event_id": 19, "type": "merge", "primary_stream": "C", "secondary_streams": ["D"], "strategy": "unanimous"}
+{"event_id": 20, "type": "event", "entries": [{"stream": "C", "seq": 20, "op": "FINALIZE", "value": "done", "clock": 1040}]}
+{"event_id": 21, "type": "event", "entries": [{"stream": "D", "seq": 10, "op": "SET", "value": 999}]}
+F:1:START:alpha
+{"event_id": 23, "type": "event", "entries": []}
+{"event_id": 24, "type": "event", "entries": [{"stream": "A", "seq": 8, "op": "SET", "value": 700, "clock": 1045}], "metadata": {"reliability": 0.05}}
+{"event_id": 25, "type": "merge", "primary_stream": "A", "secondary_streams": ["C", "F"], "strategy": "majority"}
+{"event_id": 26, "type": "event", "entries": [{"stream": "F", "seq": 2, "op": "END", "value": "omega"}]}
