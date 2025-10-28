@@ -1,17 +1,17 @@
 prompt: |
   You're given a large multi-modal logistics network (`/workdir/data/graph.json`) with stochastic travel times and costs whose parameters depend on fuel, congestion, and weather conditions. A tight deadline (in hours) and a quadratic delay penalty are provided in `/workdir/data/params.json`.
 
-  **Objective:** Compute the path from origin to destination that minimizes the expected total cost, where:
+  Objective: Compute the path from origin to destination that minimizes the expected total cost, where:
     
     total_cost = expected transport cost + expected quadratic deadline penalty
 
-  **Input Files:**
+  Input Files:
   
-  1. **`/workdir/data/graph.json`**: Network structure with nodes and edges
+  1. `/workdir/data/graph.json`: Network structure with nodes and edges
      - Each edge has: mode, distance_km, base_time_mean_h, base_time_cv, fuel_rate_l_per_km, 
        handling_fee, congestion_sensitivity, weather_sensitivity
   
-  2. **`/workdir/data/params.json`**: Problem parameters
+  2. `/workdir/data/params.json`: Problem parameters
      - `origin`: Starting node (e.g., "A")
      - `destination`: Target node (e.g., "Z")
      - `deadline_h`: Time deadline in hours
@@ -22,9 +22,9 @@ prompt: |
      - `mc_samples`: Number of Monte Carlo samples for simulation (typically 1500)
      - `rng_seed`: Random seed for reproducibility
 
-  **Key Details:**
+  Key Details:
   
-  • **Travel Time Distribution:** Each edge's travel time follows a LogNormal distribution with mean:
+  • Travel Time Distribution: Each edge's travel time follows a LogNormal distribution with mean:
       
       adjusted_mean = base_time_mean_h 
                       × (1 + congestion_sensitivity × congestion_index)
@@ -32,50 +32,85 @@ prompt: |
       
     and coefficient of variation (CoV) = base_time_cv
     
-  • **Transport Cost:** For each edge:
+  • Transport Cost: For each edge:
       
       cost = handling_fee + (fuel_rate_l_per_km × distance_km × fuel_price_usd_per_litre)
       
-  • **Path Time:** Sum of independent edge times
+  • Path Time: Sum of independent edge times
   
-  • **Delay Penalty:** 
+  • Delay Penalty: 
       
       penalty = penalty_lambda × E[(max(0, path_time - deadline_h))²]
       
-  • **Mode Flexibility:** You can freely switch between transportation modes (road/rail/air/sea) at any node
+  • Mode Flexibility: You can freely switch between transportation modes (road/rail/air/sea) at any node
 
-  **Challenge Factors:**
+  Challenge Factors:
   - The graph has 30 nodes and 100+ edges, requiring efficient path exploration
-  - **Very tight deadline** (12 hours) relative to feasible path times
-  - **Extremely high** congestion (0.9) and weather disruption (0.25) probabilities
-  - **Very high** penalty coefficient (λ=8.0) makes deadline violations extremely costly
+  - Very tight deadline (12 hours) relative to feasible path times
+  - Extremely high congestion (0.9) and weather disruption (0.25) probabilities
+  - Very high penalty coefficient (λ=8.0) makes deadline violations extremely costly
   - Higher fuel costs increase pressure on route selection
   - More Monte Carlo samples (1500) required for accuracy
   - Stochastic travel times with high variance require sophisticated optimization
   - Multiple competing objectives: minimize cost, minimize time, minimize risk
 
-  **Output Format:**
+  Output Format:
   Write your solution to `/workdir/sol.csv` with the following headers:
   - `path_nodes`: semicolon-separated node IDs (e.g., "A;C;G;Z")
   - `path_modes`: semicolon-separated transportation modes (e.g., "road;rail;rail")
   - `expected_cost`: float representing the expected total cost
   - `p_delay`: float representing the probability of missing the deadline
 
-  **Constraints:**
+  Validation Criteria:
+  Your solution will be validated against the following criteria:
+  
+  1. Path Validity: 
+     - Path must start at the specified origin node
+     - Path must end at the specified destination node
+     - All edges in the path must exist in the graph with the specified modes
+     - Number of modes must equal number of edges (nodes - 1)
+  
+  2. Cost Accuracy: 
+     - Your reported expected_cost will be compared against a recomputed value
+     - Must be within 5% relative error of the recomputed expected cost
+     - The grader uses the same Monte Carlo methodology with the same rng_seed
+  
+  3. Probability Accuracy: 
+     - Your reported p_delay will be compared against a recomputed value
+     - Must be within 12% relative error of the recomputed delay probability
+     - The 12% tolerance accounts for Monte Carlo variance with 1500 samples
+  
+  4. Reproducibility: 
+     - Must use the exact rng_seed from params.json before any random sampling
+     - Must use exactly mc_samples iterations for Monte Carlo simulation
+     - The grader will validate results using identical parameters and random seed
+  
+  5. Required Parameters:
+     - All parameters in params.json (origin, destination, deadline_h, penalty_lambda,
+       fuel_price_usd_per_litre, congestion_index, weather_disruption_prob, 
+       mc_samples, rng_seed) must be present and used correctly
+
+  Relative Error Calculation:
+  - For expected_cost: |your_cost - true_cost| / max(1.0, |true_cost|)
+  - For p_delay: |your_p - true_p| / max(0.01, |true_p|) when true_p > 0
+
+  Constraints:
   • No internet access
   • Python standard library only (no external packages)
-  • **CRITICAL**: Must use `rng_seed` from params.json for reproducibility
-  • **CRITICAL**: Must use `mc_samples` from params.json for Monte Carlo simulation
+  • CRITICAL: Must use `rng_seed` from params.json for reproducibility
+  • CRITICAL: Must use `mc_samples` from params.json for Monte Carlo simulation
   • Path must be valid (all edges must exist in the graph)
   • Path must start at origin and end at destination
 
-  **Hints:**
+  Hints:
   - Consider using K-shortest paths algorithms to explore candidate routes
   - Use Monte Carlo simulation to estimate the expected penalty and delay probability
   - Balance transport cost against deadline penalty when selecting paths
   - The LogNormal distribution can be parameterized from mean and CoV
+  - With high penalty (λ=8.0) and tight deadline (12h), prioritize fast paths
+  - Test multiple candidate paths since the optimal path depends on stochastic behavior
   
-  **Implementation Notes:**
+  Implementation Notes:
   - Read all parameters from params.json (origin, destination, deadline_h, penalty_lambda, 
     fuel_price_usd_per_litre, congestion_index, weather_disruption_prob, mc_samples, rng_seed)
   - Use `random.seed(rng_seed)` before any random sampling
