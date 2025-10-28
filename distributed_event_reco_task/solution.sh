@@ -6,8 +6,6 @@ python3 - << 'PY'
 """
 Advanced Reference Solution for Distributed Event Log Reconciliation.
 
-This solution implements a sophisticated distributed event processing system with:
-
 Core Features:
 - Multiple consistency mode analysis (eventual, causal, linearizable)
 - Stream merging with conflict resolution strategies (latest, unanimous, majority)
@@ -34,7 +32,7 @@ Algorithm Overview:
    - Handle command types (event/merge/snapshot/reorder)
    - Resolve stream aliases from merges
    - Apply sequence offsets from reorders
-   - Detect and resolve conflicts
+   - Detect and resolve conflicts with reliability weighting
    - Track causal ordering violations
 4. For each event, compute metrics across all consistency modes
 5. Write results to /workdir/sol.csv
@@ -46,6 +44,7 @@ Key Implementation Details:
 - Floating-point arithmetic for clock deltas (rounded to 2 decimals)
 - Low-reliability entries (< 0.1) are flagged
 - Deterministic processing (no randomness, stable sorting)
+- Reliability-weighted conflict resolution at both entry and merge levels
 """
 import json, csv, os, math
 from pathlib import Path
@@ -260,16 +259,25 @@ def apply_merge(state: EventState, primary: str, secondaries: List[str], strateg
     """
     Merge secondary streams into primary with conflict resolution.
     
+    FIXED: Complete N-way merge implementation:
+    1. Collects all entries from all secondary streams
+    2. Applies reliability-weighted conflict resolution FIRST
+    3. Falls back to merge strategy if no clear reliability winner
+    4. Unanimous strategy checks ALL streams (N-way)
+    5. Majority strategy implements proper vote counting
+    
     Merge process:
     1. Resolve all stream names to their primaries (handles chained merges)
     2. Mark each secondary as alias of primary
-    3. Transfer all entries from secondaries to primary
-    4. Apply conflict resolution strategy for sequence number collisions
+    3. Collect all entries from all secondaries
+    4. For each sequence position with conflicts:
+       a. Check reliability differences (>CONFLICT_THRESHOLD = auto-resolve)
+       b. Apply merge strategy if no clear winner
     
     Conflict resolution strategies:
     - "latest": Use entry with highest logical clock (or keep existing if no clocks)
-    - "unanimous": Only keep entry if all conflicting streams have same value
-    - "majority": Use value that appears in >50% of streams (for multi-way merges)
+    - "unanimous": Only keep entry if ALL streams have same value (N-way check)
+    - "majority": Use value that appears in >50% of streams (proper vote counting)
     
     Side effects:
     - Updates stream_aliases mapping
@@ -279,43 +287,113 @@ def apply_merge(state: EventState, primary: str, secondaries: List[str], strateg
     """
     primary = resolve_stream(state, primary)
     
+    # Collect all entries from all secondary streams with their metadata
+    all_secondary_entries = {}  # seq -> list of (entry, stream_name)
+    
     for secondary in secondaries:
         secondary = resolve_stream(state, secondary)
         if secondary == primary:
             continue
             
+        # Mark secondary as alias of primary
         state.stream_aliases[secondary] = primary
         
+        # Collect entries from this secondary
         sec_entries = state.streams.get(secondary, {})
         for seq, entry in sec_entries.items():
             adjusted_seq = seq + state.seq_offsets[secondary]
             target_seq = adjusted_seq + state.seq_offsets[primary]
             
-            if target_seq in state.streams[primary]:
-                existing = state.streams[primary][target_seq]
-                
-                if strategy == "latest":
-                    if "clock" in entry and "clock" in existing:
-                        if entry["clock"] > existing["clock"]:
-                            state.streams[primary][target_seq] = entry
-                            state.flags_by_stream[primary].add("MERGE_CONFLICT")
-                    elif "clock" in entry and "clock" not in existing:
-                        state.streams[primary][target_seq] = entry
-                        state.flags_by_stream[primary].add("MERGE_CONFLICT")
-                        
-                elif strategy == "unanimous":
-                    if existing.get("value") == entry.get("value"):
-                        state.streams[primary][target_seq] = existing
-                    else:
-                        del state.streams[primary][target_seq]
-                        state.flags_by_stream[primary].add("MERGE_CONFLICT")
-                        
-                elif strategy == "majority":
+            if target_seq not in all_secondary_entries:
+                all_secondary_entries[target_seq] = []
+            all_secondary_entries[target_seq].append((entry, secondary))
+    
+    # Now process each sequence position
+    for target_seq, candidates in all_secondary_entries.items():
+        if target_seq in state.streams[primary]:
+            # Conflict with existing entry in primary
+            existing = state.streams[primary][target_seq]
+            all_entries = [(existing, primary)] + candidates
+            
+            # FIXED: Check reliability-weighted resolution FIRST (applies to all strategies)
+            # If reliability difference > CONFLICT_THRESHOLD, auto-resolve to higher reliability
+            reliabilities = []
+            for entry, src_stream in all_entries:
+                # Get reliability from entry metadata
+                rel = entry.get("_reliability", 1.0)  # Default to 1.0
+                reliabilities.append((rel, entry, src_stream))
+            
+            reliabilities.sort(key=lambda x: x[0], reverse=True)
+            max_rel = reliabilities[0][0]
+            
+            # Check if any entry has significantly higher reliability
+            auto_resolved = False
+            for rel, entry, src_stream in reliabilities[1:]:
+                if max_rel - rel > CONFLICT_THRESHOLD:
+                    # Auto-resolve to highest reliability entry
+                    state.streams[primary][target_seq] = reliabilities[0][1]
                     state.flags_by_stream[primary].add("MERGE_CONFLICT")
-                    
+                    state.conflict_counts[primary] += 1
+                    auto_resolved = True
+                    break
+            
+            if auto_resolved:
+                continue
+            
+            # Apply merge strategy if no auto-resolution
+            if strategy == "latest":
+                # Use entry with highest clock, or keep existing if no clocks
+                entries_with_clocks = [(e, s) for e, s in all_entries if "clock" in e]
+                if entries_with_clocks:
+                    entries_with_clocks.sort(key=lambda x: x[0]["clock"], reverse=True)
+                    winner = entries_with_clocks[0][0]
+                    if winner != existing:
+                        state.streams[primary][target_seq] = winner
+                        state.flags_by_stream[primary].add("MERGE_CONFLICT")
+                # else keep existing
                 state.conflict_counts[primary] += 1
-            else:
-                state.streams[primary][target_seq] = entry
+                        
+            elif strategy == "unanimous":
+                # FIXED: Check if ALL streams agree on value (N-way, not just 2-way)
+                values = [e.get("value") for e, s in all_entries]
+                # Convert to strings for comparison (handles different types)
+                if len(set(str(v) for v in values)) == 1:
+                    # All agree - keep existing (which has the agreed value)
+                    pass
+                else:
+                    # Not unanimous - remove entry
+                    del state.streams[primary][target_seq]
+                    state.flags_by_stream[primary].add("MERGE_CONFLICT")
+                state.conflict_counts[primary] += 1
+                        
+            elif strategy == "majority":
+                # FIXED: Implement proper majority vote counting across N streams
+                value_votes = Counter()
+                for entry, src_stream in all_entries:
+                    value_votes[str(entry.get("value"))] += 1
+                
+                # Find majority (>50% of streams)
+                total_streams = len(all_entries)
+                majority_threshold = total_streams / 2.0
+                
+                most_common = value_votes.most_common(1)
+                if most_common and most_common[0][1] > majority_threshold:
+                    # Found majority - use entry with this value
+                    majority_value = most_common[0][0]
+                    for entry, src_stream in all_entries:
+                        if str(entry.get("value")) == majority_value:
+                            state.streams[primary][target_seq] = entry
+                            break
+                else:
+                    # No majority - keep existing (arbitrary but deterministic)
+                    pass
+                    
+                state.flags_by_stream[primary].add("MERGE_CONFLICT")
+                state.conflict_counts[primary] += 1
+        else:
+            # No conflict with primary - just add first secondary entry
+            # (If multiple secondaries have same seq, use first one - deterministic)
+            state.streams[primary][target_seq] = candidates[0][0]
 
 def apply_reorder(state: EventState, stream: str, offset: int):
     """
@@ -431,7 +509,7 @@ def process_events(objs: List[dict]) -> List[List[str]]:
       2. Per-stream rows (sorted alphabetically)
     
     Special handling:
-    - Snapshot restore: Skip forward without normal iteration
+    - Snapshot restore: Skip forward without normal iteration (no row output)
     - Stream aliases: All operations go to primary stream
     - Empty streams: Omitted from output
     - Manual loop control (while i < len) for snapshot jumps
@@ -461,12 +539,32 @@ def process_events(objs: List[dict]) -> List[List[str]]:
                 if "clock" in entry:
                     state.max_clocks[stream] = max(state.max_clocks[stream], entry["clock"])
                 
+                # FIXED: Check for conflicts with reliability-based resolution
                 if seq in state.streams[stream]:
+                    existing = state.streams[stream][seq]
+                    existing_reliability = existing.get("_reliability", 1.0)
+                    
+                    # Check if reliability difference exceeds threshold
+                    if reliability - existing_reliability > CONFLICT_THRESHOLD:
+                        # New entry has significantly higher reliability - replace
+                        entry_copy = entry.copy()
+                        entry_copy["_reliability"] = reliability
+                        state.streams[stream][seq] = entry_copy
+                        state.flags_by_stream[stream].add("SEQ_CONFLICT")
+                    elif existing_reliability - reliability > CONFLICT_THRESHOLD:
+                        # Existing has significantly higher reliability - keep it
+                        state.flags_by_stream[stream].add("SEQ_CONFLICT")
+                    else:
+                        # No clear winner - keep existing (first-arrival wins)
+                        state.flags_by_stream[stream].add("SEQ_CONFLICT")
+                    
                     state.conflict_counts[stream] += 1
-                    state.flags_by_stream[stream].add("SEQ_CONFLICT")
                     continue
                 
-                state.streams[stream][seq] = entry
+                # No conflict - add entry with reliability metadata
+                entry_copy = entry.copy()
+                entry_copy["_reliability"] = reliability
+                state.streams[stream][seq] = entry_copy
                 
         elif t == "merge":
             primary = obj.get("primary_stream")
@@ -481,6 +579,9 @@ def process_events(objs: List[dict]) -> List[List[str]]:
             if action == "save" and snap_id:
                 snapshots[snap_id] = state.clone()
             elif action == "restore" and snap_id and snap_id in snapshots:
+                # CLARIFIED: Restore state and continue from next line
+                # Snapshot restore does NOT generate output rows
+                # It simply resets state and processing continues
                 state = snapshots[snap_id].clone()
                 i += 1
                 continue
