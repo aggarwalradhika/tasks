@@ -159,9 +159,6 @@ def calculate_fag(customer, usage, tier):
     """Calculate Feature Adoption Gap with tier expectations."""
     features_available = len(customer.get("feature_access", []))
     
-    if features_available == 0:
-        return 0.0
-    
     features_used = set()
     for entry in usage:
         entry_date = parse_date(entry["date"])
@@ -169,7 +166,10 @@ def calculate_fag(customer, usage, tier):
             for feature in entry.get("feature_usage", []):
                 features_used.add(feature)
     
-    adoption_rate = len(features_used) / features_available
+    if features_available == 0:
+        adoption_rate = 1.0
+    else:
+        adoption_rate = len(features_used) / features_available
     
     expected_for_tier = TIER_EXPECTED_FEATURES.get(tier, 2)
     tier_gap = max(0, expected_for_tier - len(features_used))
