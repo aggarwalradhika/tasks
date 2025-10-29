@@ -116,51 +116,67 @@ prompt: |
 
   ## Your Output
 
-  Save results to `/workdir/sol.csv` with exactly 5 rows (plus header), one per new station.
+  Save results to `/workdir/solution.json` as a single JSON file with the following structure:
 
-  Required columns:
-  ```
-  station_id,location_name,latitude,longitude,neighborhood,census_tract_id,projected_daily_ridership,demographic_multiplier,poi_proximity_multiplier,network_effect_multiplier,weather_adjustment,nearby_existing_count,is_high_density,near_transit,is_isolated
+  ```json
+  {
+    "selected_stations": [
+      {
+        "station_id": "CAND_XXX",
+        "location_name": "string",
+        "latitude": 40.1234,
+        "longitude": -74.1234,
+        "neighborhood": "string",
+        "census_tract_id": "CT_XXX",
+        "projected_daily_ridership": 123.4,
+        "demographic_multiplier": 1.234,
+        "poi_proximity_multiplier": 1.234,
+        "network_effect_multiplier": 1.234,
+        "weather_adjustment": 1.234,
+        "nearby_existing_count": 3,
+        "is_high_density": true,
+        "near_transit": false,
+        "is_isolated": false
+      }
+      // ... 4 more stations (5 total)
+    ],
+    "network_summary": {
+      "total_projected_ridership": 1234.5,
+      "spacing_penalty": 123.4,
+      "imbalance_penalty": 12.3,
+      "isolation_penalty": 200.0,
+      "network_score": 2898.8,
+      "ridership_coefficient_of_variation": 0.123,
+      "constraints_satisfied": {
+        "coverage_constraint": true,
+        "spacing_constraint": true,
+        "density_constraint": true,
+        "transit_integration": true,
+        "network_balance": true,
+        "geographic_diversity": true
+      },
+      "min_distance_between_new_stations": 0.234,
+      "min_distance_to_existing": 0.345,
+      "neighborhoods_represented": ["East Village", "SoHo", "Chelsea"]
+    }
+  }
   ```
 
-  Column specifications:
+  Field specifications for `selected_stations`:
   - `station_id`: The candidate location ID from candidate_locations.json
   - `location_name`: The name from candidate_locations.json
   - `latitude`, `longitude`: From candidate_locations.json (4 decimal places)
   - `neighborhood`: From candidate_locations.json
   - `census_tract_id`: From candidate_locations.json
-  - `projected_daily_ridership`: Calculated value (1 decimal)
-  - `demographic_multiplier`: Calculated value (3 decimals)
-  - `poi_proximity_multiplier`: Calculated value (3 decimals)
-  - `network_effect_multiplier`: Calculated value (3 decimals)
-  - `weather_adjustment`: Calculated value (3 decimals)
+  - `projected_daily_ridership`: Calculated value (1 decimal place)
+  - `demographic_multiplier`: Calculated value (3 decimal places)
+  - `poi_proximity_multiplier`: Calculated value (3 decimal places)
+  - `network_effect_multiplier`: Calculated value (3 decimal places)
+  - `weather_adjustment`: Calculated value (3 decimal places)
   - `nearby_existing_count`: Integer count of existing stations within 0.5 miles (but > 0.25)
-  - `is_high_density`: Boolean (True/False) if census tract density_category is "High Density"
-  - `near_transit`: Boolean (True/False) if within 0.1 miles of any subway_station POI
-  - `is_isolated`: Boolean (True/False) if < 2 existing stations within 0.4 miles
-
-  Additionally, create `/workdir/network_summary.json` with:
-  ```json
-  {
-    "total_projected_ridership": <float>,
-    "spacing_penalty": <float>,
-    "imbalance_penalty": <float>,
-    "isolation_penalty": <float>,
-    "network_score": <float>,
-    "ridership_coefficient_of_variation": <float>,
-    "constraints_satisfied": {
-      "coverage_constraint": <bool>,
-      "spacing_constraint": <bool>,
-      "density_constraint": <bool>,
-      "transit_integration": <bool>,
-      "network_balance": <bool>,
-      "geographic_diversity": <bool>
-    },
-    "min_distance_between_new_stations": <float>,
-    "min_distance_to_existing": <float>,
-    "neighborhoods_represented": [<list of strings>]
-  }
-  ```
+  - `is_high_density`: Boolean - true if census tract density_category is "High Density"
+  - `near_transit`: Boolean - true if within 0.1 miles of any subway_station POI
+  - `is_isolated`: Boolean - true if < 2 existing stations within 0.4 miles
 
   ## Important Notes
 
@@ -168,13 +184,13 @@ prompt: |
   - All constraints must be satisfied (constraints_satisfied must all be true)
   - Round numeric values appropriately (ridership: 1 decimal, multipliers: 3 decimals, coordinates: 4 decimals)
   - Use haversine distance for all calculations (Earth radius = 3959 miles)
-  - Boolean fields should be exactly "True" or "False" (capital T/F)
+  - The solution file must be valid JSON
 
   ## Success Criteria
 
   Your solution will be graded as PASS (1.0) if:
-  1. Both sol.csv and network_summary.json exist and are valid
-  2. sol.csv has exactly 5 rows with all required columns
+  1. /workdir/solution.json exists and is valid JSON
+  2. The file has exactly 5 stations in the selected_stations array
   3. All station_ids exist in candidate_locations.json
   4. All 6 constraints are satisfied
   5. All multipliers and projected ridership values are calculated correctly (±0.01 tolerance)

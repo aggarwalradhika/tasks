@@ -2,13 +2,12 @@
 set -e
 
 # Solution for Bike Station Optimization Task
+# Outputs a single solution.json file
 python3 << 'EOF'
 import json
 import math
-import csv
 from pathlib import Path
 from typing import Dict, List, Tuple
-from itertools import combinations
 
 
 def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -173,7 +172,7 @@ def calculate_network_score(selection: List[Dict], existing: List[Dict],
                            weather: Dict) -> Tuple[float, Dict]:
     """Calculate network score and return details"""
     ridership_values = []
-    details = []
+    station_details = []
     
     for candidate in selection:
         demo_mult = calculate_demographic_multiplier(candidate, demographics)
@@ -185,14 +184,19 @@ def calculate_network_score(selection: List[Dict], existing: List[Dict],
         ridership = base * demo_mult * poi_mult * network_mult * weather_adj
         ridership_values.append(ridership)
         
-        details.append({
-            'candidate': candidate,
-            'ridership': ridership,
-            'demo_mult': demo_mult,
-            'poi_mult': poi_mult,
-            'network_mult': network_mult,
-            'weather_adj': weather_adj,
-            'nearby_count': nearby_count,
+        station_details.append({
+            'station_id': candidate['station_id'],
+            'location_name': candidate['location_name'],
+            'latitude': round(candidate['latitude'], 4),
+            'longitude': round(candidate['longitude'], 4),
+            'neighborhood': candidate['neighborhood'],
+            'census_tract_id': candidate['census_tract_id'],
+            'projected_daily_ridership': round(ridership, 1),
+            'demographic_multiplier': round(demo_mult, 3),
+            'poi_proximity_multiplier': round(poi_mult, 3),
+            'network_effect_multiplier': round(network_mult, 3),
+            'weather_adjustment': round(weather_adj, 3),
+            'nearby_existing_count': nearby_count,
             'is_high_density': is_high_density(candidate, demographics),
             'near_transit': is_near_transit(candidate, pois),
             'is_isolated': is_isolated(candidate, existing)
@@ -217,12 +221,12 @@ def calculate_network_score(selection: List[Dict], existing: List[Dict],
     imbalance_penalty = max(0, (cv - 0.25) * 500)
     
     # Isolation penalty
-    isolation_penalty = sum(200 for d in details if d['is_isolated'])
+    isolation_penalty = sum(200 for detail in station_details if detail['is_isolated'])
     
     network_score = total_ridership - spacing_penalty - imbalance_penalty - isolation_penalty
     
     return network_score, {
-        'details': details,
+        'station_details': station_details,
         'total_ridership': total_ridership,
         'spacing_penalty': spacing_penalty,
         'imbalance_penalty': imbalance_penalty,
@@ -299,7 +303,7 @@ def optimize_stations(existing, candidates, demographics, pois, weather):
                 test_selection = selection + [candidate]
                 valid, _ = check_constraints(test_selection, existing, demographics, pois)
                 
-                if valid or len(test_selection) < 5:  # Allow partial constraint violations during building
+                if valid or len(test_selection) < 5:
                     test_score, _ = calculate_network_score(test_selection, existing, 
                                                            demographics, pois, weather)
                     if test_score > best_addition_score:
@@ -328,7 +332,6 @@ def optimize_stations(existing, candidates, demographics, pois, weather):
         random.seed(42)
         
         for _ in range(1000):
-            # Randomly select from top candidates
             sample = random.sample(candidate_scores[:100], min(100, len(candidate_scores[:100])))
             
             selection = []
@@ -336,7 +339,6 @@ def optimize_stations(existing, candidates, demographics, pois, weather):
                 if len(selection) >= 5:
                     break
                 
-                # Check constraints
                 valid_addition = True
                 for s in selection:
                     dist = haversine_distance(candidate['latitude'], candidate['longitude'],
@@ -379,36 +381,6 @@ def main():
     
     print(f"\nBest network score: {best_score:.2f}")
     
-    # Write sol.csv
-    with open('/workdir/sol.csv', 'w', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow([
-            'station_id', 'location_name', 'latitude', 'longitude', 'neighborhood',
-            'census_tract_id', 'projected_daily_ridership', 'demographic_multiplier',
-            'poi_proximity_multiplier', 'network_effect_multiplier', 'weather_adjustment',
-            'nearby_existing_count', 'is_high_density', 'near_transit', 'is_isolated'
-        ])
-        
-        for detail in best_info['details']:
-            c = detail['candidate']
-            writer.writerow([
-                c['station_id'],
-                c['location_name'],
-                f"{c['latitude']:.4f}",
-                f"{c['longitude']:.4f}",
-                c['neighborhood'],
-                c['census_tract_id'],
-                f"{detail['ridership']:.1f}",
-                f"{detail['demo_mult']:.3f}",
-                f"{detail['poi_mult']:.3f}",
-                f"{detail['network_mult']:.3f}",
-                f"{detail['weather_adj']:.3f}",
-                detail['nearby_count'],
-                'True' if detail['is_high_density'] else 'False',
-                'True' if detail['near_transit'] else 'False',
-                'True' if detail['is_isolated'] else 'False'
-            ])
-    
     # Calculate final metrics
     valid, constraints = check_constraints(best_selection, existing, demographics, pois)
     
@@ -428,24 +400,28 @@ def main():
     
     neighborhoods = list(set(c['neighborhood'] for c in best_selection))
     
-    # Write network_summary.json
-    summary = {
-        'total_projected_ridership': best_info['total_ridership'],
-        'spacing_penalty': best_info['spacing_penalty'],
-        'imbalance_penalty': best_info['imbalance_penalty'],
-        'isolation_penalty': best_info['isolation_penalty'],
-        'network_score': best_score,
-        'ridership_coefficient_of_variation': best_info['cv'],
-        'constraints_satisfied': constraints,
-        'min_distance_between_new_stations': min_dist_between,
-        'min_distance_to_existing': min_dist_to_existing,
-        'neighborhoods_represented': neighborhoods
+    # Build complete solution JSON
+    solution = {
+        'selected_stations': best_info['station_details'],
+        'network_summary': {
+            'total_projected_ridership': round(best_info['total_ridership'], 1),
+            'spacing_penalty': round(best_info['spacing_penalty'], 1),
+            'imbalance_penalty': round(best_info['imbalance_penalty'], 1),
+            'isolation_penalty': round(best_info['isolation_penalty'], 1),
+            'network_score': round(best_score, 1),
+            'ridership_coefficient_of_variation': round(best_info['cv'], 3),
+            'constraints_satisfied': constraints,
+            'min_distance_between_new_stations': round(min_dist_between, 3),
+            'min_distance_to_existing': round(min_dist_to_existing, 3),
+            'neighborhoods_represented': neighborhoods
+        }
     }
     
-    with open('/workdir/network_summary.json', 'w') as f:
-        json.dump(summary, f, indent=2)
+    # Write single solution file
+    with open('/workdir/solution.json', 'w') as f:
+        json.dump(solution, f, indent=2)
     
-    print("\nSolution saved to /workdir/sol.csv and /workdir/network_summary.json")
+    print("\nSolution saved to /workdir/solution.json")
     print(f"Constraints satisfied: {all(constraints.values())}")
     print(f"Network score: {best_score:.2f}")
 
