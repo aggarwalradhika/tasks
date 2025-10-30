@@ -12,4 +12,4 @@ COPY ./grader.py /tests/
 COPY ./data /workdir/data
 
 # Make data readable by 'model' user (tests/ is already root-only)
-RUN chown -R model:model /workdir/data && chmod -R 755 /workdir/data
+RUN chown -R model:model /workdir/data && chmod -R 700 /workdir/data
