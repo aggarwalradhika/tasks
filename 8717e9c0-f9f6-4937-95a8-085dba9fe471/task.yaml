@@ -1,0 +1,182 @@
+prompt: |
+  You are given a single input file at /workdir/data/operations.jsonl containing database operations
+  that you must process to build and query a simple in-memory database with basic indexing.
+
+  ## Accepted line formats (any format may appear; lines are independent)
+  1) Insert operation (structured):
+     {
+       "op": "insert",
+       "id": <int>,                           # unique record ID
+       "fields": {
+         "category": "<str>",                 # categorical field
+         "status": "<str>",                   # categorical field
+         "priority": <int>,                   # numeric field
+         "score": <float>,                    # numeric field
+         "tags": [<str>, ...],               # multi-valued field
+         "timestamp": <int>                   # unix timestamp
+       }
+     }
+
+  2) Query operation (structured):
+     {
+       "op": "query",
+       "query_id": "<str>",
+       "conditions": [
+         {"field": "<str>", "operator": "==" | "!=" | "<" | ">" | "<=" | ">=" | "CONTAINS", "value": <any>},
+         ...
+       ],
+       "join_type": "AND" | "OR",            # how to combine conditions
+       "sort_by": "<field>",                 # optional sort field
+       "sort_order": "asc" | "desc",         # optional sort direction
+       "limit": <int, optional>,             # optional result limit
+       "aggregation": {                      # optional aggregation
+         "type": "count" | "sum" | "avg" | "min" | "max",
+         "field": "<str>"
+       }
+     }
+
+  3) Update operation (structured):
+     {
+       "op": "update",
+       "id": <int>,                           # record ID to update
+       "fields": {<field>: <value>, ...}     # fields to update
+     }
+
+  4) Delete operation (structured):
+     {
+       "op": "delete",
+       "id": <int>                            # record ID to delete
+     }
+
+  5) Compact insert format:
+     insert:<id>:<category>:<status>:<priority>
+     - Example: "insert:1:electronics:active:5"
+     - Other fields get defaults (score=0.5, tags=[], timestamp=1000)
+
+  6) Compact query format:
+     query:<query_id>:<field>:<operator>:<value>
+     - Example: "query:q1:category:==:electronics"
+     - Single condition, no aggregation
+
+  7) Checkpoint operation:
+     {
+       "op": "checkpoint",
+       "checkpoint_id": "<str>",
+       "action": "save" | "restore"
+     }
+
+  ## Required Implementation
+
+  You MUST implement a primary index (id -> record mapping) for CRUD operations.
+  Indexes are NOT required but will make queries faster. The query output must be correct
+  regardless of whether you implement indexes or not.
+
+  ### Optional: Bitmap Index (for categorical fields)
+  If implemented, use for: category, status
+  
+  Structure: field -> value -> Set(record_ids)
+  Example:
+    category="electronics" -> {1, 5, 8}
+    category="books" -> {2, 3, 7}
+
+  ### Optional: Range Index (for numeric fields)
+  If implemented, use for: priority, score, timestamp
+  
+  Structure: field -> SortedList[(value, record_id), ...]
+
+  ### Optional: Inverted Index (for multi-valued fields)
+  If implemented, use for: tags
+  
+  Structure: field -> term -> Set(record_ids)
+  Case-insensitive matching for tags
+
+  ## Query Processing
+
+  1. Parse query conditions, join type, sorting, aggregation
+  2. Find matching records (using indexes if available, or scan all records)
+  3. Apply filters based on conditions and join_type (AND/OR)
+  4. Sort results if sort_by is specified
+  5. Apply LIMIT if specified
+  6. Compute aggregation if specified
+
+  ## Operators
+
+  - `==`: Equality
+  - `!=`: Inequality  
+  - `<`, `>`, `<=`, `>=`: Numeric comparisons
+  - `CONTAINS`: Check if value is in tags list (case-insensitive)
+
+  ## Aggregations
+
+  - `count`: Number of matching records
+  - `sum`: Sum of field values (numeric fields only)
+  - `avg`: Average of field values (numeric fields only)
+  - `min`: Minimum field value
+  - `max`: Maximum field value
+
+  ## Update & Delete
+
+  ### Update
+  1. Find record by ID
+  2. Update specified fields
+  3. If you have indexes, update them accordingly
+
+  ### Delete
+  1. Find record by ID
+  2. Remove from storage
+  3. If you have indexes, remove from them
+
+  ## Checkpoint & Restore
+
+  ### Save
+  Save complete state (all records, indexes if any)
+
+  ### Restore
+  Restore to saved state, discarding operations after checkpoint
+
+  ## Output Format
+
+  Write ONE file:
+
+  ### /workdir/results.csv
+  One row per query operation:
+
+  Columns:
+  query_id,result_count,aggregation_value,result_ids
+
+  - query_id: From query operation
+  - result_count: Number of matching records
+  - aggregation_value: Result of aggregation (or "" if none)
+  - result_ids: Comma-separated list of matching record IDs (up to 100)
+
+  ## Edge Cases
+
+  - Invalid record ID on update/delete: Ignore operation
+  - Query on non-existent field: Return empty result
+  - Insert with duplicate ID: Update existing record
+  - Empty query conditions: Return all records
+  - Aggregation on non-numeric field: Return ""
+  - Sort by non-existent field: No sorting applied
+  - Negative or zero LIMIT: Return empty result
+  - Checkpoint restore to non-existent checkpoint: No-op
+
+  ## Notes
+  - All string comparisons are case-insensitive
+  - Timestamps are Unix epoch seconds (integers)
+  - Floating-point values rounded to 2 decimal places
+  - Record IDs must be unique
+  - No network access. Deterministic output only.
+  - File must be written to /workdir/results.csv with exact schema
+
+metadata:
+  difficulty: medium
+  category: algorithms
+  tags: [database, data-structures, query-processing, crud-operations]
+  references:
+    - "Introduction to Algorithms"
+
+time_limit: 3600
+memory_limit: 1024
+max_agent_timeout_sec: 2400
+expert_time_estimate_min: 120
+junior_time_estimate_min: 240
