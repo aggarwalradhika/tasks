@@ -1,0 +1,137 @@
+[
+  {
+    "route_id": "RT001",
+    "route_name": "Pacific Express",
+    "origin_city": "Seattle",
+    "destination_city": "Los Angeles",
+    "distance_km": 1545,
+    "status": "active",
+    "monthly_volume": 450
+  },
+  {
+    "route_id": "RT002",
+    "route_name": "Mountain Pass",
+    "origin_city": "Denver",
+    "destination_city": "Phoenix",
+    "distance_km": 1050,
+    "status": "active",
+    "monthly_volume": 320
+  },
+  {
+    "route_id": "RT003",
+    "route_name": "Eastern Corridor",
+    "origin_city": "New York",
+    "destination_city": "Miami",
+    "distance_km": 2050,
+    "status": "active",
+    "monthly_volume": 580
+  },
+  {
+    "route_id": "RT004",
+    "route_name": "Midwest Link",
+    "origin_city": "Chicago",
+    "destination_city": "Dallas",
+    "distance_km": 1450,
+    "status": "active",
+    "monthly_volume": 280
+  },
+  {
+    "route_id": "RT005",
+    "route_name": "Northern Route",
+    "origin_city": "Minneapolis",
+    "destination_city": "Seattle",
+    "distance_km": 2650,
+    "status": "active",
+    "monthly_volume": 150
+  },
+  {
+    "route_id": "RT006",
+    "route_name": "Gulf Stream",
+    "origin_city": "Houston",
+    "destination_city": "New Orleans",
+    "distance_km": 550,
+    "status": "inactive",
+    "monthly_volume": 200
+  },
+  {
+    "route_id": "RT007",
+    "route_name": "Desert Highway",
+    "origin_city": "Las Vegas",
+    "destination_city": "Salt Lake City",
+    "distance_km": 680,
+    "status": "active",
+    "monthly_volume": 75
+  },
+  {
+    "route_id": "RT008",
+    "route_name": "Atlantic Lane",
+    "origin_city": "Boston",
+    "destination_city": "Washington DC",
+    "distance_km": 630,
+    "status": "active",
+    "monthly_volume": 410
+  },
+  {
+    "route_id": "RT009",
+    "route_name": "Great Plains",
+    "origin_city": "Kansas City",
+    "destination_city": "Omaha",
+    "distance_km": 300,
+    "status": "active",
+    "monthly_volume": 190
+  },
+  {
+    "route_id": "RT010",
+    "route_name": "Coastal Runner",
+    "origin_city": "San Diego",
+    "destination_city": "San Francisco",
+    "distance_km": 800,
+    "status": "active",
+    "monthly_volume": 520
+  },
+  {
+    "route_id": "RT011",
+    "route_name": "Sunshine Express",
+    "origin_city": "Orlando",
+    "destination_city": "Tampa",
+    "distance_km": 140,
+    "status": "active",
+    "monthly_volume": 340
+  },
+  {
+    "route_id": "RT012",
+    "route_name": "Steel City Link",
+    "origin_city": "Pittsburgh",
+    "destination_city": "Cleveland",
+    "distance_km": 215,
+    "status": "active",
+    "monthly_volume": 260
+  },
+  {
+    "route_id": "RT013",
+    "route_name": "Music Highway",
+    "origin_city": "Nashville",
+    "destination_city": "Memphis",
+    "distance_km": 340,
+    "status": "active",
+    "monthly_volume": 210
+  },
+  {
+    "route_id": "RT014",
+    "route_name": "Tech Corridor",
+    "origin_city": "Austin",
+    "destination_city": "San Antonio",
+    "distance_km": 130,
+    "status": "active",
+    "monthly_volume": 380
+  },
+  {
+    "route_id": "RT015",
+    "route_name": "Blue Ridge",
+    "origin_city": "Charlotte",
+    "destination_city": "Atlanta",
+    "distance_km": 390,
+    "status": "active",
+    "monthly_volume": 440
+  }
+]

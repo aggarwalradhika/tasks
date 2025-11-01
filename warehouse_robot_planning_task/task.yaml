@@ -1,0 +1,293 @@
+prompt: |
+  You are working at Amazon Robotics on the optimization system for a next-generation warehouse fulfillment center.
+  
+  ## Your Task
+  
+  Design optimal paths for multiple robots to collect items from warehouse shelves while minimizing total completion time, respecting battery constraints, and avoiding collisions.
+  
+  ## Problem Details
+  
+  - You have a warehouse grid of size `rows × cols`
+  - You have `r` robots, each starting at a designated charging station
+  - You have `n` pick orders, where each order specifies items to collect from specific shelf locations
+  - Each robot has:
+    * A battery capacity (measured in movement units)
+    * Movement cost: 1 battery unit per grid cell moved
+    * Can recharge at any charging station (takes time = sqrt(battery_used))
+  - Movement takes 1 time unit per grid cell (including diagonals)
+  - Picking an item takes `p` time units
+  - Robots cannot occupy the same cell at the same time (collision constraint)
+  - Each order must be completed by exactly one robot
+  
+  ## Objective
+  
+  Minimize the maximum completion time across all robots (makespan) while ensuring:
+  1. All orders are fulfilled
+  2. No robot runs out of battery
+  3. No collisions occur (no two robots in same cell at same time)
+  4. Robots return to any charging station when done
+  
+  ## Why This Matters
+  
+  Warehouse efficiency directly impacts delivery times and operational costs. Poor robot coordination leads to:
+  - Collisions and deadlocks (robots blocking each other)
+  - Battery depletion requiring emergency interventions
+  - Unbalanced workload (some robots idle while others overworked)
+  - Longer fulfillment times affecting customer satisfaction
+  
+  Your optimization must balance path efficiency, battery management, collision avoidance, and load distribution.
+  
+  ## Input Format
+  
+  The file `/workdir/data/warehouse.txt` contains:
+  
+  ```
+  rows cols r n p battery_capacity
+  <robot_id> <start_row> <start_col>
+  ...
+  <order_id> <num_items>
+  <item_row> <item_col>
+  ...
+  [obstacles section]
+  <obs_row> <obs_col>
+  ...
+  [charging stations section]
+  <station_row> <station_col>
+  ...
+  ```
+  
+  - First line: grid dimensions, number of robots, orders, pick time, battery capacity
+  - Next `r` lines: Robot starting positions (also charging stations)
+  - Next section: For each order, first line has order_id and number of items, followed by item locations
+  - Obstacles section (after blank line): Grid cells that are blocked
+  - Charging stations section (after blank line): All charging station locations (includes robot starts)
+  
+  Example:
+  ```
+  10 10 2 3 2 50
+  robot1 0 0
+  robot2 0 9
+  order1 2
+  3 4
+  7 2
+  order2 1
+  5 5
+  order3 3
+  2 8
+  4 8
+  6 8
+  
+  5 0
+  5 9
+  
+  0 0
+  0 9
+  5 5
+  ```
+  
+  This means:
+  - 10×10 grid, 2 robots, 3 orders, pick_time=2, battery_capacity=50
+  - robot1 starts at (0,0), robot2 starts at (0,9) - both are charging stations
+  - order1 requires picking from (3,4) and (7,2)
+  - order2 requires picking from (5,5)
+  - order3 requires picking from (2,8), (4,8), (6,8)
+  - Obstacles at (5,0) and (5,9)
+  - Charging stations at (0,0), (0,9), and (5,5)
+  
+  ## Grid Coordinate System
+  
+  - (0,0) is top-left corner
+  - row increases downward, col increases rightward
+  - Movement allowed in 8 directions (including diagonals)
+  - Distance between adjacent cells (including diagonal) = 1 time unit
+  
+  ## Output Format
+  
+  You must produce ONE file: `/workdir/schedule.txt`
+  
+  Format - First line is the makespan, then robot plans:
+  ```
+  <makespan>
+  <robot_id>
+  MOVE <row> <col>
+  MOVE <row> <col>
+  ...
+  PICK <order_id>
+  MOVE <row> <col>
+  ...
+  CHARGE
+  MOVE <row> <col>
+  ...
+  PICK <order_id>
+  ...
+  RETURN
+  <robot_id>
+  ...
+  RETURN
+  ```
+  
+  Commands:
+  - First line: Integer makespan (maximum completion time across all robots)
+  - `MOVE <row> <col>`: Move to this cell (must be adjacent to current position)
+  - `PICK <order_id>`: Pick all items for this order (must be at correct locations)
+  - `CHARGE`: Recharge battery to full at current location (must be at a charging station)
+  - `RETURN`: Mark completion (must be at a charging station)
+  
+  CRITICAL RULES:
+  1. First line MUST be the makespan (single integer)
+  2. Each order must be picked by exactly one robot
+  3. To pick an order, robot must visit ALL item locations for that order (in any sequence)
+  4. Movement must be continuous (each MOVE goes to an adjacent cell)
+  5. Robot cannot move if battery would drop below 0
+  6. CHARGE can only happen at charging stations
+  7. RETURN must be the last command for each robot (must be at a charging station)
+  8. No two robots can be in the same cell at the same time
+  
+  Example:
+  ```
+  45
+  robot1
+  MOVE 0 1
+  MOVE 1 2
+  MOVE 2 3
+  MOVE 3 4
+  PICK order1
+  MOVE 4 3
+  MOVE 5 2
+  MOVE 6 2
+  MOVE 7 2
+  PICK order1
+  MOVE 6 1
+  MOVE 5 0
+  CHARGE
+  MOVE 4 1
+  MOVE 3 2
+  MOVE 2 3
+  MOVE 1 4
+  MOVE 0 5
+  MOVE 0 4
+  MOVE 0 3
+  MOVE 0 2
+  MOVE 0 1
+  MOVE 0 0
+  RETURN
+  robot2
+  MOVE 1 8
+  MOVE 2 8
+  PICK order3
+  MOVE 3 8
+  MOVE 4 8
+  PICK order3
+  MOVE 5 7
+  MOVE 5 6
+  MOVE 5 5
+  PICK order2
+  CHARGE
+  MOVE 5 6
+  MOVE 6 7
+  MOVE 6 8
+  PICK order3
+  MOVE 5 8
+  MOVE 4 9
+  MOVE 3 9
+  MOVE 2 9
+  MOVE 1 9
+  MOVE 0 9
+  RETURN
+  ```
+  
+  In this example:
+  - Line 1: Makespan = 45 time units
+  - robot1 completes at time 35
+  - robot2 completes at time 45 (the bottleneck)
+  - Maximum = 45, which matches the first line
+  
+  ## Constraints
+  
+  - 8 ≤ rows, cols ≤ 30
+  - 2 ≤ r ≤ 6 (number of robots)
+  - 5 ≤ n ≤ 30 (number of orders)
+  - 1 ≤ items per order ≤ 8
+  - 1 ≤ p ≤ 5 (pick time)
+  - 30 ≤ battery_capacity ≤ 200
+  - Obstacles ≤ 15% of grid cells
+  - 2 ≤ charging stations ≤ 6
+  - You do NOT have internet access
+  - Python 3 is available
+  
+  ## Important Notes
+  
+  1. This is NP-hard: Multi-agent path finding with constraints is computationally complex. Use sophisticated heuristics.
+  
+  2. Your plan will be validated: The grader will:
+     - Simulate the execution of your plan step-by-step
+     - Check all orders are completed exactly once
+     - Verify no battery violations
+     - Verify no collision violations (two robots in same cell at same time)
+     - Compute the actual makespan from your plan
+     - Check that it matches your claimed makespan (first line of schedule.txt)
+     - Verify your solution is near-optimal (within 1.25x of a sophisticated baseline)
+  
+  3. Think algorithmically: Consider approaches like:
+     - Task allocation: Which robot should handle which orders? (assignment problem)
+     - Path planning: A* or Dijkstra for individual paths
+     - Collision avoidance: 
+       * Prioritized planning (plan paths in sequence, later robots avoid earlier ones)
+       * Time-space A* (plan in 3D: x, y, time)
+       * Conflict-based search (CBS)
+     - Battery management: 
+       * Plan charging stops proactively
+       * Consider battery when assigning orders
+       * Route through charging stations strategically
+     - Load balancing: Distribute orders to minimize makespan
+     - Clustering: Group nearby orders for the same robot
+     - Local optimization: Improve initial solution with swaps and refinements
+  
+  4. Algorithm Design Guidance:
+     - Start with task assignment (which robot gets which orders)
+     - Consider travel distances, battery constraints, and current robot positions
+     - Plan paths considering temporal coordination (when each robot will be where)
+     - Build a time-expanded state space for collision avoidance
+     - Optimize for the bottleneck robot (the one that finishes last)
+     - Consider interleaving charging with task execution
+  
+  5. Battery Management Strategy:
+     - Track battery continuously during path planning
+     - Insert CHARGE commands proactively before battery runs out
+     - Consider routing through charging stations even if not empty
+     - Remember: charging time = sqrt(battery_used), so frequent small charges might be better than rare full charges
+  
+  6. Collision Avoidance Strategy:
+     - Time-stamp each robot's position at each timestep
+     - Ensure no two robots occupy same cell at same time
+     - Consider "waiting" moves (staying in place) when necessary
+     - Plan routes in priority order (e.g., by distance to destination)
+  
+  7. Be deterministic: If your algorithm has ties, break them consistently.
+  
+  8. Test your solution: Verify a small example manually to ensure correctness.
+  
+  9. Near-optimality tolerance: Your solution must achieve a makespan within 1.25x (125%) of a sophisticated baseline. This accounts for the problem's complexity - you need intelligent heuristics for task allocation, path planning, and coordination!
+
+metadata:
+  difficulty: hard
+  category: optimization_algorithms
+  tags:
+    - path_planning
+    - multi_agent_systems
+    - resource_constraints
+    - collision_avoidance
+    - np_hard_optimization
+    - graph_search
+    - warehouse_automation
+  estimated_time_minutes: 90
+  references:
+    - "Multi-Agent Path Finding (MAPF) problem"
+    - "Related to Vehicle Routing Problem with time windows"
+    - "Conflict-Based Search (CBS) algorithm"
+    - "Capacitated Arc Routing Problem"
+  time_limit: 300
+  memory_limit: 1024
+  max_agent_timeout_sec: 600
+  expert_time_estimate_min: 35
+  junior_time_estimate_min: 120

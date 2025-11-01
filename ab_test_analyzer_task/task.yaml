@@ -1,0 +1,154 @@
+prompt: |
+  You are inside a Linux container without internet.
+  Goal: Produce /workdir/results.json with statistical analysis of A/B test experiments.
+
+  Input data is under /workdir/data/experiments/ and may contain:
+    - CSV files (possibly .gz compressed)
+    - JSONL files (possibly .bz2 compressed)
+    - Nested directories (must search recursively)
+
+  CSV schema (header present):
+    experiment_id,user_id,variant,metric_type,metric_value,timestamp,country,device
+  
+  JSONL schema (one JSON object per line, same keys as CSV):
+    {"experiment_id": "exp_001", "user_id": "u123", "variant": "control", 
+     "metric_type": "conversion", "metric_value": 1, "timestamp": "2024-01-15T10:30:00Z",
+     "country": "US", "device": "mobile"}
+
+  Comments & malformed lines:
+    - Lines beginning with '#' or '//' are comments and MUST be ignored.
+    - Malformed lines MUST be skipped silently (do not raise/print errors).
+    - CSV cells may contain inline comments after '#' - strip these.
+
+  Processing requirements:
+    1) Deduplicate by (experiment_id, user_id, metric_type) - keep the LAST occurrence (by timestamp).
+    2) For each experiment_id, analyze ALL metric_types present.
+    3) Only analyze variants named "control" and "treatment" (ignore others).
+    4) Experiments must have BOTH control and treatment data to be valid.
+    5) Filter to only include data from timestamp range: 
+       start = 2024-01-15T00:00:00Z, end = 2024-01-31T23:59:59Z (inclusive)
+    6) Perform SEGMENTED analysis: analyze separately by country AND device.
+       - Valid countries: US, UK, CA, DE, FR (ignore others)
+       - Valid devices: mobile, desktop, tablet (ignore others)
+
+  Statistical Analysis (per experiment, per metric_type, per country, per device):
+    
+    For BINARY metrics (metric_value in {0, 1}):
+      - Calculate conversion rate for each variant: sum(metric_value) / count(users)
+      - Perform two-proportion z-test (two-tailed)
+      - Calculate: z_statistic, p_value, lift (% change from control to treatment)
+      - Calculate confidence interval (95%) for lift using Wilson score interval
+    
+    For CONTINUOUS metrics (any numeric values):
+      - Calculate mean for each variant: sum(metric_value) / count(users)
+      - Perform Welch's t-test (two-tailed, unequal variances)
+      - Calculate: t_statistic, p_value, lift (% change from control to treatment)
+      - Calculate confidence interval (95%) for the difference in means
+      - Calculate Cohen's d effect size: (mean_treatment - mean_control) / pooled_std
+    
+    Metric type detection:
+      - If ALL metric_values for a metric_type are in {0, 1, 0.0, 1.0}: BINARY
+      - Otherwise: CONTINUOUS
+
+  Sample Size Filtering:
+    - Only include segments with at least 30 samples in BOTH control and treatment
+    - Segments not meeting this threshold should be excluded from results
+
+  Multiple Testing Correction:
+    - Apply Benjamini-Hochberg (FDR) correction instead of Bonferroni
+    - Control false discovery rate at q = 0.05
+    - Sort all p-values across all tests, apply BH procedure
+    - Mark test as "significant": true if passes FDR threshold, else false
+
+  Power Analysis:
+    - For each test, calculate statistical power (1 - beta) assuming:
+      - alpha = 0.05 (before correction)
+      - observed effect size
+      - actual sample sizes
+    - Round power to 4 decimal places
+
+  Rounding & Precision:
+    - Conversion rates / means: 6 decimal places
+    - Lift: 4 decimal places (as percentage, e.g., 15.2500 for 15.25%)
+    - p_value: 6 decimal places
+    - z_statistic / t_statistic: 4 decimal places
+    - confidence intervals: 4 decimal places
+    - effect_size (Cohen's d): 4 decimal places
+    - power: 4 decimal places
+    - fdr_threshold: 6 decimal places
+
+  Output format (/workdir/results.json):
+    {
+      "total_tests": <integer>,
+      "fdr_threshold": <float with 6 decimals>,
+      "experiments": [
+        {
+          "experiment_id": "exp_001",
+          "segments": [
+            {
+              "country": "US",
+              "device": "mobile",
+              "metrics": [
+                {
+                  "metric_type": "conversion",
+                  "metric_kind": "binary",
+                  "control_n": 45,
+                  "treatment_n": 48,
+                  "control_value": 0.123456,
+                  "treatment_value": 0.145678,
+                  "lift_percent": 18.0500,
+                  "confidence_interval": [-5.2300, 41.3200],
+                  "test_statistic": 2.3456,
+                  "p_value": 0.019234,
+                  "power": 0.6234,
+                  "significant": true
+                },
+                {
+                  "metric_type": "revenue",
+                  "metric_kind": "continuous",
+                  "control_n": 45,
+                  "treatment_n": 48,
+                  "control_value": 45.678900,
+                  "treatment_value": 52.341200,
+                  "lift_percent": 14.5800,
+                  "confidence_interval": [2.1200, 11.2050],
+                  "test_statistic": 1.8765,
+                  "p_value": 0.061234,
+                  "effect_size": 0.4523,
+                  "power": 0.4821,
+                  "significant": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+
+  Sort order:
+    - experiments: sorted by experiment_id (ascending)
+    - segments within each experiment: sorted by country then device (ascending)
+    - metrics within each segment: sorted by metric_type (ascending)
+
+  Notes:
+    - Use scipy.stats for statistical tests and power analysis
+    - For binary z-test, use pooled proportion for standard error
+    - For confidence intervals on binary metrics, use Wilson score interval method
+    - Lift = ((treatment_value - control_value) / control_value) * 100
+    - Cohen's d uses pooled standard deviation: sqrt(((n1-1)*s1^2 + (n2-1)*s2^2) / (n1+n2-2))
+    - Power calculation should account for actual sample sizes and observed effect
+    - Do NOT hardcode answers. Your solution must work for any dataset.
+    - Do NOT print to stdout; grading only inspects /workdir/results.json.
+    - Search ALL subdirectories recursively for data files.
+
+metadata:
+  difficulty: hard
+  category: data-science
+  tags: [data-science, statistics, hypothesis-testing, a-b-testing, analytics, segmentation, fdr]
+  references: "N/A"
+
+time_limit: 600              # seconds (10 minutes)
+memory_limit: 2048           # MB
+max_agent_timeout_sec: 900   # hard cap for agent execution (15 minutes)
+expert_time_estimate_min: 60 # expected time for an expert
+junior_time_estimate_min: 180 # expected time for a junior engineer

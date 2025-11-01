@@ -1,0 +1,17 @@
+experiment_id,user_id,variant,metric_type,metric_value,timestamp
+exp_001,u001,control,conversion,0,2024-01-15T10:00:00Z
+exp_001,u002,control,conversion,1,2024-01-15T10:05:00Z
+exp_001,u003,control,conversion,0,2024-01-15T10:10:00Z
+exp_001,u004,control,conversion,1,2024-01-15T10:15:00Z
+exp_001,u005,control,conversion,0,2024-01-15T10:20:00Z
+exp_001,u006,control,conversion,1,2024-01-15T10:25:00Z
+exp_001,u007,control,conversion,0,2024-01-15T10:30:00Z
+exp_001,u008,control,conversion,0,2024-01-15T10:35:00Z
+exp_001,u009,treatment,conversion,1,2024-01-15T10:40:00Z
+exp_001,u010,treatment,conversion,1,2024-01-15T10:45:00Z
+exp_001,u011,treatment,conversion,1,2024-01-15T10:50:00Z
+exp_001,u012,treatment,conversion,0,2024-01-15T10:55:00Z
+exp_001,u013,treatment,conversion,1,2024-01-15T11:00:00Z
+exp_001,u014,treatment,conversion,1,2024-01-15T11:05:00Z
+exp_001,u015,treatment,conversion,1,2024-01-15T11:10:00Z
+exp_001,u016,treatment,conversion,0,2024-01-15T11:15:00Z

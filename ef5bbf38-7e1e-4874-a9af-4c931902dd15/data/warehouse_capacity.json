@@ -1,0 +1,14 @@
+[
+  {"warehouse_id": "WH_LA", "max_weight_kg": 6000, "location": "Los Angeles"},
+  {"warehouse_id": "WH_PHX", "max_weight_kg": 4000, "location": "Phoenix"},
+  {"warehouse_id": "WH_MIA", "max_weight_kg": 7000, "location": "Miami"},
+  {"warehouse_id": "WH_DAL", "max_weight_kg": 5000, "location": "Dallas"},
+  {"warehouse_id": "WH_DC", "max_weight_kg": 2500, "location": "Washington DC"},
+  {"warehouse_id": "WH_OMA", "max_weight_kg": 1800, "location": "Omaha"},
+  {"warehouse_id": "WH_SF", "max_weight_kg": 3000, "location": "San Francisco"},
+  {"warehouse_id": "WH_TAM", "max_weight_kg": 1000, "location": "Tampa"},
+  {"warehouse_id": "WH_CLE", "max_weight_kg": 1500, "location": "Cleveland"},
+  {"warehouse_id": "WH_MEM", "max_weight_kg": 2000, "location": "Memphis"},
+  {"warehouse_id": "WH_SA", "max_weight_kg": 800, "location": "San Antonio"},
+  {"warehouse_id": "WH_ATL", "max_weight_kg": 2200, "location": "Atlanta"}
+]

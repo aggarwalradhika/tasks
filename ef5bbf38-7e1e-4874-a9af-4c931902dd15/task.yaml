@@ -1,0 +1,76 @@
+prompt: |
+  Supply Chain Route Anomaly Detection (select exactly 8 routes with highest anomaly_score)
+
+  Files (JSON, read-only):
+  /workdir/data/routes.json
+  /workdir/data/shipments.json
+  /workdir/data/weather_events.json
+  /workdir/data/warehouse_capacity.json
+
+  Reference date: 2025-10-30 (use this as "today" for all date calculations)
+
+  Eligibility (route-level):
+  • route.status == "active"
+  • route.monthly_volume ≥ 100
+  • at least 20 shipments in the last 60 days (shipments with date within 60 days before 2025-10-30)
+
+  Anomaly components (compute exactly):
+  1) delay_volatility_score:
+     • For each shipment on the route in last 60 days (shipments where shipment.date is within 60 days before 2025-10-30), compute delay_hours = actual_delivery_time - expected_delivery_time (in hours).
+       - Parse timestamps as ISO format and compute difference.
+       - If delay_hours < 0, treat as 0 (early deliveries don't count as anomalies).
+     • Compute standard deviation of delay_hours across all shipments.
+       - Use sample standard deviation: sqrt(Σ(x - mean)² / (n-1)) where n = number of shipments.
+       - If n < 2, std_dev = 0.0.
+     • delay_volatility_score = min(1.0, std_dev / 24.0) (normalize by 24 hours).
+
+  2) cost_inflation_score:
+     • For each route, calculate cost_per_km for each shipment = shipment.cost / route.distance_km.
+     • Compute median cost_per_km for the route across all shipments in last 60 days (within 60 days before 2025-10-30).
+     • Compute 75th percentile cost_per_km for the route.
+     • cost_inflation_ratio = (percentile_75 - median) / median if median > 0, else 0.0.
+     • cost_inflation_score = min(1.0, cost_inflation_ratio * 2.0).
+
+  3) weather_impact_correlation:
+     • Count severe_weather_days = number of unique dates where route experienced severe weather (weather_events.severity == "severe" or "extreme").
+       - Match weather_events.route_id with route and filter by last 60 days (weather_events.date within 60 days before 2025-10-30).
+     • Count delayed_shipment_days = number of unique dates where at least one shipment on route had delay_hours > 6.
+     • If severe_weather_days > 0:
+         expected_delayed_days = severe_weather_days * 0.7 (we expect 70% correlation).
+         weather_impact_correlation = max(0, (delayed_shipment_days - expected_delayed_days) / severe_weather_days).
+       Else weather_impact_correlation = 0.0.
+     • Cap to [0, 1].
+
+  4) capacity_utilization_penalty:
+     • For each shipment, compute utilization = shipment.weight_kg / warehouse_capacity.max_weight_kg for the destination warehouse.
+       - Match shipment.destination_warehouse_id with warehouse_capacity.warehouse_id.
+     • Count overutilization_shipments = shipments where utilization > 0.85.
+     • total_shipments = all route shipments in last 60 days (within 60 days before 2025-10-30).
+     • capacity_utilization_penalty = min(1.0, overutilization_shipments / total_shipments) if total_shipments > 0, else 0.0.
+
+  Final anomaly score:
+  anomaly_score = 3.0*delay_volatility_score + 2.5*cost_inflation_score + 4.0*weather_impact_correlation + 3.5*capacity_utilization_penalty
+
+  Selection & ordering:
+  • Consider only eligible routes.
+  • Sort by anomaly_score descending; then route_id (ascending).
+  • Take top 8; assign rank=1..8 (1 highest anomaly_score).
+
+  Output (CSV → /workdir/sol.csv; exact header & order):
+  route_id,route_name,origin_city,destination_city,delay_volatility_score,cost_inflation_score,weather_impact_correlation,capacity_utilization_penalty,anomaly_score,rank
+
+  Formatting:
+  delay_volatility_score:3dp; cost_inflation_score:3dp; weather_impact_correlation:3dp;
+  capacity_utilization_penalty:3dp; anomaly_score:3dp; rank:1..8
+  Exactly 8 rows. No extra columns. No index.
+
+metadata:
+  difficulty: hard
+  category: "data-science"
+  tags: ["supply-chain","anomaly-detection","logistics","operations","optimization"]
+  references: ["N/A"]
+time_limit: 900          # seconds
+memory_limit: 1024       # MB
+max_agent_timeout_sec: 600
+expert_time_estimate_min: 50
+junior_time_estimate_min: 130

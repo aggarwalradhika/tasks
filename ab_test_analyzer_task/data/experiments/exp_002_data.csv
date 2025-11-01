@@ -1,0 +1,25 @@
+experiment_id,user_id,variant,metric_type,metric_value,timestamp
+exp_002,u101,control,click_rate,1,2024-01-16T09:00:00Z
+exp_002,u102,control,click_rate,0,2024-01-16T09:05:00Z
+exp_002,u103,control,click_rate,1,2024-01-16T09:10:00Z
+exp_002,u104,control,click_rate,1,2024-01-16T09:15:00Z
+exp_002,u105,control,click_rate,0,2024-01-16T09:20:00Z
+exp_002,u101,control,click_rate,0,2024-01-16T09:25:00Z
+# This is a duplicate - should be ignored (same user_id, experiment, metric)
+exp_002,u106,treatment,click_rate,1,2024-01-16T09:30:00Z
+exp_002,u107,treatment,click_rate,1,2024-01-16T09:35:00Z
+exp_002,u108,treatment,click_rate,1,2024-01-16T09:40:00Z
+exp_002,u109,treatment,click_rate,1,2024-01-16T09:45:00Z
+exp_002,u110,treatment,click_rate,1,2024-01-16T09:50:00Z
+exp_002,u111,variant_c,click_rate,0,2024-01-16T09:55:00Z
+// This variant_c should be ignored - only control and treatment are analyzed
+exp_002,u101,control,engagement,125.5,2024-01-16T10:00:00Z
+exp_002,u102,control,engagement,98.3,2024-01-16T10:05:00Z
+exp_002,u103,control,engagement,142.7,2024-01-16T10:10:00Z
+exp_002,u104,control,engagement,108.9,2024-01-16T10:15:00Z
+exp_002,u105,control,engagement,135.2,2024-01-16T10:20:00Z
+exp_002,u106,treatment,engagement,155.8,2024-01-16T10:25:00Z
+exp_002,u107,treatment,engagement,178.4,2024-01-16T10:30:00Z
+exp_002,u108,treatment,engagement,162.1,2024-01-16T10:35:00Z
+exp_002,u109,treatment,engagement,145.6,2024-01-16T10:40:00Z
+exp_002,u110,treatment,engagement,189.2,2024-01-16T10:45:00Z

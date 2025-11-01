@@ -1,0 +1,40 @@
+[
+  {"route_id": "RT001", "date": "2025-09-05", "severity": "severe", "event_type": "storm"},
+  {"route_id": "RT001", "date": "2025-09-15", "severity": "extreme", "event_type": "storm"},
+  {"route_id": "RT001", "date": "2025-10-01", "severity": "severe", "event_type": "storm"},
+  {"route_id": "RT001", "date": "2025-10-20", "severity": "moderate", "event_type": "rain"},
+  
+  {"route_id": "RT002", "date": "2025-09-14", "severity": "severe", "event_type": "dust_storm"},
+  {"route_id": "RT002", "date": "2025-10-08", "severity": "extreme", "event_type": "dust_storm"},
+  
+  {"route_id": "RT003", "date": "2025-10-12", "severity": "moderate", "event_type": "rain"},
+  
+  {"route_id": "RT004", "date": "2025-09-10", "severity": "moderate", "event_type": "rain"},
+  {"route_id": "RT004", "date": "2025-09-22", "severity": "moderate", "event_type": "rain"},
+  {"route_id": "RT004", "date": "2025-10-10", "severity": "moderate", "event_type": "rain"},
+  
+  {"route_id": "RT008", "date": "2025-09-28", "severity": "moderate", "event_type": "rain"},
+  
+  {"route_id": "RT009", "date": "2025-10-03", "severity": "moderate", "event_type": "rain"},
+  
+  {"route_id": "RT010", "date": "2025-10-05", "severity": "moderate", "event_type": "wind"},
+  
+  {"route_id": "RT011", "date": "2025-09-15", "severity": "severe", "event_type": "hurricane"},
+  {"route_id": "RT011", "date": "2025-10-03", "severity": "extreme", "event_type": "hurricane"},
+  {"route_id": "RT011", "date": "2025-10-21", "severity": "severe", "event_type": "tropical_storm"},
+  
+  {"route_id": "RT012", "date": "2025-09-11", "severity": "severe", "event_type": "snow"},
+  {"route_id": "RT012", "date": "2025-09-23", "severity": "extreme", "event_type": "blizzard"},
+  {"route_id": "RT012", "date": "2025-10-05", "severity": "severe", "event_type": "snow"},
+  {"route_id": "RT012", "date": "2025-10-23", "severity": "extreme", "event_type": "blizzard"},
+  
+  {"route_id": "RT013", "date": "2025-10-08", "severity": "moderate", "event_type": "rain"},
+  
+  {"route_id": "RT014", "date": "2025-10-12", "severity": "moderate", "event_type": "rain"},
+  
+  {"route_id": "RT015", "date": "2025-09-14", "severity": "moderate", "event_type": "rain"},
+  {"route_id": "RT015", "date": "2025-09-20", "severity": "severe", "event_type": "storm"},
+  {"route_id": "RT015", "date": "2025-10-02", "severity": "moderate", "event_type": "rain"},
+  {"route_id": "RT015", "date": "2025-10-08", "severity": "severe", "event_type": "storm"},
+  {"route_id": "RT015", "date": "2025-10-26", "severity": "extreme", "event_type": "hurricane"}
+]
