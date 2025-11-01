@@ -76,9 +76,12 @@ class Database:
             results.sort(key=lambda r: r.fields.get(sort_by, 0), 
                         reverse=(sort_order == 'desc'))
         
-        # Limit
-        if limit and limit > 0:
-            results = results[:limit]
+        # Limit - FIXED: Handle negative and zero limits correctly
+        if limit is not None:
+            if limit <= 0:
+                results = []
+            else:
+                results = results[:limit]
         
         # Aggregation
         agg_value = ""

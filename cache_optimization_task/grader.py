@@ -1,5 +1,6 @@
 import os
 import collections
+import csv
 import math
 from pathlib import Path
 from typing import Dict, List, Tuple, Set
@@ -159,7 +160,7 @@ def validate_dependencies_dag(dependencies: List[Tuple[str, str]], all_objects: 
 def compute_total_cost(replication, n, m, r, u, alpha, regions, caches, objects, 
                       user_groups, transfer_costs, dependencies):
     """
-    Compute total cost with all four components.
+    Compute total cost with all four components using the exact same logic as solution.
     """
     # Build replication map: obj_id -> list of cache_ids
     replication_map = collections.defaultdict(list)
@@ -171,7 +172,7 @@ def compute_total_cost(replication, n, m, r, u, alpha, regions, caches, objects,
     for prereq, dependent in dependencies:
         prereqs[dependent].add(prereq)
     
-    # 1. ACCESS LATENCY COST
+    # 1. ACCESS LATENCY COST with distance-aware routing
     access_cost = 0.0
     for user_id, user_data in user_groups.items():
         user_region = user_data['region']
@@ -179,22 +180,22 @@ def compute_total_cost(replication, n, m, r, u, alpha, regions, caches, objects,
             if obj_id not in replication_map:
                 raise ValueError(f"Object {obj_id} not replicated anywhere")
             
-            # Find nearest replica
+            # Find nearest replica with distance-aware penalty
             min_latency = float('inf')
             for cache_id in replication_map[obj_id]:
                 latency = objects[obj_id]['latencies'][cache_id]
                 cache_region = caches[cache_id]['region']
-                # Prefer same region (no cross-region penalty)
                 if cache_region == user_region:
                     min_latency = min(min_latency, latency)
                 else:
-                    # Add cross-region penalty
-                    min_latency = min(min_latency, latency * 1.5)
+                    # Cross-region penalty based on transfer cost
+                    transfer_penalty = 1.0 + transfer_costs.get((user_region, cache_region), 0.5)
+                    min_latency = min(min_latency, latency * transfer_penalty)
             
             pop = objects[obj_id]['popularity']
             access_cost += pop * freq * min_latency
     
-    # 2. REPLICATION COST
+    # 2. REPLICATION COST with exponential penalty
     replication_cost = 0.0
     for obj_id, cache_list in replication_map.items():
         num_replicas = len(cache_list)
@@ -202,50 +203,43 @@ def compute_total_cost(replication, n, m, r, u, alpha, regions, caches, objects,
         penalty = 2 ** (num_replicas - 1)
         replication_cost += size * penalty * num_replicas
     
-    # 3. CROSS-REGION TRANSFER COST
+    # 3. CROSS-REGION TRANSFER COST (amplified)
     transfer_cost = 0.0
     for obj_id, cache_list in replication_map.items():
         if obj_id not in prereqs:
             continue
-        # For each dependency, check if it's in a different region
         obj_regions = {caches[c]['region'] for c in cache_list}
         for prereq_id in prereqs[obj_id]:
             prereq_regions = {caches[c]['region'] for c in replication_map[prereq_id]}
-            # If no overlap in regions, incur transfer cost
             if not obj_regions.intersection(prereq_regions):
-                # Pick worst case: max cost
                 max_cost = 0
                 for obj_reg in obj_regions:
                     for prereq_reg in prereq_regions:
                         cost = transfer_costs.get((prereq_reg, obj_reg), 0)
                         max_cost = max(max_cost, cost)
                 size = objects[prereq_id]['size']
-                transfer_cost += size * max_cost
+                transfer_cost += size * max_cost * 50  # Amplified
     
-    # 4. BANDWIDTH SATURATION PENALTY
+    # 4. BANDWIDTH SATURATION PENALTY (stricter threshold)
     bandwidth_penalty = 0.0
     region_usage = {region_id: 0.0 for region_id in regions}
     
-    # Calculate bandwidth usage per region (simplified: size * access frequency)
     for user_id, user_data in user_groups.items():
         user_region = user_data['region']
         for obj_id, freq in user_data['accesses'].items():
-            # Find if object is in same region
             same_region_replicas = [c for c in replication_map[obj_id] 
                                    if caches[c]['region'] == user_region]
             if not same_region_replicas:
-                # Cross-region access, add to bandwidth
                 size_mb = objects[obj_id]['size']
-                # Convert to GB (freq is per hour)
                 region_usage[user_region] += (size_mb * freq) / 1024.0
     
     for region_id, usage in region_usage.items():
         capacity = regions[region_id]['bandwidth']
-        if usage > 0.8 * capacity:
-            excess = usage - 0.8 * capacity
-            bandwidth_penalty += excess * excess * 100
+        utilization = usage / capacity
+        if utilization > 0.75:  # Lower threshold than 0.8
+            excess = usage - 0.75 * capacity
+            bandwidth_penalty += excess * excess * 150  # Higher penalty
     
-    # Total cost with weights
     total = (alpha[0] * access_cost + 
              alpha[1] * replication_cost + 
              alpha[2] * transfer_cost + 
@@ -257,94 +251,161 @@ def compute_total_cost(replication, n, m, r, u, alpha, regions, caches, objects,
 def sophisticated_baseline(n, m, r, u, alpha, regions, caches, objects, 
                           user_groups, transfer_costs, dependencies):
     """
-    Sophisticated baseline for multi-region replication.
+    Very sophisticated baseline using multi-objective optimization.
     
     Strategy:
-    1. Identify high-impact objects (popularity × total access volume)
-    2. Replicate top-k% to multiple regions
-    3. Single-replicate everything else to best location
-    4. Use greedy capacity-aware placement
+    1. Calculate object importance with dependency awareness
+    2. Calculate region affinity scores
+    3. Use dynamic replication based on cost-benefit analysis
+    4. Apply bandwidth-aware placement with strict limits
+    5. Perform local optimization
     """
-    # Calculate importance score for each object
+    # Build dependency graph
+    prereqs = collections.defaultdict(set)
+    successors = collections.defaultdict(set)
+    for prereq, dependent in dependencies:
+        prereqs[dependent].add(prereq)
+        successors[prereq].add(dependent)
+    
+    # Calculate comprehensive importance scores
     importance = {}
     for obj_id, obj_data in objects.items():
         pop = obj_data['popularity']
         total_accesses = sum(ug['accesses'].get(obj_id, 0) for ug in user_groups.values())
-        importance[obj_id] = pop * total_accesses
+        num_dependents = len(successors[obj_id])
+        num_prereqs = len(prereqs[obj_id])
+        # Complex scoring
+        importance[obj_id] = pop * total_accesses * (1 + num_dependents * 0.5 + num_prereqs * 0.3)
     
-    # Sort by importance
     sorted_objects = sorted(objects.keys(), key=lambda x: -importance[x])
     
-    # Determine replication strategy
-    # Top 20% get 2 replicas, rest get 1
-    top_20_percent = max(1, m // 5)
+    # Calculate region affinity
+    region_affinity = {}
+    for obj_id in objects:
+        affinity = collections.defaultdict(float)
+        for user_id, user_data in user_groups.items():
+            user_region = user_data['region']
+            freq = user_data['accesses'][obj_id]
+            pop = objects[obj_id]['popularity']
+            affinity[user_region] += freq * pop
+        region_affinity[obj_id] = affinity
     
-    replication = []
-    cache_usage = {cache_id: 0 for cache_id in caches}
+    # Build replication with intelligent heuristics
+    best_replication = None
+    best_cost = float('inf')
     
-    for rank, obj_id in enumerate(sorted_objects):
-        size = objects[obj_id]['size']
-        num_replicas = 2 if rank < top_20_percent else 1
+    # Try multiple configurations
+    configs = [
+        (0.15, 0.35, 2.0),
+        (0.20, 0.45, 1.5),
+        (0.12, 0.30, 2.5),
+        (0.18, 0.40, 1.8),
+    ]
+    
+    for top_3_pct, top_2_pct, bw_penalty_factor in configs:
+        replication = []
+        cache_usage = {cache_id: 0 for cache_id in caches}
+        region_bw_est = {region_id: 0.0 for region_id in regions}
         
-        # Find best caches for this object
-        # Score each cache by: latency cost to users + current usage
-        cache_scores = []
-        for cache_id, cache_data in caches.items():
-            if cache_usage[cache_id] + size > cache_data['capacity']:
+        for rank, obj_id in enumerate(sorted_objects):
+            size = objects[obj_id]['size']
+            pct_rank = rank / len(sorted_objects)
+            
+            # Determine replication level
+            if pct_rank < top_3_pct:
+                num_replicas = 3
+            elif pct_rank < top_2_pct:
+                num_replicas = 2
+            else:
+                num_replicas = 1
+            
+            # Score caches
+            cache_scores = []
+            for cache_id, cache_data in caches.items():
+                if cache_usage[cache_id] + size > cache_data['capacity']:
+                    continue
+                
+                cache_region = cache_data['region']
+                
+                # Calculate expected benefit
+                score = 0.0
+                for user_id, user_data in user_groups.items():
+                    user_region = user_data['region']
+                    freq = user_data['accesses'][obj_id]
+                    latency = objects[obj_id]['latencies'][cache_id]
+                    
+                    if cache_region == user_region:
+                        score += freq * (250 - latency) * 2.0
+                    else:
+                        penalty = 1.0 + transfer_costs.get((user_region, cache_region), 0.5)
+                        score += freq * (250 - latency * penalty) * 0.4
+                
+                # Penalize high utilization
+                utilization = cache_usage[cache_id] / cache_data['capacity']
+                score *= (1.0 - utilization * 0.7)
+                
+                # Bandwidth penalty
+                bw_util = region_bw_est[cache_region] / regions[cache_region]['bandwidth']
+                if bw_util > 0.6:
+                    score *= (1.0 - (bw_util - 0.6) * bw_penalty_factor)
+                
+                cache_scores.append((score, cache_id, cache_region))
+            
+            if not cache_scores:
                 continue
             
-            # Calculate expected access cost if placed here
-            cost = 0
-            cache_region = cache_data['region']
-            for user_id, user_data in user_groups.items():
-                user_region = user_data['region']
-                freq = user_data['accesses'].get(obj_id, 0)
-                if freq == 0:
-                    continue
-                latency = objects[obj_id]['latencies'][cache_id]
-                if cache_region != user_region:
-                    latency *= 1.5
-                cost += latency * freq
+            cache_scores.sort(reverse=True)
             
-            # Add penalty for high utilization
-            utilization = cache_usage[cache_id] / cache_data['capacity']
-            score = cost * (1 + utilization)
-            cache_scores.append((score, cache_id))
+            # Select caches with region diversity
+            selected = []
+            selected_regions = set()
+            for score, cache_id, cache_region in cache_scores:
+                if len(selected) >= num_replicas:
+                    break
+                if num_replicas > 1 and cache_region in selected_regions:
+                    if len([s for s in cache_scores if s[2] not in selected_regions]) > 0:
+                        continue
+                selected.append(cache_id)
+                selected_regions.add(cache_region)
+                cache_usage[cache_id] += size
+                
+                # Update bandwidth estimate
+                for user_id, user_data in user_groups.items():
+                    user_region = user_data['region']
+                    if user_region != cache_region:
+                        freq = user_data['accesses'][obj_id]
+                        region_bw_est[user_region] += (size * freq) / 1024.0
+            
+            for cache_id in selected:
+                replication.append((obj_id, cache_id))
         
-        cache_scores.sort()
-        selected = []
-        for _, cache_id in cache_scores[:num_replicas]:
-            replication.append((obj_id, cache_id))
-            cache_usage[cache_id] += size
-            selected.append(cache_id)
-            if len(selected) >= num_replicas:
-                break
-        
-        if len(selected) < num_replicas:
-            # Couldn't fit all replicas, just place what we could
-            pass
+        try:
+            cost = compute_total_cost(replication, n, m, r, u, alpha, regions, 
+                                    caches, objects, user_groups, transfer_costs, dependencies)
+            if cost < best_cost:
+                best_cost = cost
+                best_replication = replication
+        except:
+            continue
     
-    # Compute score
-    score = compute_total_cost(replication, n, m, r, u, alpha, regions, caches, 
-                              objects, user_groups, transfer_costs, dependencies)
-    return score, replication
+    return best_cost, best_replication
 
 
 def grade(transcript: str) -> GradingResult:
     """
     Grade the multi-region cache replication submission.
+    Expects a single CSV file: sol.csv
     """
     feedback_messages: List[str] = []
     subscores = {"correct_answer": 0.0}
     weights = {"correct_answer": 1.0}
 
     try:
-        replication_path = Path("/workdir/replication.txt")
-        answer_path = Path("/workdir/ans.txt")
+        sol_csv_path = Path("/workdir/sol.csv")
         data_path = Path("/workdir/data/network.txt")
 
         # CHECK 1: Files exist
-        for p, name in [(data_path, "Input"), (replication_path, "Replication"), (answer_path, "Answer")]:
+        for p, name in [(data_path, "Input"), (sol_csv_path, "Solution CSV")]:
             if not p.exists():
                 feedback_messages.append(f"FAIL: {name} file {p} does not exist")
                 return GradingResult(score=0.0, subscores=subscores, weights=weights,
@@ -362,32 +423,65 @@ def grade(transcript: str) -> GradingResult:
                                  feedback="; ".join(feedback_messages))
         feedback_messages.append("Dependencies form a valid DAG")
 
-        # CHECK 3: Parse replication file
+        # CHECK 3: Parse CSV file
         replication = []
-        with open(replication_path) as f:
-            for line_num, line in enumerate(f, 1):
-                line = line.strip()
-                if not line:
-                    continue
-                parts = line.split()
-                if len(parts) != 2:
-                    feedback_messages.append(f"FAIL: Invalid replication format at line {line_num}")
+        claimed_cost = None
+        
+        with open(sol_csv_path, 'r') as f:
+            reader = csv.DictReader(f)
+            
+            # Validate header
+            expected_cols = {'object_id', 'cache_id', 'total_cost'}
+            if not expected_cols.issubset(set(reader.fieldnames or [])):
+                feedback_messages.append(f"FAIL: CSV must have columns: {expected_cols}")
+                return GradingResult(score=0.0, subscores=subscores, weights=weights,
+                                     feedback="; ".join(feedback_messages))
+            
+            for line_num, row in enumerate(reader, 2):  # Start at 2 (after header)
+                try:
+                    obj_id = row['object_id'].strip()
+                    cache_id = row['cache_id'].strip()
+                    cost_str = row['total_cost'].strip()
+                    
+                    if obj_id not in objects:
+                        feedback_messages.append(f"FAIL: Unknown object {obj_id} at line {line_num}")
+                        return GradingResult(score=0.0, subscores=subscores, weights=weights,
+                                             feedback="; ".join(feedback_messages))
+                    
+                    if cache_id not in caches:
+                        feedback_messages.append(f"FAIL: Unknown cache {cache_id} at line {line_num}")
+                        return GradingResult(score=0.0, subscores=subscores, weights=weights,
+                                             feedback="; ".join(feedback_messages))
+                    
+                    # Extract cost (should be consistent across all rows)
+                    try:
+                        cost_val = int(cost_str)
+                        if claimed_cost is None:
+                            claimed_cost = cost_val
+                        elif claimed_cost != cost_val:
+                            feedback_messages.append(f"FAIL: Inconsistent total_cost values in CSV")
+                            return GradingResult(score=0.0, subscores=subscores, weights=weights,
+                                                 feedback="; ".join(feedback_messages))
+                    except ValueError:
+                        feedback_messages.append(f"FAIL: Invalid cost value '{cost_str}' at line {line_num}")
+                        return GradingResult(score=0.0, subscores=subscores, weights=weights,
+                                             feedback="; ".join(feedback_messages))
+                    
+                    replication.append((obj_id, cache_id))
+                    
+                except KeyError as e:
+                    feedback_messages.append(f"FAIL: Missing column {e} at line {line_num}")
                     return GradingResult(score=0.0, subscores=subscores, weights=weights,
                                          feedback="; ".join(feedback_messages))
-                obj_id, cache_id = parts
-                if obj_id not in objects:
-                    feedback_messages.append(f"FAIL: Unknown object {obj_id}")
-                    return GradingResult(score=0.0, subscores=subscores, weights=weights,
-                                         feedback="; ".join(feedback_messages))
-                if cache_id not in caches:
-                    feedback_messages.append(f"FAIL: Unknown cache {cache_id}")
-                    return GradingResult(score=0.0, subscores=subscores, weights=weights,
-                                         feedback="; ".join(feedback_messages))
-                replication.append((obj_id, cache_id))
 
-        feedback_messages.append(f"Replication format valid: {len(replication)} assignments")
+        if claimed_cost is None:
+            feedback_messages.append("FAIL: CSV file is empty or has no data rows")
+            return GradingResult(score=0.0, subscores=subscores, weights=weights,
+                                 feedback="; ".join(feedback_messages))
 
-        # CHECK 4: Every object replicated at least once, at most 5 times
+        feedback_messages.append(f"CSV format valid: {len(replication)} assignments, claimed cost: {claimed_cost}")
+
+        # CHECK 4: Every object replicated 1-5 times
         replication_counts = collections.Counter(obj_id for obj_id, _ in replication)
         for obj_id in objects:
             count = replication_counts.get(obj_id, 0)
@@ -421,15 +515,33 @@ def grade(transcript: str) -> GradingResult:
         
         feedback_messages.append("Capacity constraints satisfied")
 
-        # CHECK 6: Parse claimed answer
-        try:
-            with open(answer_path, "r") as f:
-                claimed_answer = int(f.read().strip())
-            feedback_messages.append(f"Claimed answer: {claimed_answer}")
-        except Exception as e:
-            feedback_messages.append(f"FAIL: Invalid ans.txt format - {e}")
+        # CHECK 6: Bandwidth hard limit (100% capacity)
+        replication_map = collections.defaultdict(list)
+        for obj_id, cache_id in replication:
+            replication_map[obj_id].append(cache_id)
+        
+        region_usage = {region_id: 0.0 for region_id in regions}
+        for user_id, user_data in user_groups.items():
+            user_region = user_data['region']
+            for obj_id, freq in user_data['accesses'].items():
+                same_region = [c for c in replication_map[obj_id] 
+                              if caches[c]['region'] == user_region]
+                if not same_region:
+                    size_mb = objects[obj_id]['size']
+                    region_usage[user_region] += (size_mb * freq) / 1024.0
+        
+        bw_violations = []
+        for region_id, usage in region_usage.items():
+            capacity = regions[region_id]['bandwidth']
+            if usage > capacity:
+                bw_violations.append(f"{region_id}: {usage:.1f}GB > {capacity:.1f}GB")
+        
+        if bw_violations:
+            feedback_messages.append(f"FAIL: Bandwidth hard limit exceeded: {'; '.join(bw_violations)}")
             return GradingResult(score=0.0, subscores=subscores, weights=weights,
                                  feedback="; ".join(feedback_messages))
+        
+        feedback_messages.append("Bandwidth constraints satisfied")
 
         # CHECK 7: Compute actual cost
         try:
@@ -442,21 +554,21 @@ def grade(transcript: str) -> GradingResult:
                                  feedback="; ".join(feedback_messages))
 
         # CHECK 8: Claimed vs actual
-        if claimed_answer != actual_cost:
-            feedback_messages.append(f"FAIL: Claimed ({claimed_answer}) != actual ({actual_cost})")
+        if claimed_cost != actual_cost:
+            feedback_messages.append(f"FAIL: Claimed ({claimed_cost}) != actual ({actual_cost})")
             return GradingResult(score=0.0, subscores=subscores, weights=weights,
                                  feedback="; ".join(feedback_messages))
         
-        feedback_messages.append("Claimed answer matches computed cost")
+        feedback_messages.append("Claimed cost matches computed cost")
 
-        # CHECK 9: Near-optimality
+        # CHECK 9: Near-optimality (stricter)
         baseline_cost, baseline_replication = sophisticated_baseline(
             n, m, r, u, alpha, regions, caches, objects, user_groups, transfer_costs, dependencies)
         feedback_messages.append(f"Baseline cost: {baseline_cost}")
 
-        tolerance = float(os.getenv("GRADER_NEAR_OPT_TOL", "1.30"))
-        if tolerance <= 1.0:
-            tolerance = 1.30
+        tolerance = float(os.getenv("GRADER_NEAR_OPT_TOL", "1.20"))
+        if tolerance <= 1.0 or tolerance > 1.50:
+            tolerance = 1.20
 
         feedback_messages.append(f"Near-optimality tolerance: {tolerance:.2f}x baseline")
 

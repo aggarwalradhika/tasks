@@ -18,5 +18,4 @@ COPY ./grader.py   /tests/
 COPY --chown=model:model ./data /workdir/data
 
 RUN chown -R model:model /workdir && chmod -R 700 /workdir && \
-    chmod +x /tests/solution.sh && \
-    chmod 0700 /tests
+    chmod +x /tests/solution.sh

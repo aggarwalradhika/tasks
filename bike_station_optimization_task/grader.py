@@ -14,7 +14,6 @@ appropriate tolerances for floating-point comparisons.
 """
 
 import json
-import csv
 import math
 import sys
 from pathlib import Path
@@ -331,26 +330,16 @@ def grade() -> GradingResult:
     Returns:
         GradingResult with score (1.0 or 0.0) and detailed feedback
     """
-    # Check if output files exist
-    sol_csv_path = Path('/workdir/sol.csv')
-    summary_json_path = Path('/workdir/network_summary.json')
+    # Check if solution.json exists
+    solution_path = Path('/workdir/solution.json')
     
-    if not sol_csv_path.exists():
+    if not solution_path.exists():
         return GradingResult(
             score=0.0,
-            feedback="FAIL: sol.csv not found at /workdir/sol.csv",
+            feedback="FAIL: solution.json not found at /workdir/solution.json",
             subscores={"all_passes": 0.0},
             weights={"all_passes": 1.0},
-            details={"error": "sol.csv file missing"}
-        )
-    
-    if not summary_json_path.exists():
-        return GradingResult(
-            score=0.0,
-            feedback="FAIL: network_summary.json not found at /workdir/network_summary.json",
-            subscores={"all_passes": 0.0},
-            weights={"all_passes": 1.0},
-            details={"error": "network_summary.json file missing"}
+            details={"error": "solution.json file missing"}
         )
     
     # Load data files
@@ -368,47 +357,69 @@ def grade() -> GradingResult:
     # Create lookup dictionaries
     candidates_dict = {c['station_id']: c for c in candidates}
     
-    # Parse sol.csv
+    # Parse solution.json
     try:
-        with open(sol_csv_path, 'r') as f:
-            reader = csv.DictReader(f)
-            rows = list(reader)
+        with open(solution_path, 'r') as f:
+            solution = json.load(f)
     except Exception as e:
         return GradingResult(
             score=0.0,
-            feedback=f"FAIL: Error reading sol.csv: {str(e)}",
+            feedback=f"FAIL: Error reading solution.json: {str(e)}",
             subscores={"all_passes": 0.0},
             weights={"all_passes": 1.0},
-            details={"error": f"CSV parsing error: {str(e)}"}
+            details={"error": f"JSON parsing error: {str(e)}"}
         )
     
-    # Check exactly 5 rows
+    # Validate solution structure
+    if 'selected_stations' not in solution:
+        return GradingResult(
+            score=0.0,
+            feedback="FAIL: solution.json missing 'selected_stations' field",
+            subscores={"all_passes": 0.0},
+            weights={"all_passes": 1.0},
+            details={"error": "Missing 'selected_stations' field"}
+        )
+    
+    if 'network_summary' not in solution:
+        return GradingResult(
+            score=0.0,
+            feedback="FAIL: solution.json missing 'network_summary' field",
+            subscores={"all_passes": 0.0},
+            weights={"all_passes": 1.0},
+            details={"error": "Missing 'network_summary' field"}
+        )
+    
+    rows = solution['selected_stations']
+    summary = solution['network_summary']
+    
+    # Check exactly 5 stations
     if len(rows) != 5:
         return GradingResult(
             score=0.0,
-            feedback=f"FAIL: sol.csv must have exactly 5 rows, found {len(rows)}",
+            feedback=f"FAIL: selected_stations must have exactly 5 stations, found {len(rows)}",
             subscores={"all_passes": 0.0},
             weights={"all_passes": 1.0},
-            details={"error": f"Wrong number of rows: {len(rows)} instead of 5"}
+            details={"error": f"Wrong number of stations: {len(rows)} instead of 5"}
         )
     
-    # Validate required columns
-    required_columns = [
+    # Validate required fields in each station
+    required_fields = [
         'station_id', 'location_name', 'latitude', 'longitude', 'neighborhood',
         'census_tract_id', 'projected_daily_ridership', 'demographic_multiplier',
         'poi_proximity_multiplier', 'network_effect_multiplier', 'weather_adjustment',
         'nearby_existing_count', 'is_high_density', 'near_transit', 'is_isolated'
     ]
     
-    missing_columns = [col for col in required_columns if col not in rows[0].keys()]
-    if missing_columns:
-        return GradingResult(
-            score=0.0,
-            feedback=f"FAIL: Missing required columns in sol.csv: {missing_columns}",
-            subscores={"all_passes": 0.0},
-            weights={"all_passes": 1.0},
-            details={"error": f"Missing columns: {missing_columns}"}
-        )
+    for i, row in enumerate(rows):
+        missing_fields = [field for field in required_fields if field not in row]
+        if missing_fields:
+            return GradingResult(
+                score=0.0,
+                feedback=f"FAIL: Station {i+1} missing required fields: {missing_fields}",
+                subscores={"all_passes": 0.0},
+                weights={"all_passes": 1.0},
+                details={"error": f"Missing fields in station {i+1}: {missing_fields}"}
+            )
     
     # Validate station IDs and build selection
     selection = []
@@ -428,26 +439,13 @@ def grade() -> GradingResult:
     if len(set(row['station_id'] for row in rows)) != 5:
         return GradingResult(
             score=0.0,
-            feedback="FAIL: Duplicate station_ids found in sol.csv",
+            feedback="FAIL: Duplicate station_ids found in selected_stations",
             subscores={"all_passes": 0.0},
             weights={"all_passes": 1.0},
             details={"error": "Duplicate station IDs in solution"}
         )
     
-    # Parse network_summary.json
-    try:
-        with open(summary_json_path, 'r') as f:
-            summary = json.load(f)
-    except Exception as e:
-        return GradingResult(
-            score=0.0,
-            feedback=f"FAIL: Error reading network_summary.json: {str(e)}",
-            subscores={"all_passes": 0.0},
-            weights={"all_passes": 1.0},
-            details={"error": f"JSON parsing error: {str(e)}"}
-        )
-    
-    # Validate summary structure
+    # Validate network_summary structure
     required_summary_fields = [
         'total_projected_ridership', 'spacing_penalty', 'imbalance_penalty',
         'isolation_penalty', 'network_score', 'ridership_coefficient_of_variation',
@@ -459,10 +457,10 @@ def grade() -> GradingResult:
     if missing_fields:
         return GradingResult(
             score=0.0,
-            feedback=f"FAIL: Missing required fields in network_summary.json: {missing_fields}",
+            feedback=f"FAIL: Missing required fields in network_summary: {missing_fields}",
             subscores={"all_passes": 0.0},
             weights={"all_passes": 1.0},
-            details={"error": f"Missing JSON fields: {missing_fields}"}
+            details={"error": f"Missing summary fields: {missing_fields}"}
         )
     
     # Verify constraints
@@ -516,7 +514,7 @@ def grade() -> GradingResult:
                     details={"error": f"Wrong demographic_multiplier for {candidate['station_id']}",
                             "expected": expected_demo_mult, "actual": actual_demo_mult}
                 )
-        except ValueError:
+        except (ValueError, TypeError):
             return GradingResult(
                 score=0.0,
                 feedback=f"FAIL: Invalid demographic_multiplier value for {candidate['station_id']}",
@@ -538,7 +536,7 @@ def grade() -> GradingResult:
                     details={"error": f"Wrong poi_proximity_multiplier for {candidate['station_id']}",
                             "expected": expected_poi_mult, "actual": actual_poi_mult}
                 )
-        except ValueError:
+        except (ValueError, TypeError):
             return GradingResult(
                 score=0.0,
                 feedback=f"FAIL: Invalid poi_proximity_multiplier value for {candidate['station_id']}",
@@ -560,7 +558,7 @@ def grade() -> GradingResult:
                     details={"error": f"Wrong network_effect_multiplier for {candidate['station_id']}",
                             "expected": expected_network_mult, "actual": actual_network_mult}
                 )
-        except ValueError:
+        except (ValueError, TypeError):
             return GradingResult(
                 score=0.0,
                 feedback=f"FAIL: Invalid network_effect_multiplier value for {candidate['station_id']}",
@@ -582,7 +580,7 @@ def grade() -> GradingResult:
                     details={"error": f"Wrong weather_adjustment for {candidate['station_id']}",
                             "expected": expected_weather_adj, "actual": actual_weather_adj}
                 )
-        except ValueError:
+        except (ValueError, TypeError):
             return GradingResult(
                 score=0.0,
                 feedback=f"FAIL: Invalid weather_adjustment value for {candidate['station_id']}",
@@ -604,7 +602,7 @@ def grade() -> GradingResult:
                     details={"error": f"Wrong nearby_existing_count for {candidate['station_id']}",
                             "expected": expected_nearby_count, "actual": actual_nearby_count}
                 )
-        except ValueError:
+        except (ValueError, TypeError):
             return GradingResult(
                 score=0.0,
                 feedback=f"FAIL: Invalid nearby_existing_count value for {candidate['station_id']}",
@@ -626,7 +624,7 @@ def grade() -> GradingResult:
                     details={"error": f"Wrong projected_daily_ridership for {candidate['station_id']}",
                             "expected": expected_ridership, "actual": actual_ridership}
                 )
-        except ValueError:
+        except (ValueError, TypeError):
             return GradingResult(
                 score=0.0,
                 feedback=f"FAIL: Invalid projected_daily_ridership value for {candidate['station_id']}",
@@ -637,15 +635,15 @@ def grade() -> GradingResult:
         
         # Verify boolean fields
         expected_high_density = is_high_density(candidate, demographics)
-        if row['is_high_density'] not in ['True', 'False']:
+        if not isinstance(row['is_high_density'], bool):
             return GradingResult(
                 score=0.0,
-                feedback=f"FAIL: is_high_density must be 'True' or 'False' for {candidate['station_id']}",
+                feedback=f"FAIL: is_high_density must be boolean for {candidate['station_id']}",
                 subscores={"all_passes": 0.0},
                 weights={"all_passes": 1.0},
                 details={"error": f"Invalid is_high_density format for {candidate['station_id']}"}
             )
-        if (row['is_high_density'] == 'True') != expected_high_density:
+        if row['is_high_density'] != expected_high_density:
             return GradingResult(
                 score=0.0,
                 feedback=f"FAIL: Incorrect is_high_density for {candidate['station_id']}: "
@@ -657,15 +655,15 @@ def grade() -> GradingResult:
             )
         
         expected_near_transit = is_near_transit(candidate, pois)
-        if row['near_transit'] not in ['True', 'False']:
+        if not isinstance(row['near_transit'], bool):
             return GradingResult(
                 score=0.0,
-                feedback=f"FAIL: near_transit must be 'True' or 'False' for {candidate['station_id']}",
+                feedback=f"FAIL: near_transit must be boolean for {candidate['station_id']}",
                 subscores={"all_passes": 0.0},
                 weights={"all_passes": 1.0},
                 details={"error": f"Invalid near_transit format for {candidate['station_id']}"}
             )
-        if (row['near_transit'] == 'True') != expected_near_transit:
+        if row['near_transit'] != expected_near_transit:
             return GradingResult(
                 score=0.0,
                 feedback=f"FAIL: Incorrect near_transit for {candidate['station_id']}: "
@@ -677,15 +675,15 @@ def grade() -> GradingResult:
             )
         
         expected_isolated = is_isolated(candidate, existing)
-        if row['is_isolated'] not in ['True', 'False']:
+        if not isinstance(row['is_isolated'], bool):
             return GradingResult(
                 score=0.0,
-                feedback=f"FAIL: is_isolated must be 'True' or 'False' for {candidate['station_id']}",
+                feedback=f"FAIL: is_isolated must be boolean for {candidate['station_id']}",
                 subscores={"all_passes": 0.0},
                 weights={"all_passes": 1.0},
                 details={"error": f"Invalid is_isolated format for {candidate['station_id']}"}
             )
-        if (row['is_isolated'] == 'True') != expected_isolated:
+        if row['is_isolated'] != expected_isolated:
             return GradingResult(
                 score=0.0,
                 feedback=f"FAIL: Incorrect is_isolated for {candidate['station_id']}: "
@@ -744,7 +742,7 @@ def grade() -> GradingResult:
                 details={"error": "Wrong total_projected_ridership",
                         "expected": expected_total_ridership, "actual": actual_total}
             )
-    except (ValueError, KeyError) as e:
+    except (ValueError, KeyError, TypeError) as e:
         return GradingResult(
             score=0.0,
             feedback=f"FAIL: Invalid total_projected_ridership: {str(e)}",
@@ -766,7 +764,7 @@ def grade() -> GradingResult:
                 details={"error": "Wrong spacing_penalty",
                         "expected": expected_spacing_penalty, "actual": actual_spacing}
             )
-    except (ValueError, KeyError) as e:
+    except (ValueError, KeyError, TypeError) as e:
         return GradingResult(
             score=0.0,
             feedback=f"FAIL: Invalid spacing_penalty: {str(e)}",
@@ -788,7 +786,7 @@ def grade() -> GradingResult:
                 details={"error": "Wrong imbalance_penalty",
                         "expected": expected_imbalance_penalty, "actual": actual_imbalance}
             )
-    except (ValueError, KeyError) as e:
+    except (ValueError, KeyError, TypeError) as e:
         return GradingResult(
             score=0.0,
             feedback=f"FAIL: Invalid imbalance_penalty: {str(e)}",
@@ -810,7 +808,7 @@ def grade() -> GradingResult:
                 details={"error": "Wrong isolation_penalty",
                         "expected": expected_isolation_penalty, "actual": actual_isolation}
             )
-    except (ValueError, KeyError) as e:
+    except (ValueError, KeyError, TypeError) as e:
         return GradingResult(
             score=0.0,
             feedback=f"FAIL: Invalid isolation_penalty: {str(e)}",
@@ -832,7 +830,7 @@ def grade() -> GradingResult:
                 details={"error": "Wrong network_score",
                         "expected": expected_network_score, "actual": actual_score}
             )
-    except (ValueError, KeyError) as e:
+    except (ValueError, KeyError, TypeError) as e:
         return GradingResult(
             score=0.0,
             feedback=f"FAIL: Invalid network_score: {str(e)}",
@@ -854,7 +852,7 @@ def grade() -> GradingResult:
                 details={"error": "Wrong ridership_coefficient_of_variation",
                         "expected": expected_cv, "actual": actual_cv}
             )
-    except (ValueError, KeyError) as e:
+    except (ValueError, KeyError, TypeError) as e:
         return GradingResult(
             score=0.0,
             feedback=f"FAIL: Invalid ridership_coefficient_of_variation: {str(e)}",
@@ -878,7 +876,7 @@ def grade() -> GradingResult:
     if summary['constraints_satisfied'] != constraints_dict:
         return GradingResult(
             score=0.0,
-            feedback=f"FAIL: constraints_satisfied in network_summary.json does not match actual "
+            feedback=f"FAIL: constraints_satisfied in network_summary does not match actual "
                     f"constraint status. Expected: {constraints_dict}, Got: {summary['constraints_satisfied']}",
             subscores={"all_passes": 0.0},
             weights={"all_passes": 1.0},

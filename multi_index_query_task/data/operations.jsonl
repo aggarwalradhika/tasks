@@ -20,3 +20,41 @@ query:q6:priority:<:5
 {"op": "insert", "id": 8, "fields": {"category": "electronics", "status": "active", "priority": 9, "score": 0.92, "tags": ["premium"], "timestamp": 1350}}
 {"op": "query", "query_id": "q9", "conditions": [{"field": "category", "operator": "!=", "value": "books"}], "join_type": "AND", "limit": 3}
 {"op": "query", "query_id": "q10", "conditions": [{"field": "priority", "operator": ">=", "value": 5}, {"field": "status", "operator": "==", "value": "active"}], "join_type": "AND", "sort_by": "score", "sort_order": "asc"}
+// NEW TESTS BELOW - Enhanced coverage for untested features
+{"op": "insert", "id": 9, "fields": {"category": "sports", "status": "pending", "priority": 1, "score": 0.55, "tags": ["seasonal"], "timestamp": 1400}}
+{"op": "insert", "id": 10, "fields": {"category": "home", "status": "active", "priority": 10, "score": 0.99, "tags": ["premium", "bestseller"], "timestamp": 1450}}
+// Test OR join type (Issue #2)
+{"op": "query", "query_id": "q11", "conditions": [{"field": "category", "operator": "==", "value": "sports"}, {"field": "priority", "operator": ">=", "value": 8}], "join_type": "OR"}
+// Test <= operator (Issue #2)
+{"op": "query", "query_id": "q12", "conditions": [{"field": "priority", "operator": "<=", "value": 3}], "join_type": "AND"}
+// Test sum aggregation (Issue #2)
+{"op": "query", "query_id": "q13", "conditions": [{"field": "status", "operator": "==", "value": "active"}], "join_type": "AND", "aggregation": {"type": "sum", "field": "score"}}
+// Test min aggregation (Issue #2)
+{"op": "query", "query_id": "q14", "conditions": [{"field": "status", "operator": "==", "value": "active"}], "join_type": "AND", "aggregation": {"type": "min", "field": "priority"}}
+// Test max aggregation (Issue #2)
+{"op": "query", "query_id": "q15", "conditions": [{"field": "status", "operator": "==", "value": "active"}], "join_type": "AND", "aggregation": {"type": "max", "field": "score"}}
+// Test zero limit (Issue #1)
+{"op": "query", "query_id": "q16", "conditions": [{"field": "status", "operator": "==", "value": "active"}], "join_type": "AND", "limit": 0}
+// Test negative limit (Issue #1)
+{"op": "query", "query_id": "q17", "conditions": [{"field": "category", "operator": "==", "value": "electronics"}], "join_type": "AND", "limit": -5}
+// Test update with invalid ID (edge case)
+{"op": "update", "id": 999, "fields": {"status": "updated"}}
+// Test delete with invalid ID (edge case)
+{"op": "delete", "id": 888}
+// Test query on non-existent field (edge case)
+{"op": "query", "query_id": "q18", "conditions": [{"field": "nonexistent_field", "operator": "==", "value": "test"}], "join_type": "AND"}
+// Test empty conditions (edge case)
+{"op": "query", "query_id": "q19", "conditions": [], "join_type": "AND", "limit": 5}
+// Test aggregation on non-numeric field (edge case)
+{"op": "query", "query_id": "q20", "conditions": [{"field": "status", "operator": "==", "value": "active"}], "join_type": "AND", "aggregation": {"type": "sum", "field": "category"}}
+// Test sort by non-existent field (edge case)
+{"op": "query", "query_id": "q21", "conditions": [{"field": "status", "operator": "==", "value": "active"}], "join_type": "AND", "sort_by": "nonexistent_sort_field", "sort_order": "desc", "limit": 3}
+// Test checkpoint restore to non-existent checkpoint (edge case)
+{"op": "checkpoint", "checkpoint_id": "nonexistent_cp", "action": "restore"}
+// Verify restore didn't break anything
+{"op": "query", "query_id": "q22", "conditions": [{"field": "status", "operator": "==", "value": "active"}], "join_type": "AND"}
+// Test insert with duplicate ID (should update existing record)
+{"op": "insert", "id": 1, "fields": {"category": "furniture", "status": "inactive", "priority": 2, "score": 0.30, "tags": ["clearance"], "timestamp": 1500}}
+{"op": "query", "query_id": "q23", "conditions": [{"field": "id", "operator": "==", "value": 1}], "join_type": "AND"}
+// Test complex OR query with multiple conditions
+{"op": "query", "query_id": "q24", "conditions": [{"field": "priority", "operator": ">=", "value": 9}, {"field": "category", "operator": "==", "value": "home"}, {"field": "tags", "operator": "CONTAINS", "value": "seasonal"}], "join_type": "OR"}
