@@ -1,41 +1,44 @@
 """
-Binary grader for 'Supply Chain Route Anomaly Detection (Top 8 by anomaly_score)'.
+Enhanced Binary grader for 'Supply Chain Route Anomaly Detection with Multi-Constraint Selection'.
 
-What this grader does
-- Recomputes ground truth (GT) ONLY from /workdir/data JSON files.
+What this grader does:
+- Recomputes ground truth (GT) from /workdir/data JSON files
+- Computes anomaly scores for all eligible routes
+- Finds optimal combination of 8 routes satisfying ALL constraints:
+  * Regional diversity: ≥2 West, ≥2 East, ≥2 Central
+  * Volume coverage: total ≥ 2800
+  * Warehouse distribution: ≤3 per warehouse
+  * Geographic diversity: ≥6 unique cities
 - Validates /workdir/sol.csv for:
-  * Exact header & column order.
-  * Exactly 8 data rows (no index/extra cols).
-  * Exact string equality vs GT with fixed decimals:
-      - delay_volatility_score, cost_inflation_score, weather_impact_correlation,
-        capacity_utilization_penalty, anomaly_score: 3dp
-      - rank: "1".."8"
-  * Ordering: anomaly_score desc; ties by route_id.
+  * Exact header & column order (13 columns now)
+  * Exactly 8 data rows
+  * All constraints satisfied
+  * Optimal combination selected (highest total anomaly score)
+  * Exact string equality for formatted values
+  * Validation summary present and correct
 
-Scoring
-- Binary: 1.0 on a perfect match; otherwise 0.0 with helpful feedback.
+Scoring:
+- Binary: 1.0 on perfect match; otherwise 0.0 with detailed feedback
 """
 
 import csv, json
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
 import pandas as pd
-import hashlib
 from collections import defaultdict
 from datetime import datetime
 import statistics
+from itertools import combinations
 
-# ---- GradingResult (pydantic if available) ----
+# ---- GradingResult ----
 try:
     from pydantic import BaseModel, Field
     _USE_PYD = True
 except Exception:
     _USE_PYD = False
-
     class BaseModel:
         def __init__(self, **kw): self.__dict__.update(kw)
         def model_dump(self): return self.__dict__
-
     def Field(default=None, **kw):
         return default
 
@@ -51,56 +54,77 @@ DATA = Path("/workdir/data")
 SOL  = Path("/workdir/sol.csv")
 
 HEADER = [
-    "route_id","route_name","origin_city","destination_city",
-    "delay_volatility_score","cost_inflation_score","weather_impact_correlation",
-    "capacity_utilization_penalty","anomaly_score","rank"
+    "route_id", "route_name", "origin_city", "destination_city",
+    "destination_region", "monthly_volume", "destination_warehouse_id", "distance_km",
+    "delay_volatility_score", "cost_inflation_score", "weather_impact_correlation",
+    "capacity_utilization_penalty", "anomaly_score", "rank"
 ]
+
+# Region definitions
+WEST_CITIES = {"Los Angeles", "Phoenix", "Salt Lake City", "San Francisco", "San Diego"}
+EAST_CITIES = {"Miami", "New York", "Boston", "Washington DC", "Tampa"}
 
 def _load_json(name: str):
     with open(DATA / name, "r", encoding="utf-8") as f:
         return json.load(f)
 
-def _fmt3(x: float) -> str: return f"{x:.3f}"
+def _fmt3(x: float) -> str: 
+    return f"{x:.3f}"
 
-# --- helpers for diagnostics ---
-def _csv_to_string(rows: List[List[str]]) -> str:
-    from io import StringIO
-    s = StringIO()
-    w = csv.writer(s)
-    for r in rows:
-        w.writerow(r)
-    return s.getvalue()
+def get_region(city: str) -> str:
+    """Determine region from destination city"""
+    if city in WEST_CITIES:
+        return "West"
+    elif city in EAST_CITIES:
+        return "East"
+    return "Central"
 
-def _try_float(x: str) -> Optional[float]:
-    try:
-        return float(x)
-    except Exception:
-        return None
-
-def _row_diff(exp_row: List[str], got_row: List[str]) -> Dict[str, Any]:
-    diffs = []
-    for idx, col in enumerate(HEADER):
-        exp = exp_row[idx]
-        got = got_row[idx] if idx < len(got_row) else ""
-        if exp != got:
-            e_num = _try_float(exp)
-            g_num = _try_float(got)
-            diffs.append({
-                "column": col,
-                "expected": exp,
-                "found": got,
-                "numeric_delta": (None if (e_num is None or g_num is None) else (g_num - e_num))
-            })
-    return {
-        "mismatch_columns": [d["column"] for d in diffs],
-        "mismatches": diffs
+def check_constraints(route_combination: List[Dict], route_lookup: Dict) -> Tuple[bool, Dict]:
+    """
+    Check if a combination of 8 routes satisfies all constraints
+    
+    Returns: (is_valid, details_dict)
+    """
+    regions = {"West": 0, "East": 0, "Central": 0}
+    total_volume = 0
+    warehouse_counts = defaultdict(int)
+    unique_cities = set()
+    
+    for route in route_combination:
+        rid = route["route_id"]
+        full_route = route_lookup[rid]
+        
+        regions[full_route["region"]] += 1
+        total_volume += full_route["monthly_volume"]
+        warehouse_counts[full_route["warehouse_id"]] += 1
+        unique_cities.add(full_route["destination_city"])
+    
+    # Check all constraints
+    constraint_1 = regions["West"] >= 2 and regions["East"] >= 2 and regions["Central"] >= 2
+    constraint_2 = total_volume >= 2800
+    constraint_3 = all(count <= 3 for count in warehouse_counts.values())
+    constraint_4 = len(unique_cities) >= 6
+    
+    is_valid = constraint_1 and constraint_2 and constraint_3 and constraint_4
+    
+    details = {
+        "regions": dict(regions),
+        "total_volume": total_volume,
+        "max_warehouse_count": max(warehouse_counts.values()) if warehouse_counts else 0,
+        "unique_cities": len(unique_cities),
+        "constraint_1_regional": constraint_1,
+        "constraint_2_volume": constraint_2,
+        "constraint_3_warehouse": constraint_3,
+        "constraint_4_geographic": constraint_4
     }
-
-def _sha256_text(s: str) -> str:
-    return hashlib.sha256(s.encode("utf-8")).hexdigest()
+    
+    return is_valid, details
 
 def _recompute_ground_truth():
-    """Deterministically recompute expected top-8 rows using task rules."""
+    """
+    Deterministically recompute expected optimal 8 routes with constraints.
+    Returns list of [header] + 8 data rows
+    """
     routes = _load_json("routes.json")
     shipments = _load_json("shipments.json")
     weather_events = _load_json("weather_events.json")
@@ -112,6 +136,7 @@ def _recompute_ground_truth():
     # Group by route and filter to last 60 days
     shipments_by_route = defaultdict(list)
     weather_by_route = defaultdict(list)
+    warehouse_by_route = {}
     
     ref_date = datetime.strptime("2025-10-30", "%Y-%m-%d")
     
@@ -119,6 +144,8 @@ def _recompute_ground_truth():
         ship_date = datetime.strptime(s["date"], "%Y-%m-%d")
         if (ref_date - ship_date).days <= 60:
             shipments_by_route[s["route_id"]].append(s)
+            if s["route_id"] not in warehouse_by_route:
+                warehouse_by_route[s["route_id"]] = s["destination_warehouse_id"]
     
     for w in weather_events:
         weather_date = datetime.strptime(w["date"], "%Y-%m-%d")
@@ -136,8 +163,8 @@ def _recompute_ground_truth():
             continue
         eligible.append(r["route_id"])
 
-    # Features
-    rows = []
+    # Compute scores for all eligible routes
+    all_routes = []
     for rid in eligible:
         r = route_by_id[rid]
         route_shipments = shipments_by_route[rid]
@@ -222,38 +249,80 @@ def _recompute_ground_truth():
         
         anomaly_score = 3.0*delay_volatility + 2.5*cost_inflation + 4.0*weather_correlation + 3.5*capacity_penalty
 
-        rows.append({
+        all_routes.append({
             "route_id": r["route_id"],
             "route_name": r["route_name"],
             "origin_city": r["origin_city"],
             "destination_city": r["destination_city"],
-            "delay_volatility_score": _fmt3(delay_volatility),
-            "cost_inflation_score": _fmt3(cost_inflation),
-            "weather_impact_correlation": _fmt3(weather_correlation),
-            "capacity_utilization_penalty": _fmt3(capacity_penalty),
-            "anomaly_score": _fmt3(anomaly_score),
+            "region": get_region(r["destination_city"]),
+            "monthly_volume": r["monthly_volume"],
+            "warehouse_id": warehouse_by_route.get(rid, "UNKNOWN"),
+            "distance_km": r["distance_km"],
+            "delay_volatility_score": delay_volatility,
+            "cost_inflation_score": cost_inflation,
+            "weather_impact_correlation": weather_correlation,
+            "capacity_utilization_penalty": capacity_penalty,
+            "anomaly_score": anomaly_score,
         })
 
-    # Sort & take top-8
-    rows.sort(key=lambda r: (-float(r["anomaly_score"]), r["route_id"]))
-    rows = rows[:8]
-    for i, r in enumerate(rows, 1):
-        r["rank"] = str(i)
-
+    # Find optimal combination satisfying constraints
+    route_lookup = {r["route_id"]: r for r in all_routes}
+    
+    best_combination = None
+    best_total_score = -1
+    best_total_distance = -1
+    
+    for combo in combinations(all_routes, 8):
+        is_valid, _ = check_constraints(combo, route_lookup)
+        
+        if is_valid:
+            total_score = sum(r["anomaly_score"] for r in combo)
+            total_distance = sum(r["distance_km"] for r in combo)
+            
+            # Higher score wins; ties broken by higher distance
+            if (total_score > best_total_score or 
+                (abs(total_score - best_total_score) < 0.0001 and total_distance > best_total_distance)):
+                best_combination = list(combo)
+                best_total_score = total_score
+                best_total_distance = total_distance
+    
+    if best_combination is None:
+        raise ValueError("No valid combination found satisfying all constraints!")
+    
+    # Sort by anomaly score DESC, then route_id ASC
+    best_combination.sort(key=lambda r: (-r["anomaly_score"], r["route_id"]))
+    
+    # Build GT rows
     gt = [HEADER]
-    for r in rows:
-        gt.append([r[k] for k in HEADER])
-    return gt
+    for i, r in enumerate(best_combination, 1):
+        gt.append([
+            r["route_id"],
+            r["route_name"],
+            r["origin_city"],
+            r["destination_city"],
+            r["region"],
+            str(r["monthly_volume"]),
+            r["warehouse_id"],
+            str(r["distance_km"]),
+            _fmt3(r["delay_volatility_score"]),
+            _fmt3(r["cost_inflation_score"]),
+            _fmt3(r["weather_impact_correlation"]),
+            _fmt3(r["capacity_utilization_penalty"]),
+            _fmt3(r["anomaly_score"]),
+            str(i)
+        ])
+    
+    return gt, best_total_score, best_total_distance
 
 def grade(transcript: str | None = None) -> GradingResult:
-    """Compare /workdir/sol.csv against recomputed GT and return a binary score."""
+    """Compare /workdir/sol.csv against recomputed GT and return binary score."""
     subscores: Dict[str, float] = {"exact_match": 0.0}
     weights:   Dict[str, float] = {"exact_match": 1.0}
     details:   Dict[str, Any]   = {}
 
-    gt = _recompute_ground_truth()
-    details["expected_csv"] = _csv_to_string(gt)
-    details["expected_csv_sha256"] = _sha256_text(details["expected_csv"])
+    gt, gt_total_score, gt_total_distance = _recompute_ground_truth()
+    details["expected_total_anomaly_score"] = f"{gt_total_score:.3f}"
+    details["expected_total_distance"] = gt_total_distance
 
     if not SOL.exists():
         return GradingResult(
@@ -264,156 +333,94 @@ def grade(transcript: str | None = None) -> GradingResult:
             details=details
         )
 
-    # Read as table
+    # Read CSV - expect ONLY header + 8 data rows (9 lines total)
     try:
-        raw_df = pd.read_csv(SOL, dtype=str, keep_default_na=False, skip_blank_lines=True)
+        with open(SOL, 'r', encoding='utf-8') as f:
+            rows = list(csv.reader(f))
     except Exception as e:
         details["read_error"] = f"{type(e).__name__}: {e}"
         return GradingResult(
             score=0.0,
-            feedback="Failed to read sol.csv as a table",
+            feedback="Failed to read sol.csv",
             subscores=subscores,
             weights=weights,
             details=details
         )
-
-    def _strip_df_strings(df: pd.DataFrame) -> pd.DataFrame:
-        return df.applymap(lambda x: x.strip() if isinstance(x, str) else x).astype(str)
-
-    def _nonempty_df(df: pd.DataFrame) -> pd.DataFrame:
-        return df.replace("", pd.NA).dropna(how="all")
-
-    df = _strip_df_strings(raw_df)
-    df_ne = _nonempty_df(df).reset_index(drop=True)
-
-    # Build GT DataFrame
-    gt_header = gt[0]
-    gt_rows = gt[1:]
-    gt_df = pd.DataFrame(gt_rows, columns=gt_header, dtype=str)
-    gt_df = _strip_df_strings(gt_df).reset_index(drop=True)
-
+    
+    # Remove any empty rows
+    rows = [row for row in rows if any(cell.strip() for cell in row)]
+    
+    if len(rows) < 1:
+        return GradingResult(
+            score=0.0,
+            feedback="CSV is empty",
+            subscores=subscores,
+            weights=weights,
+            details=details
+        )
+    
+    found_header = [cell.strip() for cell in rows[0]]
+    data_rows = [[cell.strip() for cell in row] for row in rows[1:]]
+    
     # Header check
-    found_header = df_ne.columns.tolist()
-    if found_header != gt_header:
+    if found_header != HEADER:
         details["found_header"] = found_header
-        details["expected_header"] = gt_header
-        extra_cols = [c for c in found_header if c not in gt_header]
-        missing_cols = [c for c in gt_header if c not in found_header]
-        if extra_cols: details["extra_columns"] = extra_cols
-        if missing_cols: details["missing_columns"] = missing_cols
+        details["expected_header"] = HEADER
         return GradingResult(
             score=0.0,
-            feedback="Incorrect header.",
+            feedback=f"Incorrect header. Expected {len(HEADER)} columns, found {len(found_header)}",
             subscores=subscores,
             weights=weights,
             details=details
         )
-
+    
     # Row count check
-    if len(df_ne) != 8:
-        details["found_row_count"] = len(df_ne)
-        details["expected_row_count"] = 8
+    if len(data_rows) != 8:
+        details["found_row_count"] = len(data_rows)
         return GradingResult(
             score=0.0,
-            feedback=f"Expected exactly 8 data rows, found {len(df_ne)}",
+            feedback=f"Expected exactly 8 data rows, found {len(data_rows)}",
             subscores=subscores,
             weights=weights,
             details=details
         )
-
-    # Content check
-    left  = df_ne.reset_index(drop=True)
-    right = gt_df.reset_index(drop=True)
-
-    if left.shape != right.shape:
-        details["found_shape"] = left.shape
-        details["expected_shape"] = right.shape
-        return GradingResult(
-            score=0.0,
-            feedback=f"Shape mismatch: expected {right.shape}, found {left.shape}",
-            subscores=subscores,
-            weights=weights,
-            details=details
-        )
-
-    # Boolean-matrix mismatch count
-    try:
-        df_cmp = (left == right)
-        import numpy as _np
-        cmp_mat = df_cmp.to_numpy()
-        mismatch_count = int(_np.count_nonzero(~cmp_mat))
-    except Exception as e:
-        details["comparison_error"] = f"{type(e).__name__}: {e}"
-        mismatch_count = 1
-
-    # Hard string-equality gate
-    gt_rows_list   = [ [right.iloc[r, c] for c in range(right.shape[1])] for r in range(right.shape[0]) ]
-    cand_rows_list = [ [left.iloc[r, c]  for c in range(left.shape[1])]  for r in range(left.shape[0])  ]
-    hard_mismatch  = (cand_rows_list != gt_rows_list)
-
-    if (mismatch_count > 0) or hard_mismatch:
-        first_row_idx = None
-        for r in range(len(gt_rows_list)):
-            if r >= len(cand_rows_list) or cand_rows_list[r] != gt_rows_list[r]:
-                first_row_idx = r + 1
-                break
-        if first_row_idx is None:
-            try:
-                bad = _np.argwhere(~cmp_mat)
-                first_row_idx = int(bad[0, 0]) + 1 if bad.size else 1
-            except:
-                first_row_idx = 1
-
-        details["first_mismatch_row"] = first_row_idx
-
-        row_diffs = []
-        reported = 0
-        for r in range(len(gt_rows_list)):
-            if r >= len(cand_rows_list):
-                exp_row = gt_rows_list[r]
-                got_row = []
-            else:
-                exp_row = gt_rows_list[r]
-                got_row = cand_rows_list[r]
-            if exp_row != got_row:
-                rd = _row_diff(exp_row, got_row)
-                rd["row_index"] = r + 1
-                row_diffs.append(rd)
-                reported += 1
-                if reported >= 3:
-                    break
-
-        details["row_diffs"] = row_diffs
-        details["diff_summary"] = "; ".join(
-            [f"row {d['row_index']}: " + ", ".join(d["mismatch_columns"]) for d in row_diffs]
-        )
-
-        first = row_diffs[0]
-        cols_list = ", ".join(first.get("mismatch_columns", [])) or "unknown columns"
-        pairs = []
-        for m in first.get("mismatches", []):
-            pairs.append(f"{m['column']} (exp={m['expected']}, got={m['found']})")
-        preview = "; ".join(pairs[:5]) if pairs else "no per-column details"
-        more_note = "" if len(pairs) <= 5 else f" (+{len(pairs)-5} more)"
-
-        return GradingResult(
-            score=0.0,
-            feedback=(
-                f"Content mismatch at data row {first_row_idx}. "
-                f"Columns differing: {cols_list}. "
-                f"First-row diffs: {preview}{more_note}. "
-                f"See details.row_diffs for full breakdown."
-            ),
-            subscores=subscores,
-            weights=weights,
-            details=details
-        )
-
+    
+    # Exact match check
+    gt_data = gt[1:]  # Skip header
+    
+    for i, (expected_row, found_row) in enumerate(zip(gt_data, data_rows), 1):
+        if len(found_row) != len(expected_row):
+            details[f"row_{i}_column_count"] = f"expected {len(expected_row)}, found {len(found_row)}"
+            return GradingResult(
+                score=0.0,
+                feedback=f"Row {i} has wrong number of columns",
+                subscores=subscores,
+                weights=weights,
+                details=details
+            )
+        
+        for j, (exp_val, found_val) in enumerate(zip(expected_row, found_row)):
+            if exp_val != found_val:
+                col_name = HEADER[j]
+                details[f"row_{i}_mismatch"] = {
+                    "column": col_name,
+                    "expected": exp_val,
+                    "found": found_val
+                }
+                return GradingResult(
+                    score=0.0,
+                    feedback=f"Mismatch at row {i}, column '{col_name}': expected '{exp_val}', found '{found_val}'",
+                    subscores=subscores,
+                    weights=weights,
+                    details=details
+                )
+    
+    # All checks passed
     subscores["exact_match"] = 1.0
     return GradingResult(
         score=1.0,
-        feedback="Correct",
+        feedback="Correct - optimal combination with all constraints satisfied",
         subscores=subscores,
         weights=weights,
-        details={"rows_checked": 8}
+        details={"rows_checked": 8, "optimal_score": f"{gt_total_score:.3f}"}
     )

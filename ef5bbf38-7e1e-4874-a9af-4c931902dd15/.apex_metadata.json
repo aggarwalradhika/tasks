@@ -1,10 +1,10 @@
 {
   "task_id": "ef5bbf38-7e1e-4874-a9af-4c931902dd15",
   "version_info": {
-    "version_number": 1,
-    "date_created": "2025-10-30T12:08:52.728Z",
-    "upload_method": "initial",
-    "gcs_path": "ef5bbf38-7e1e-4874-a9af-4c931902dd15"
+    "version_number": 2,
+    "date_created": "2025-11-03T18:58:48.512Z",
+    "upload_method": "update",
+    "gcs_path": "v2_ef5bbf38-7e1e-4874-a9af-4c931902dd15"
   },
-  "downloaded_at": "2025-10-30T12:09:15.314967+00:00"
+  "downloaded_at": "2025-11-03T18:59:16.508029+00:00"
 }
