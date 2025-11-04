@@ -60,10 +60,16 @@ class Database:
             if self._matches(record, conditions, join_type):
                 results.append(record)
         
-        # Sort
-        if sort_by and results and sort_by in results[0].fields:
-            results.sort(key=lambda r: r.fields.get(sort_by, 0), 
-                        reverse=(sort_order == 'desc'))
+        # Sort - use record ID as secondary key for stable, deterministic ordering
+        if sort_by and results:
+            # Check if sort field exists in at least one record
+            has_sort_field = any(sort_by in r.fields for r in results)
+            if has_sort_field:
+                # Sort by (sort_field, id) for deterministic ordering when sort values are equal
+                if sort_order == 'desc':
+                    results.sort(key=lambda r: (r.fields.get(sort_by, 0), r.id), reverse=True)
+                else:
+                    results.sort(key=lambda r: (r.fields.get(sort_by, 0), r.id))
         
         # Limit - FIXED: Handle negative and zero limits correctly
         if limit is not None:

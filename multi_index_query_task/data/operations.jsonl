@@ -58,3 +58,8 @@ query:q6:priority:<:5
 {"op": "query", "query_id": "q23", "conditions": [{"field": "id", "operator": "==", "value": 1}], "join_type": "AND"}
 // Test complex OR query with multiple conditions
 {"op": "query", "query_id": "q24", "conditions": [{"field": "priority", "operator": ">=", "value": 9}, {"field": "category", "operator": "==", "value": "home"}, {"field": "tags", "operator": "CONTAINS", "value": "seasonal"}], "join_type": "OR"}
+// Test sorting stability - multiple records with same sort value should sort by ID
+{"op": "insert", "id": 11, "fields": {"category": "test", "status": "active", "priority": 5, "score": 0.80, "tags": [], "timestamp": 1600}}
+{"op": "insert", "id": 12, "fields": {"category": "test", "status": "active", "priority": 5, "score": 0.80, "tags": [], "timestamp": 1610}}
+{"op": "insert", "id": 13, "fields": {"category": "test", "status": "active", "priority": 5, "score": 0.80, "tags": [], "timestamp": 1620}}
+{"op": "query", "query_id": "q25", "conditions": [{"field": "priority", "operator": "==", "value": 5}], "join_type": "AND", "sort_by": "priority", "sort_order": "asc"}

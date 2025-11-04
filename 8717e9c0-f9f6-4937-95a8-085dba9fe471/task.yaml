@@ -67,9 +67,15 @@ prompt: |
 
   ## Required Implementation
 
-  You MUST implement a primary index (id -> record mapping) for CRUD operations.
-  Indexes are NOT required but will make queries faster. The query output must be correct
-  regardless of whether you implement indexes or not.
+  You must store records in memory and support all CRUD operations (Create/Insert, Read/Query, Update, Delete).
+  The implementation approach is up to you - you can use any data structure(s) that produce correct results.
+  
+  Common approaches include:
+  - Simple list/dict scan (works but may be slower)
+  - Primary index (id -> record mapping)
+  - Optional secondary indexes for faster queries (bitmap, range, inverted indexes)
+  
+  The grader validates output correctness only - implementation details are not checked.
 
   ### Optional: Bitmap Index (for categorical fields)
   If implemented, use for: category, status
@@ -96,19 +102,19 @@ prompt: |
   2. Find matching records (using indexes if available, or scan all records)
   3. Apply filters based on conditions and join_type (AND/OR)
   4. Sort results if sort_by is specified
-  5. Apply LIMIT if specified
+  5. Apply LIMIT if specified (see edge cases below)
   6. Compute aggregation if specified
 
   ## Operators
 
-  - `==`: Equality
-  - `!=`: Inequality  
+  - `==`: Equality (case-insensitive for strings)
+  - `!=`: Inequality (case-insensitive for strings)
   - `<`, `>`, `<=`, `>=`: Numeric comparisons
   - `CONTAINS`: Check if value is in tags list (case-insensitive)
 
   ## Aggregations
 
-  - `count`: Number of matching records
+  - `count`: Number of matching records (doesn't require a field)
   - `sum`: Sum of field values (numeric fields only)
   - `avg`: Average of field values (numeric fields only)
   - `min`: Minimum field value
@@ -118,7 +124,7 @@ prompt: |
 
   ### Update
   1. Find record by ID
-  2. Update specified fields
+  2. Update specified fields (merge with existing fields)
   3. If you have indexes, update them accordingly
 
   ### Delete
@@ -129,17 +135,17 @@ prompt: |
   ## Checkpoint & Restore
 
   ### Save
-  Save complete state (all records, indexes if any)
+  Save complete state (all records, indexes if any) with the given checkpoint_id
 
   ### Restore
-  Restore to saved state, discarding operations after checkpoint
+  Restore to saved state with the given checkpoint_id, discarding operations after checkpoint
 
   ## Output Format
 
   Write ONE file:
 
   ### /workdir/results.csv
-  One row per query operation:
+  One row per query operation (in the order queries were processed):
 
   Columns:
   query_id,result_count,aggregation_value,result_ids
@@ -151,19 +157,19 @@ prompt: |
 
   ## Edge Cases
 
-  - Invalid record ID on update/delete: Ignore operation
-  - Query on non-existent field: Return empty result
-  - Insert with duplicate ID: Update existing record
-  - Empty query conditions: Return all records
-  - Aggregation on non-numeric field: Return ""
-  - Sort by non-existent field: No sorting applied
-  - Negative or zero LIMIT: Return empty result
-  - Checkpoint restore to non-existent checkpoint: No-op
+  - Invalid record ID on update/delete: Ignore operation (no error)
+  - Query on non-existent field: Record doesn't match condition (field treated as missing)
+  - Insert with duplicate ID: Replace/update existing record with new fields
+  - Empty query conditions: Match all records
+  - Aggregation on non-numeric field: Return "" (empty string)
+  - Sort by non-existent field: No sorting applied (maintain insertion order)
+  - Negative or zero LIMIT: Return empty result (0 records)
+  - Checkpoint restore to non-existent checkpoint: Ignore operation (no-op)
 
   ## Notes
   - All string comparisons are case-insensitive
   - Timestamps are Unix epoch seconds (integers)
-  - Floating-point values rounded to 2 decimal places
+  - Floating-point values rounded to 2 decimal places in output
   - Record IDs must be unique
   - No network access. Deterministic output only.
   - File must be written to /workdir/results.csv with exact schema
