@@ -21,92 +21,215 @@ prompt: |
   
   Minimize the total weighted cost which includes:
   
-  1. Access Latency Cost: Sum of (popularity × request_volume × latency) for all user-object pairs
-     - Latency depends on user region, object replica location, and dependencies
-     - Users route to the nearest replica of an object
-     - Cross-region access incurs a penalty based on transfer costs between regions
+  1. Access Latency Cost: Sum of (popularity × request_volume × effective_latency) for all user-object pairs
+     - effective_latency = base_latency if same region, else base_latency × 1.5
+     - CRITICAL: The 1.5× cross-region penalty represents additional network overhead, routing latency, and potential congestion
+     - Users route to the nearest replica of an object (considering the penalty)
+     - This penalty applies even if the object is in a "nearby" region
      
   2. Replication Cost: Sum of (size × replication_penalty × num_replicas) for all objects
      - More replicas = higher storage/sync costs
      - replication_penalty = 2^(num_replicas - 1) (exponential growth)
+     - Examples: 1 replica = 1×, 2 replicas = 2×, 3 replicas = 4×, 4 replicas = 8×, 5 replicas = 16×
      
-  3. Cross-Region Transfer Cost: Sum of (size × transfer_cost × dependency_hops × 50)
+  3. Cross-Region Transfer Cost: Sum of (size × transfer_cost × dependency_hops)
      - When object A depends on B, and they're in different regions
      - transfer_cost varies by region pair (e.g., US↔Asia expensive, US↔Canada cheap)
-     - AMPLIFIED by 50x to make dependency co-location critical
+     - Uses maximum cost across all region pairs (worst-case scenario)
      
   4. Bandwidth Saturation Penalty: Quadratic penalty when region bandwidth is heavily utilized
-     - Each region has max cross-region bandwidth (GB/hour)
-     - IMPORTANT: Only CROSS-REGION traffic counts toward bandwidth
-     - Intra-region traffic (within same datacenter) is "free"
-     - penalty = max(0, (usage - 0.75×capacity)²) × 150
-     - Hard constraint: Solutions that exceed 100% of bandwidth capacity are INVALID
+     - Each region has max bandwidth (GB/hour)
+     - penalty = max(0, (usage - 0.8×capacity)²) × 100
+     - Bandwidth usage is calculated as total cross-region data transfer
+     - When users access objects not in their region, it counts toward bandwidth usage
   
   Total Cost = α₁×AccessCost + α₂×ReplicationCost + α₃×TransferCost + α₄×BandwidthPenalty
   
   Where α₁=10, α₂=1, α₃=5, α₄=20 (weights are specified in input file)
   
-  ## Cost Function Details (CRITICAL)
+  ## Constraints - HARD REQUIREMENTS
   
-  ### Access Latency Calculation
-  For cross-region access, the penalty is NOT a fixed 1.5x. Instead:
+  Your solution MUST satisfy these constraints or it will be rejected:
+  
+  1. Replication: Each object must be replicated to 1-5 caches (inclusive)
+  2. Capacity: Total size of objects on each cache must not exceed cache capacity
+  3. Bandwidth: Total cross-region bandwidth usage per region must not exceed region bandwidth capacity
+     - CRITICAL: This is a HARD constraint, not just a penalty
+     - Solutions violating bandwidth limits are INVALID and will fail grading
+     - Your solution must validate this before outputting results
+  4. Dependencies: Must form a DAG (Directed Acyclic Graph) - no circular dependencies
+  
+  ## Algorithm Design Guidance
+  
+  This section provides guidance on how to derive effective heuristics from the problem specification.
+  
+  ### 1. Object Importance Scoring
+  
+  Problem: Which objects should get more replicas?
+  
+  Derivable from specification:
+  - Access cost weight (α₁=10) is 10× larger than replication cost (α₂=1)
+  - This means reducing latency is much more valuable than saving storage
+  - Objects with high (popularity × access_frequency) have the most impact on access cost
+  - Objects with dependents affect multiple other objects
+  
+  Suggested formula:
   ```
-  If cache_region == user_region:
-    effective_latency = base_latency
-  Else:
-    penalty_multiplier = 1.0 + transfer_cost(user_region, cache_region)
-    effective_latency = base_latency × penalty_multiplier
+  importance = popularity × total_accesses × (1 + num_dependents × factor)
+  ```
+  Where factor ∈ [0.1, 0.5] weights dependency importance
+  
+  Rationale: This directly optimizes the dominant cost component (access latency)
+  
+  ### 2. Replication Strategy
+  
+  Problem: How many replicas should each object have?
+  
+  Derivable from specification:
+  - Replication cost grows exponentially: 2^(n-1)
+  - 3 replicas costs 4× more per MB than 1 replica
+  - Only high-value objects justify high replication cost
+  
+  Suggested approach:
+  ```
+  Rank objects by importance
+  Top X% → 3 replicas (high-value content)
+  Next Y% → 2 replicas (medium-value content)  
+  Rest → 1 replica (long-tail content)
+  ```
+  Where X ∈ [5%, 20%], Y ∈ [10%, 40%]
+  
+  Rationale: Aligns replication cost with value (importance)
+  
+  ### 3. Cache Selection Scoring
+  
+  Problem: Which caches should host each replica?
+  
+  Derivable from specification:
+  - Access cost = popularity × frequency × latency
+  - Cross-region access has 1.5× penalty
+  - Same-region placement avoids both latency penalty and bandwidth usage
+  
+  Suggested scoring:
+  ```
+  For each cache:
+    score = Σ(freq × (MAX_LATENCY - effective_latency)) for all users
+    where effective_latency = latency × 1.0 (same region) or 1.5 (cross-region)
   ```
   
-  This makes cross-region routing more complex and region-dependent.
+  Rationale: Maximizes benefit (reduced latency) for placement decision
   
-  ### Dependency Transfer Cost (50x Amplified)
-  When an object and its prerequisite are in different regions:
+  ### 4. Region Diversity for Replicas
+  
+  Problem: Should replicas be in same or different regions?
+  
+  Derivable from specification:
+  - Users in different regions → high latency if all replicas in one region
+  - Cross-region penalty (1.5×) makes this expensive
+  - But multiple replicas in one region saves bandwidth
+  
+  Suggested strategy:
   ```
-  cost = object_size × max_transfer_cost × 50
-  ```
-  
-  The 50x amplification makes dependency co-location CRITICAL for good solutions.
-  
-  ### Bandwidth Penalty (Stricter Thresholds)
-  ```
-  For each region:
-    if bandwidth_usage > 0.75 × bandwidth_capacity:
-      excess = bandwidth_usage - 0.75 × bandwidth_capacity
-      penalty += excess² × 150
-  ```
-  
-  Lower threshold (75% vs 80%) and higher coefficient (150 vs 100) means bandwidth management is more critical.
-  
-  ## Bandwidth Calculation Details
-  
-  Critical Understanding: Bandwidth limits apply to CROSS-REGION traffic only.
-  
-  For each region, bandwidth usage is calculated as:
-  ```
-  For each user group in region R:
-    For each object they access:
-      If NO replica exists in region R:
-        bandwidth_usage[R] += (object_size_MB × access_frequency) / 1024.0  // Convert to GB
+  For objects with 2+ replicas:
+    First replica → highest affinity region
+    Second replica → different high-affinity region (if significant demand)
+    Third replica → third region (only if widely accessed)
   ```
   
-  This reflects real-world CDN pricing where:
-  - Intra-region transfers (same datacenter): Free/cheap
-  - Cross-region transfers (between continents): Expensive and bandwidth-limited
+  Rationale: Balances latency reduction with replication cost
   
-  Example:
-  - US users accessing object on US cache: 0 bandwidth usage
-  - US users accessing object on EU cache: Counts toward US region's bandwidth
-  - The bandwidth penalty starts at 75% utilization and becomes quadratic
-  - Exceeding 100% capacity makes the solution INVALID (hard constraint)
+  ### 5. Bandwidth Management
+  
+  Problem: How to avoid bandwidth violations?
+  
+  Derivable from specification:
+  - Bandwidth is HARD constraint (solutions must satisfy it)
+  - Bandwidth usage = Σ(size × frequency) for cross-region accesses
+  - Placing replica in user's region eliminates bandwidth cost
+  
+  Required approach:
+  ```
+  After generating solution:
+    1. Calculate bandwidth usage per region
+    2. If any region exceeds capacity:
+       - Remove low-value cross-region replicas
+       - Add in-region replicas for high-access objects
+    3. Repeat until constraints satisfied
+  ```
+  
+  Rationale: Bandwidth is non-negotiable; must be validated and enforced
+  
+  ### 6. Multi-Start Search
+  
+  Problem: How to explore solution space?
+  
+  Derivable from specification:
+  - Problem is NP-hard (facility location + replication + load balancing)
+  - Local optima are common
+  - Different initial strategies explore different trade-offs
+  
+  Suggested approach:
+  ```
+  Try multiple initial configurations:
+    - Conservative replication (low X%, low Y%)
+    - Aggressive replication (high X%, high Y%)
+    - Balanced approaches
+  Choose best result
+  ```
+  
+  Rationale: Increases chance of finding good solution in complex space
+  
+  ### 7. Local Search Operators
+  
+  Problem: How to improve initial solution?
+  
+  Derivable from specification:
+  - Three main decision types: add replica, remove replica, swap location
+  - Each affects different cost components
+  - Must validate constraints after each change
+  
+  Suggested operators:
+  ```
+  Add: Increases replication cost but may reduce access/transfer cost
+  Remove: Reduces replication cost but may increase access cost
+  Swap: Changes access cost with minimal replication cost impact
+  ```
+  
+  Rationale: Different operators optimize different trade-offs
+  
+  ## Deriving Parameters from Problem Structure
+  
+  All "magic numbers" can be derived from these principles:
+  
+  1. Cost weight ratios (α₁:α₂:α₃:α₄ = 10:1:5:20):
+     - Access cost dominates → focus on latency
+     - Bandwidth penalty is severe → avoid violations
+     - These ratios justify importance scoring and replication decisions
+  
+  2. Exponential replication penalty (2^(n-1)):
+     - 3 replicas = 4× cost vs 1 replica
+     - Justifies limiting high replication to top 10-20% of objects
+  
+  3. Cross-region penalty (1.5×):
+     - 50% additional latency for cross-region access
+     - Justifies strong preference for same-region placement
+  
+  4. Bandwidth threshold (80%):
+     - Standard networking practice (avoid congestion)
+     - Quadratic penalty above this threshold
+  
+  5. Capacity utilization:
+     - Prefer balanced utilization across caches
+     - Avoid hotspots that limit future placement options
   
   ## Why This Matters - Real-World Complexity
   
   Real CDNs face competing objectives:
   - Low latency requires replicating content close to users (costs storage)
-  - Dependencies between objects require careful co-location (or pay massive transfer costs)
+  - Dependencies between objects require careful co-location (or pay transfer costs)
   - Bandwidth limits prevent placing all hot content in one region
   - Replication costs grow non-linearly (sync overhead, consistency, storage)
+  - Cross-region access incurs additional latency (1.5× penalty)
   
   A naive solution might replicate everything everywhere (high replication cost) or place everything in one region (high latency). You must find the optimal balance.
   
@@ -141,132 +264,49 @@ prompt: |
      - n = total caches, m = objects, r = regions, u = user groups, d = dependencies
      - α values are cost weights
   
-  2. Regions: For each region, its cross-region bandwidth capacity (GB/hour, as float)
+  2. Regions: For each region, its bandwidth capacity (GB/hour)
   
-  3. Caches: Each cache with its region and storage capacity (MB, as integer)
+  3. Caches: Each cache with its region and capacity (MB)
   
-  4. Objects: Object metadata (popularity 1-5, size 5-100 MB)
+  4. Objects: Object metadata (popularity 1-5, size in MB)
   
-  5. Object-Cache Latencies: Base latency for each object-cache pair (10-200 ms)
+  5. Object-Cache Latencies: Base latency for each object-cache pair (milliseconds)
+     - This is the latency within the same region
+     - Cross-region access incurs 1.5× penalty on this base latency
   
-  6. User Groups: Each user group's region and total request volume
+  6. User Groups: Each user group's region and total request volume (per hour)
   
   7. Access Patterns: Which objects each user group accesses (frequency = requests/hour for that object)
   
-  8. Transfer Costs: Cost per MB to transfer data between region pairs (0.0-2.0, as float)
+  8. Transfer Costs: Cost per MB to transfer data between region pairs
+     - Same-region transfers have cost 0.0
+     - Cross-region costs vary based on distance
   
   9. Dependencies: After blank line, prerequisite relationships
+     - Format: <prerequisite_object> <dependent_object>
+     - If object B depends on object A, accessing B may require accessing A
+     - If A and B are in different regions, incur transfer cost
   
-  Example (simplified 2 regions, 4 caches, 3 objects):
+  ## Output Format - Replication Strategy
+  
+  You must produce TWO files:
+  
+  ### 1. `/workdir/replication.txt` - Your replication decisions
+  
+  One line per object-cache assignment:
   ```
-  4 3 2 2 1 10 1 5 20
-  US-East 2 500.0
-  EU-West 2 400.0
-  cache1 US-East 200
-  cache2 US-East 250
-  cache3 EU-West 200
-  cache4 EU-West 180
-  obj1 5 30
-  obj2 3 20
-  obj3 2 25
-  obj1 cache1 10
-  obj1 cache2 12
-  obj1 cache3 80
-  obj1 cache4 85
-  obj2 cache1 15
-  obj2 cache2 18
-  obj2 cache3 75
-  obj2 cache4 78
-  obj3 cache1 20
-  obj3 cache2 22
-  obj3 cache3 70
-  obj3 cache4 72
-  users_us US-East 10000
-  users_eu EU-West 8000
-  users_us obj1 5000
-  users_us obj2 3000
-  users_us obj3 2000
-  users_eu obj1 4000
-  users_eu obj2 2500
-  users_eu obj3 1500
-  US-East EU-West 0.5
-  EU-West US-East 0.5
-  US-East US-East 0.0
-  EU-West EU-West 0.0
-  
-  obj1 obj2
-  ```
-  
-  This means:
-  - US-East has 2 caches (500 GB/hour cross-region bandwidth), EU-West has 2 caches (400 GB/hour)
-  - obj1 is popular (5), large (30MB), has low latency in US (10-12ms) but high in EU (80-85ms)
-  - US users make 10K requests/hour total, with 5K for obj1, 3K for obj2, 2K for obj3
-  - EU users make 8K requests/hour total
-  - Cross-region transfers cost 0.5 per MB
-  - obj2 depends on obj1
-  
-  ## Output Format - Single CSV File
-  
-  You must produce ONE file: `/workdir/sol.csv`
-  
-  The CSV file must have these exact columns (with header row):
-  - `object_id`: The ID of the object being replicated
-  - `cache_id`: The ID of the cache where the object is placed
-  - `total_cost`: The total cost of your entire solution (same value in every row)
-  
-  Example `sol.csv`:
-  ```csv
-  object_id,cache_id,total_cost
-  obj1,cache1,19850240
-  obj1,cache3,19850240
-  obj2,cache1,19850240
-  obj3,cache3,19850240
-  obj3,cache4,19850240
+  <object_id> <cache_id>
   ```
   
   CRITICAL NOTES:
   - An object can appear MULTIPLE times (replicated to multiple caches)
-  - An object MUST appear AT LEAST ONCE and AT MOST 5 TIMES
-  - The `total_cost` value must be IDENTICAL in every row
-  - Order of rows doesn't matter
+  - An object MUST appear AT LEAST ONCE
+  - Order doesn't matter in this file
   - More replicas = better latency but higher costs
-  - The grader will verify your cost matches the actual computed cost
   
-  This means:
-  - obj1 is replicated to cache1 (US-East) and cache3 (EU-West)
-  - obj2 is only on cache1 (single replica)
-  - obj3 is replicated to cache3 and cache4 (both EU-West)
-  - The total cost of this solution is 19,850,240
+  ### 2. `/workdir/ans.txt` - The optimal cost
   
-  ## Cost Calculation Example
-  
-  For the example above, assuming the configuration described:
-  
-  1. Access Latency Cost:
-     - US users → obj1 (cache1): 5000 × 5 (pop) × 10ms = 250,000
-     - EU users → obj1 (cache3): 4000 × 5 × 80ms = 1,600,000
-     - US users → obj2 (cache1): 3000 × 3 × 15ms = 135,000
-     - (Cross-region access would have variable penalties based on transfer_cost)
-     - Subtotal ≈ 1,985,000
-  
-  2. Replication Cost:
-     - obj1: 30MB × 2^(2-1) × 2 replicas = 120
-     - obj2: 20MB × 2^(1-1) × 1 replica = 20
-     - obj3: 25MB × 2^(2-1) × 2 replicas = 100
-     - Subtotal = 240
-  
-  3. Cross-Region Transfer Cost (with 50x amplification):
-     - obj2 depends on obj1; obj2 is in US-East, obj1 is in both regions
-     - Since obj1 exists in US-East, no cross-region transfer needed
-     - Subtotal = 0
-  
-  4. Bandwidth Penalty:
-     - US-East: No cross-region access (obj1 and obj2 both local)
-     - EU-West: No cross-region access (obj1 local)
-     - Both regions: 0 GB/hr usage, well below 75% threshold
-     - Subtotal = 0
-  
-  Total Cost = 10×1,985,000 + 1×240 + 5×0 + 20×0 = 19,850,240
+  A single integer: the total cost from your replication strategy (rounded to nearest integer).
   
   ## Constraints
   
@@ -275,139 +315,84 @@ prompt: |
   - 30 ≤ m ≤ 100 (number of objects)
   - 5 ≤ u ≤ 20 (number of user groups)
   - 0 ≤ d ≤ min(50, m×(m-1)/4) (number of dependencies)
-  - 10 ≤ base_latency ≤ 200 milliseconds
+  - 10 ≤ base_latency ≤ 200 milliseconds (latency values in input)
   - 5 ≤ size ≤ 100 MB (per object)
   - 100 ≤ cache_capacity ≤ 2000 MB (per cache)
-  - 200 ≤ region_bandwidth ≤ 2000 GB/hour (per region) - HARD LIMIT at 100%
+  - 200 ≤ region_bandwidth ≤ 2000 GB/hour (per region) - HARD LIMIT
   - popularity ∈ {1, 2, 3, 4, 5}
   - 0.0 ≤ transfer_cost ≤ 2.0 (per MB)
   - Dependencies form a DAG (no cycles)
   - Each object can be replicated to 1-5 caches (not unlimited)
-  - Cross-region latency penalty: 1.0 + transfer_cost(region_A, region_B)
-  - Dependency transfer cost amplification: 50x multiplier
-  - Bandwidth penalty threshold: 75% capacity (stricter than typical 80%)
-  - Bandwidth penalty coefficient: 150 (higher than typical 100)
   - You do NOT have internet access
   - Python 3 is available
   
-  ## Important Notes
+  ## Important Implementation Requirements
   
-  1. This is significantly NP-hard: You're solving a multi-objective optimization problem with:
-     - Facility location (where to place replicas)
-     - Replication strategy (how many copies)
-     - Load balancing (bandwidth limits)
-     - Dependency-aware co-location (critical with 50x amplification)
-     Use sophisticated meta-heuristics.
-  
-  2. Your solution will be validated: The grader will:
-     - Check CSV format with exact column names
-     - Verify total_cost is consistent across all rows
-     - Check that every object is replicated at least once (and at most 5 times)
-     - Verify capacity constraints for all caches (hard limit)
-     - Verify bandwidth constraints for all regions (hard limit - must not exceed 100%)
-     - Check the solution is feasible (respects dependencies)
-     - Compute the actual total cost from your replication strategy
-     - Check that it matches your claimed total_cost in the CSV
-     - Verify your solution is competitive (within 1.20x of a sophisticated baseline)
-  
-  3. Think algorithmically - Multi-Phase Approach: Consider:
-     - Phase 1: Initial Placement
-       * Identify "hot" objects (high popularity × high request volume)
-       * Place hot objects close to major user groups
-       * Consider dependency clusters for co-location (CRITICAL with 50x penalty!)
-       * Monitor bandwidth usage to avoid exceeding limits
+  1. Bandwidth Validation is MANDATORY:
+     ```python
+     def validate_bandwidth(replication):
+         # Calculate actual bandwidth usage per region
+         # Return True if all regions within capacity, False otherwise
      
-     - Phase 2: Replication Decisions
-       * High-popularity objects in multiple regions may benefit from replication
-       * Calculate break-even point: when does replication cost < latency improvement?
-       * Consider dependency chains - replicate whole chains together
-       * Replicating to user regions reduces cross-region bandwidth
-     
-     - Phase 3: Cost Optimization
-       * Local search: try adding/removing replicas
-       * Bandwidth balancing: shift load between regions
-       * Dependency co-location: move dependent objects together (50x cost!)
-     
-     - Phase 4: Fine-Tuning
-       * Simulated annealing or genetic algorithms
-       * Multi-start with different initial configurations
-       * Hill climbing on cost function
-       * Iterate 200-300 times minimum
+     # Before outputting solution:
+     if not validate_bandwidth(replication):
+         # Fix violations by removing cross-region replicas
+         # or adding in-region replicas
+     ```
   
-  4. Algorithm Design Patterns:
-     - Greedy with look-ahead: Don't just minimize immediate cost, consider future constraints
-     - Cost-benefit analysis: Calculate marginal benefit of each replication decision
-     - Cluster detection: Find groups of related objects (dependencies + co-access patterns)
-     - Region affinity scoring: Which objects belong in which regions?
-     - Bandwidth-aware placement: Monitor region bandwidth usage, MUST stay under 100% hard limit
-     - Dependency graph analysis: Identify critical paths, place them optimally (50x penalty!)
+  2. Cross-Region Penalty Must Be Applied:
+     ```python
+     effective_latency = base_latency * 1.5 if different_region else base_latency
+     ```
   
-  5. Key Tradeoffs to Balance:
-     - Replication vs Latency: More replicas = lower latency but exponentially higher replication cost
-     - Co-location vs Distribution: Placing dependencies together saves MASSIVE transfer cost (50x!)
-     - Regional concentration vs Spreading: Concentrating in few regions saves replication cost but increases latency
-     - Popular vs Unpopular: Over-optimizing for popular objects may ignore long-tail content
-     - Bandwidth vs Latency: Replicating to user regions reduces bandwidth but costs storage
+  3. Importance-Based Replication:
+     ```python
+     importance = popularity * total_accesses * (1 + dependency_factor)
+     # Sort objects by importance
+     # Allocate more replicas to more important objects
+     ```
   
-  6. Cost Function Insights:
-     - Access cost dominates (weight=10), so latency optimization is crucial
-     - Replication cost grows exponentially: 1 replica=1x, 2 replicas=2x, 3 replicas=4x, 4 replicas=8x, 5 replicas=16x
-     - Transfer cost (weight=5) with 50x amplification makes dependencies THE critical constraint
-     - Bandwidth penalty (weight=20) is severe and kicks in at 75% (not 80%)
-     - Cross-region access has variable penalty based on actual transfer costs
+  ## Common Pitfalls to Avoid
   
-  7. Bandwidth Management Strategy:
-     - Calculate expected bandwidth usage: sum of (object_size × access_frequency) for cross-region accesses
-     - Stay well below 75% to avoid quadratic penalties
-     - Never exceed 100% - this makes your solution INVALID
-     - Popular objects accessed by distant users should be replicated to those regions
-     - Consider bandwidth capacity when deciding on replication strategy
+  1. NOT validating bandwidth constraints before output → FAIL
+  2. Ignoring cross-region penalty (1.5×) → Incorrect cost calculation
+  3. Replicating everything everywhere → Replication cost explosion
+  4. Treating all objects equally → Suboptimal importance ranking
+  5. Forgetting dependency transfer costs → Missed optimization opportunity
+  6. Not considering request volumes → Popularity ≠ actual usage
+  7. Exceeding bandwidth limits → Invalid solution, grading failure
   
-  8. Dependency Management (CRITICAL):
-     - The 50x amplification means dependency co-location is now THE dominant factor
-     - Always try to place dependent objects in the same region
-     - If you must split dependencies, minimize the number of splits
-     - Use dependency graph analysis to identify clusters that should stay together
+  ## Grading Criteria
   
-  9. Be deterministic: If your algorithm has ties, break them consistently (e.g., by object ID, cache ID lexicographically).
+  Your solution will be validated on:
   
-  10. Test incrementally: 
-      - Start with simple case: no replication, see baseline cost and bandwidth
-      - Add replication for top-k popular objects
-      - Verify costs decrease and bandwidth stays under limits
-      - Check constraints are never violated
-      - Validate CSV format is correct
+  1. ✓ Every object replicated 1-5 times
+  2. ✓ Cache capacity constraints satisfied
+  3. ✓ Bandwidth constraints satisfied (HARD) 
+  4. ✓ Dependencies form DAG
+  5. ✓ Claimed cost matches computed cost
+  6. ✓ Solution is near-optimal (within 1.30× of baseline)
   
-  11. Near-optimality tolerance: Your solution must achieve a score within 1.20x (120%) of a sophisticated baseline. This is STRICTER than typical 1.30x tolerance, reflecting that you need an excellent algorithm that:
-      - Uses multi-start optimization (7+ different strategies)
-      - Performs extensive local search (200-300 iterations)
-      - Carefully manages dependency co-location (50x penalty!)
-      - Monitors bandwidth proactively (75% threshold)
-      - Balances all four cost components effectively
-  
-  12. Common Pitfalls to Avoid:
-      - Replicating everything everywhere (replication cost explosion)
-      - Ignoring bandwidth constraints (INVALID solution)
-      - Not replicating popular content to high-traffic regions (bandwidth overload)
-      - Treating all objects equally (optimize for high-impact objects first)
-      - Forgetting dependency transfer costs (now 50x amplified!)
-      - Not considering request volumes (popularity ≠ actual usage)
-      - Using fixed 1.5x cross-region penalty (it's variable now!)
-      - Stopping optimization too early (<100 iterations won't suffice)
-      - Wrong CSV format (must have exact columns with header)
-      - Inconsistent total_cost values across rows
+  CRITICAL: If your solution violates bandwidth constraints, it will receive 0 points regardless of cost.
 
 metadata:
   difficulty: very_hard
   category: optimization_algorithms
   tags:
+    - multi_objective_optimization
+    - replication_strategy
     - resource_allocation
     - network_optimization
+    - np_hard_optimization
     - dependency_graphs
     - capacity_constraints
+    - bandwidth_management
   estimated_time_minutes: 120
   references:
-    - "N/A"
+    - "Inspired by real-world CDN optimization and cloud placement"
+    - "Related to multi-commodity network flow and facility location"
+    - "Connection to replica placement in distributed systems"
+    - "Multi-objective optimization with competing constraints"
   time_limit: 420              # seconds (7 minutes for complex computation)
   memory_limit: 2048           # MB (more memory for complex algorithms)
   max_agent_timeout_sec: 900   # hard cap for agent execution (15 minutes)
