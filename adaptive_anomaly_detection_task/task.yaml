@@ -1,0 +1,219 @@
+prompt: |
+  You are given a single input file at /workdir/data/sensor_stream.jsonl.
+
+  ## Task Overview
+  Implement a streaming anomaly detection system that learns incrementally from sensor data,
+  adapts to concept drift, and detects anomalies in real-time. The system must handle multiple
+  detection strategies, incorporate labeled feedback, and manage concept drift events.
+
+  ## Accepted line formats (each line is independent)
+  1) Observation line (sensor reading):
+     {
+       "stream_id": <int>,                # unique monotonic ID, if missing auto-assigned
+       "type": "observation",
+       "sensors": {
+         "<sensor_name>": <float|int|str>,  # sensor readings, mixed types allowed
+         ...
+       },
+       "timestamp": <int>                 # Unix epoch milliseconds
+     }
+
+  2) Label line (anomaly feedback):
+     {
+       "stream_id": <int>,
+       "type": "label",
+       "target_stream_id": <int>,        # which observation to label
+       "is_anomaly": <bool>,             # true = anomaly, false = normal
+       "confidence": <float, optional>   # labeling confidence 0.0-1.0, default 1.0
+     }
+
+  3) Drift event line (simulated concept drift):
+     {
+       "stream_id": <int>,
+       "type": "drift_event",
+       "affected_sensors": [<str>, ...], # which sensors are drifting
+       "drift_type": "sudden" | "gradual" | "incremental" | "recurring",
+       "severity": <float, optional>     # 0.0-1.0, default 0.5
+     }
+
+  4) Checkpoint line (state save/restore):
+     {
+       "stream_id": <int>,
+       "type": "checkpoint",
+       "checkpoint_id": <str>,
+       "action": "save" | "restore"
+     }
+
+  5) Config adjustment line (runtime parameter changes):
+     {
+       "stream_id": <int>,
+       "type": "adjust_config",
+       "parameter": "window_size" | "sensitivity" | "memory_limit",
+       "value": <int|float>
+     }
+
+  ## Normalization & tolerance rules
+  - Missing/invalid "stream_id" → auto-assign increasing integer (1, 2, 3, ...)
+  - Missing "timestamp" for observations → use previous timestamp + 1000ms
+  - Invalid sensor values → treated as missing, excluded from anomaly calculation
+  - Malformed lines, blank lines, and lines starting with '//' are ignored
+  - Label references to non-existent stream_ids are ignored
+  - Checkpoint restore to non-existent checkpoint_id is a no-op
+
+  ## Fixed parameters
+  - initial_window_size = 100           # observations for baseline statistics
+  - min_baseline_samples = 30           # minimum samples before detection starts
+  - anomaly_threshold = 0.75            # base threshold for anomaly score
+  - memory_budget_samples = 1000        # max observations to keep in memory
+  - drift_detection_window = 50         # observations for drift detection
+  - ensemble_update_freq = 20           # update ensemble weights every N observations
+  - confidence_decay = 0.95             # exponential decay for old statistics
+
+  ## Detection Strategies (ensemble of three)
+
+  ### 1. Statistical Strategy (Z-Score based)
+  For each numeric sensor:
+  - Maintain running mean μ and std σ using exponential moving average
+  - Anomaly score = |value - μ| / (σ + ε) where ε = 0.001
+  - Normalize to [0, 1] using sigmoid: score = 1 / (1 + exp(-2 * (z_score - 2)))
+  - For categorical sensors: frequency-based surprise (rare values score higher)
+
+  ### 2. Distance Strategy (k-NN based)
+  - Maintain reservoir sample of recent normal observations (size = memory_budget / 3)
+  - For new observation, compute distance to k=5 nearest neighbors
+  - Use weighted Euclidean distance (normalize each dimension by its range)
+  - Anomaly score = avg_distance / (max_distance_seen + ε)
+  - Categorical dimensions: distance = 0 if match, 1 if different
+
+  ### 3. Isolation Strategy (simplified streaming version)
+  - Maintain random projection trees (3 trees, max depth = 8)
+  - Score = normalized_path_length / expected_path_length
+  - Rebuild trees every 200 observations using reservoir sample
+  - Higher scores indicate easier isolation (more anomalous)
+
+  ## Ensemble Combination
+  - Initial weights: statistical=0.4, distance=0.3, isolation=0.3
+  - Final anomaly score = weighted average of strategy scores
+  - Update weights every ensemble_update_freq observations based on:
+    * Labeled feedback (if available): increase weight of strategies that predicted correctly
+    * Consistency: strategies with lower variance get higher weight
+    * Drift events: temporarily boost statistical strategy weight after drift
+
+  ## Concept Drift Handling
+
+  ### Drift Detection
+  Use ADWIN-style approach:
+  - Maintain two sliding windows: recent (last 25 obs) and reference (prev 25 obs)
+  - For each numeric sensor, compute mean difference between windows
+  - Drift detected if |mean_recent - mean_reference| > threshold
+  - Threshold = 2 * sqrt((σ²_recent + σ²_reference) / 25)
+
+  ### Adaptation Actions
+  When drift detected:
+  1. Reset running statistics for affected sensors
+  2. Clear old normal samples from reservoir
+  3. Temporarily lower anomaly threshold by 20% (gradual recovery over 50 obs)
+  4. Mark adaptation_triggered = true in output
+  5. Log drift severity based on magnitude of mean shift
+
+  ### Drift Event Processing
+  When drift_event line encountered:
+  - Mark drift_detected = true for next 10 observations
+  - Apply adaptation actions for affected_sensors
+  - Severity affects threshold adjustment: threshold *= (1 - 0.2 * severity)
+
+  ## Feedback Integration
+
+  ### Label Processing
+  When label line encountered:
+  - Find the target observation in history (if still in memory)
+  - If is_anomaly = true:
+    * Exclude from normal baseline statistics
+    * Remove from reservoir sample if present
+    * Increase anomaly_threshold slightly (threshold *= 1.02) to reduce false positives
+  - If is_anomaly = false (false positive):
+    * Add to normal baseline with high weight
+    * Decrease anomaly_threshold slightly (threshold *= 0.98)
+    * Penalize strategies that scored it high
+  - Use confidence to weight the feedback impact
+
+  ## Memory Management
+  - Reservoir sampling: maintain up to memory_budget_samples observations
+  - Probability of keeping observation i: min(1, memory_budget / i)
+  - Prioritize recent observations and labeled observations
+  - When memory full, replace oldest non-labeled observation
+
+  ## Checkpointing
+  Save/restore includes:
+  - All running statistics (means, stds, ranges)
+  - Reservoir sample contents
+  - Ensemble weights
+  - Current anomaly threshold
+  - Drift detection state
+  - Random seeds for determinism
+
+  ## Output Requirements
+  Write /workdir/sol.csv after processing all stream entries.
+  
+  For each observation (type="observation"), emit ONE row with:
+  - stream_id: the observation's stream_id
+  - anomaly_score: final ensemble score, rounded to 3 decimals, range [0.0, 1.0]
+  - is_anomaly: "true" if anomaly_score >= current_threshold, else "false"
+  - confidence: confidence in the prediction, rounded to 3 decimals [0.0, 1.0]
+    * confidence = min(1.0, (baseline_samples / min_baseline_samples) * 
+                       (1 - abs(anomaly_score - threshold) / threshold))
+  - strategy_scores: colon-separated scores "stat:X.XXX:dist:X.XXX:iso:X.XXX"
+  - ensemble_weights: colon-separated weights "stat:X.XXX:dist:X.XXX:iso:X.XXX"
+  - drift_detected: "true" if drift detected in current observation window, else "false"
+  - adaptation_triggered: "true" if adaptation actions applied, else "false"
+
+  ## CSV Schema (strict column order)
+  stream_id,anomaly_score,is_anomaly,confidence,strategy_scores,ensemble_weights,drift_detected,adaptation_triggered
+
+  ## Edge Cases & Special Rules
+  1. Cold Start: First min_baseline_samples observations:
+     - Always mark is_anomaly = "false"
+     - anomaly_score = 0.000
+     - confidence = (samples_seen / min_baseline_samples)
+     - Build baseline statistics only
+
+  2. Missing Sensors: If observation missing sensors seen before:
+     - Use last known value for that sensor in distance calculation
+     - Exclude missing sensors from statistical scoring
+     - Isolation strategy uses available sensors only
+
+  3. All-Categorical Data: If no numeric sensors present:
+     - Distance and Statistical strategies use frequency-based surprise
+     - Isolation strategy uses category splitting
+
+  4. Determinism Requirements:
+     - Use fixed random seed (42) for all randomness
+     - Reservoir sampling must be deterministic given seed
+     - Tie-breaking in k-NN uses stream_id (lower ID wins)
+
+  5. Performance Constraints:
+     - Must process ≥100 observations per second
+     - Memory usage ≤ 100MB
+     - No batch reprocessing allowed (one-pass only)
+
+  ## Notes
+  - Sensor values can be negative, zero, or positive
+  - Timestamps may be non-monotonic (handle gracefully, use stream_id order)
+  - Multiple labels for same observation: use most recent label
+  - Config adjustments apply to all subsequent observations
+  - Write exactly one row per observation, in stream_id order
+  - All floating-point outputs rounded to exactly 3 decimal places
+  - No network access. Deterministic output required.
+
+metadata:
+  difficulty: hard
+  category: data-science
+  tags: [streaming, anomaly-detection, concept-drift, online-learning, ensemble, adaptive]
+  references:
+    - "ADWIN: Adaptive Windowing for Concept Drift Detection"
+
+time_limit: 3600
+memory_limit: 1024
+max_agent_timeout_sec: 2400
+expert_time_estimate_min: 240
+junior_time_estimate_min: 480
