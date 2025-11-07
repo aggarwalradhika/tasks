@@ -37,6 +37,17 @@ query:q6:priority:<:5
 {"op": "query", "query_id": "q16", "conditions": [{"field": "status", "operator": "==", "value": "active"}], "join_type": "AND", "limit": 0}
 // Test negative limit (Issue #1)
 {"op": "query", "query_id": "q17", "conditions": [{"field": "category", "operator": "==", "value": "electronics"}], "join_type": "AND", "limit": -5}
+// *** CRITICAL TEST: LIMIT + AGGREGATION INTERACTION (Issue #3) ***
+// This query matches 7 active records but limits to 3, so aggregation should be on those 3 only
+{"op": "query", "query_id": "q26", "conditions": [{"field": "status", "operator": "==", "value": "active"}], "join_type": "AND", "sort_by": "priority", "sort_order": "desc", "limit": 3, "aggregation": {"type": "sum", "field": "score"}}
+// Another LIMIT + aggregation test: count with limit
+{"op": "query", "query_id": "q27", "conditions": [{"field": "priority", "operator": ">=", "value": 3}], "join_type": "AND", "limit": 4, "aggregation": {"type": "count", "field": "id"}}
+// LIMIT + avg aggregation
+{"op": "query", "query_id": "q28", "conditions": [{"field": "status", "operator": "==", "value": "active"}], "join_type": "AND", "sort_by": "score", "sort_order": "asc", "limit": 2, "aggregation": {"type": "avg", "field": "score"}}
+// LIMIT + min aggregation
+{"op": "query", "query_id": "q29", "conditions": [{"field": "status", "operator": "==", "value": "active"}], "join_type": "AND", "limit": 5, "aggregation": {"type": "min", "field": "priority"}}
+// LIMIT + max aggregation
+{"op": "query", "query_id": "q30", "conditions": [{"field": "category", "operator": "!=", "value": "books"}], "join_type": "AND", "sort_by": "priority", "sort_order": "asc", "limit": 2, "aggregation": {"type": "max", "field": "score"}}
 // Test update with invalid ID (edge case)
 {"op": "update", "id": 999, "fields": {"status": "updated"}}
 // Test delete with invalid ID (edge case)

@@ -98,12 +98,21 @@ prompt: |
 
   ## Query Processing
 
+  Process queries in the following order. IMPORTANT: Each step operates on the output of the previous step.
+
   1. Parse query conditions, join type, sorting, aggregation
   2. Find matching records (using indexes if available, or scan all records)
   3. Apply filters based on conditions and join_type (AND/OR)
   4. Sort results if sort_by is specified
-  5. Apply LIMIT if specified (see edge cases below)
-  6. Compute aggregation if specified
+  5. Apply LIMIT if specified (this reduces the result set)
+  6. Compute aggregation if specified (operating on the result set AFTER step 5, i.e., on the limited records)
+
+  IMPORTANT: Unlike standard SQL, LIMIT in this task affects both result_count and aggregation calculations.
+  When LIMIT is applied, both the returned record count and any aggregations are computed only on the 
+  limited subset of records, not on all matching records. This means:
+  - Aggregations are calculated AFTER the LIMIT is applied
+  - If a query has 10 matching records but LIMIT=3, aggregations compute on only those 3 records
+  - result_count will be 3, not 10
 
   ## Operators
 
@@ -151,8 +160,9 @@ prompt: |
   query_id,result_count,aggregation_value,result_ids
 
   - query_id: From query operation
-  - result_count: Number of matching records
-  - aggregation_value: Result of aggregation (or "" if none)
+  - result_count: Number of records RETURNED in this response (after applying LIMIT, if specified). 
+    For queries with LIMIT=3 that match 10 records, this should be 3, not 10.
+  - aggregation_value: Result of aggregation computed on the limited result set (or "" if none)
   - result_ids: Comma-separated list of matching record IDs (up to 100)
 
   ## Edge Cases
@@ -165,6 +175,7 @@ prompt: |
   - Sort by non-existent field: No sorting applied (maintain insertion order)
   - Negative or zero LIMIT: Return empty result (0 records)
   - Checkpoint restore to non-existent checkpoint: Ignore operation (no-op)
+  - Aggregation with LIMIT: Aggregation values are computed on records AFTER the limit is applied, not on all matching records
 
   ## Notes
   - All string comparisons are case-insensitive
