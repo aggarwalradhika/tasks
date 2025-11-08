@@ -1,15 +1,17 @@
-# grader.py
+# grader.py - CORRECTED VERSION
 import csv
 import json
 import bz2
 import gzip
+import os
+import math
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from dataclasses import dataclass, field
+from datetime import datetime
 import numpy as np
 from scipy import stats
 from collections import defaultdict
-import math
 
 @dataclass
 class GradingResult:
@@ -20,31 +22,48 @@ class GradingResult:
     details: dict | None = None
     weights: dict | None = None
 
+# Task-specified constants
+START = datetime.fromisoformat("2024-01-15T00:00:00+00:00")
+END = datetime.fromisoformat("2024-01-31T23:59:59+00:00")
+VALID_COUNTRIES = {"US", "UK", "CA", "DE", "FR"}
+VALID_DEVICES = {"mobile", "desktop", "tablet"}
+MIN_SAMPLE_SIZE = 30
+FDR_ALPHA = 0.05
+
 def _iter_files(root: Path):
     """
-    Yield open file handles for each experiment data file.
+    Recursively iterate through all experiment data files.
     
     Supports compressed and uncompressed formats:
       - *.jsonl and *.jsonl.bz2
       - *.csv and *.csv.gz
     
-    Returns tuples: (filename, kind, file_handle)
+    Returns tuples: (path, kind, file_handle)
       kind ∈ {"jsonl", "csv"}
     """
-    logs = root / "data" / "experiments"
-    if not logs.exists():
+    if not root.exists():
         return
-    for p in logs.iterdir():
-        if p.suffix == ".gz":
-            with gzip.open(p, "rt", encoding="utf-8", errors="ignore") as f:
-                yield p.name, "csv", f
-        elif p.suffix == ".bz2":
-            with bz2.open(p, "rt", encoding="utf-8", errors="ignore") as f:
-                yield p.name, "jsonl", f
-        elif p.suffix == ".jsonl":
-            yield p.name, "jsonl", open(p, "rt", encoding="utf-8", errors="ignore")
-        elif p.suffix == ".csv":
-            yield p.name, "csv", open(p, "rt", encoding="utf-8", errors="ignore")
+    
+    for dirpath, _, filenames in os.walk(root):
+        for fname in filenames:
+            p = Path(dirpath) / fname
+            
+            if p.suffix == ".gz":
+                f = gzip.open(p, "rt", encoding="utf-8", errors="ignore")
+                kind = "csv"
+            elif p.suffix == ".bz2":
+                f = bz2.open(p, "rt", encoding="utf-8", errors="ignore")
+                kind = "jsonl"
+            elif p.suffix == ".jsonl":
+                f = open(p, "rt", encoding="utf-8", errors="ignore")
+                kind = "jsonl"
+            elif p.suffix == ".csv":
+                f = open(p, "rt", encoding="utf-8", errors="ignore")
+                kind = "csv"
+            else:
+                continue
+            
+            yield p, kind, f
 
 def _parse_jsonl(f):
     """
@@ -75,24 +94,48 @@ def _parse_csv(f):
         reader = csv.DictReader(f)
     except Exception:
         return
+    
     for row in reader:
         # Skip rows that are comments
         if any(str(v).strip().startswith("#") or str(v).strip().startswith("//") 
                for v in row.values()):
             continue
+        
         clean = {}
         for k, v in row.items():
             if isinstance(v, str):
+                # Strip inline comments
                 v = v.split("#")[0].strip()
             clean[k] = v
         yield clean
 
-def _is_binary_metric(values):
+def _within_window(ts: str) -> bool:
+    """Check if timestamp is within the valid date range."""
+    try:
+        dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    except:
+        return False
+    return START <= dt <= END
+
+def _is_binary_metric(values: List[float]) -> bool:
     """Check if all values are in {0, 1, 0.0, 1.0}."""
     unique_vals = set(values)
     return unique_vals.issubset({0, 1, 0.0, 1.0})
 
-def _two_proportion_ztest(control, treatment):
+def _wilson_ci(successes: int, n: int, alpha: float = 0.05) -> List[float]:
+    """Wilson score confidence interval for proportion."""
+    if n == 0:
+        return [0.0, 0.0]
+    
+    p = successes / n
+    z = stats.norm.ppf(1 - alpha/2)
+    denominator = 1 + z**2 / n
+    centre = (p + z**2 / (2*n)) / denominator
+    spread = z * math.sqrt((p*(1-p) + z**2/(4*n)) / n) / denominator
+    
+    return [max(0, centre - spread), min(1, centre + spread)]
+
+def _two_proportion_ztest(control: np.ndarray, treatment: np.ndarray) -> Tuple[float, float]:
     """
     Perform two-proportion z-test.
     Returns: z_statistic, p_value
@@ -115,7 +158,7 @@ def _two_proportion_ztest(control, treatment):
     
     return z, p_value
 
-def _welch_ttest(control, treatment):
+def _welch_ttest(control: np.ndarray, treatment: np.ndarray) -> Tuple[float, float]:
     """
     Perform Welch's t-test (unequal variances).
     Returns: t_statistic, p_value
@@ -123,21 +166,56 @@ def _welch_ttest(control, treatment):
     result = stats.ttest_ind(treatment, control, equal_var=False)
     return result.statistic, result.pvalue
 
+def _cohens_d(control: np.ndarray, treatment: np.ndarray) -> float:
+    """Calculate Cohen's d effect size."""
+    n1, n2 = len(control), len(treatment)
+    s1, s2 = np.std(control, ddof=1), np.std(treatment, ddof=1)
+    
+    # Pooled standard deviation
+    pooled_std = math.sqrt(((n1-1)*s1**2 + (n2-1)*s2**2) / (n1+n2-2))
+    
+    if pooled_std == 0:
+        return 0.0
+    
+    return (np.mean(treatment) - np.mean(control)) / pooled_std
+
+def _power_ztest(n1: int, n2: int, effect_size: float, alpha: float = 0.05) -> float:
+    """Calculate statistical power for two-proportion z-test."""
+    z_alpha = stats.norm.ppf(1 - alpha/2)
+    noncentrality = effect_size * math.sqrt(n1 * n2 / (n1 + n2))
+    power = 1 - stats.norm.cdf(z_alpha - abs(noncentrality)) + stats.norm.cdf(-z_alpha - abs(noncentrality))
+    return max(0, min(1, power))
+
+def _power_ttest(n1: int, n2: int, effect_size: float, alpha: float = 0.05) -> float:
+    """Calculate statistical power for Welch's t-test."""
+    df = n1 + n2 - 2
+    t_crit = stats.t.ppf(1 - alpha/2, df)
+    noncentrality = effect_size * math.sqrt(n1 * n2 / (n1 + n2))
+    power = 1 - stats.nct.cdf(t_crit, df, noncentrality) + stats.nct.cdf(-t_crit, df, noncentrality)
+    return max(0, min(1, power))
+
 def _compute_expected(workdir: Path) -> dict:
     """
     Compute the expected analysis results from ground-truth data.
     
-    - Deduplicates by (experiment_id, user_id, metric_type)
+    Implements ALL task requirements:
+    - Deduplicates by (experiment_id, user_id, metric_type) - keeps LAST occurrence
     - Filters to only control and treatment variants
-    - Performs statistical tests
-    - Applies Bonferroni correction
+    - Filters by date range and valid country/device
+    - Performs SEGMENTED analysis by country and device
+    - Applies sample size filtering (minimum 30)
+    - Performs statistical tests with confidence intervals and power analysis
+    - Applies Benjamini-Hochberg FDR correction
     """
-    seen = set()
-    data = defaultdict(lambda: defaultdict(lambda: {"control": [], "treatment": []}))
+    root = workdir / "data" / "experiments"
     
-    for name, kind, f in _iter_files(workdir) or []:
+    # First pass: deduplicate by keeping LAST occurrence
+    seen = {}  # (exp_id, user_id, metric_type) -> (timestamp, full_record)
+    
+    for p, kind, f in _iter_files(root):
         with f:
             it = _parse_jsonl(f) if kind == "jsonl" else _parse_csv(f)
+            
             for obj in it:
                 try:
                     exp_id = obj["experiment_id"]
@@ -145,87 +223,212 @@ def _compute_expected(workdir: Path) -> dict:
                     variant = obj["variant"]
                     metric_type = obj["metric_type"]
                     metric_value = float(obj["metric_value"])
+                    timestamp = obj["timestamp"]
+                    country = obj.get("country", "")
+                    device = obj.get("device", "")
                 except Exception:
                     continue
                 
-                # Only consider control and treatment
+                # Filter: only control and treatment
                 if variant not in ["control", "treatment"]:
                     continue
                 
-                # Deduplicate: keep first occurrence
+                # Filter: valid country and device
+                if country not in VALID_COUNTRIES or device not in VALID_DEVICES:
+                    continue
+                
+                # Filter: within time window
+                if not _within_window(timestamp):
+                    continue
+                
+                # Deduplication: keep LAST occurrence
                 key = (exp_id, user_id, metric_type)
                 if key in seen:
-                    continue
-                seen.add(key)
+                    old_ts, _ = seen[key]
+                    try:
+                        old_dt = datetime.fromisoformat(old_ts.replace("Z", "+00:00"))
+                        new_dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+                        if new_dt <= old_dt:
+                            continue  # Keep the old one (later timestamp)
+                    except:
+                        continue
                 
-                data[exp_id][metric_type][variant].append(metric_value)
+                # Store the record
+                seen[key] = (timestamp, {
+                    "exp_id": exp_id,
+                    "country": country,
+                    "device": device,
+                    "metric_type": metric_type,
+                    "variant": variant,
+                    "metric_value": metric_value
+                })
     
-    # Perform statistical analysis
+    # Second pass: build segmented data structure
+    data = defaultdict(
+        lambda: defaultdict(
+            lambda: defaultdict(
+                lambda: {"control": [], "treatment": []}
+            )
+        )
+    )
+    
+    for timestamp, record in seen.values():
+        exp_id = record["exp_id"]
+        country = record["country"]
+        device = record["device"]
+        metric_type = record["metric_type"]
+        variant = record["variant"]
+        metric_value = record["metric_value"]
+        
+        data[exp_id][(country, device)][metric_type][variant].append(metric_value)
+    
+    # Third pass: perform statistical analysis
     experiments = []
+    all_pvalues = []
     
     for exp_id in sorted(data.keys()):
-        metrics_data = data[exp_id]
-        exp_metrics = []
+        segments_data = data[exp_id]
+        exp_segments = []
         
-        for metric_type in sorted(metrics_data.keys()):
-            variants = metrics_data[metric_type]
+        for (country, device) in sorted(segments_data.keys()):
+            metrics_data = segments_data[(country, device)]
+            seg_metrics = []
             
-            # Must have both control and treatment
-            if not variants["control"] or not variants["treatment"]:
-                continue
-            
-            control = np.array(variants["control"])
-            treatment = np.array(variants["treatment"])
-            
-            # Determine metric kind
-            all_values = list(control) + list(treatment)
-            is_binary = _is_binary_metric(all_values)
-            
-            if is_binary:
-                metric_kind = "binary"
+            for metric_type in sorted(metrics_data.keys()):
+                variants = metrics_data[metric_type]
+                
+                # Must have both control and treatment
+                if not variants["control"] or not variants["treatment"]:
+                    continue
+                
+                control = np.array(variants["control"])
+                treatment = np.array(variants["treatment"])
+                
+                # Sample size filtering: minimum 30 in BOTH groups
+                if len(control) < MIN_SAMPLE_SIZE or len(treatment) < MIN_SAMPLE_SIZE:
+                    continue
+                
+                # Determine metric kind
+                all_values = list(control) + list(treatment)
+                is_binary = _is_binary_metric(all_values)
+                
                 control_value = float(np.mean(control))
                 treatment_value = float(np.mean(treatment))
-                test_stat, p_value = _two_proportion_ztest(control, treatment)
-            else:
-                metric_kind = "continuous"
-                control_value = float(np.mean(control))
-                treatment_value = float(np.mean(treatment))
-                test_stat, p_value = _welch_ttest(control, treatment)
+                
+                # Calculate lift
+                if control_value == 0:
+                    lift_percent = 0.0
+                else:
+                    lift_percent = ((treatment_value - control_value) / control_value) * 100
+                
+                if is_binary:
+                    metric_kind = "binary"
+                    test_stat, p_value = _two_proportion_ztest(control, treatment)
+                    
+                    # Wilson CI for proportions, then convert to lift CI
+                    ci_control = _wilson_ci(int(np.sum(control)), len(control))
+                    ci_treatment = _wilson_ci(int(np.sum(treatment)), len(treatment))
+                    
+                    if control_value == 0:
+                        lift_ci = [0.0, 0.0]
+                    else:
+                        # Conservative CI for lift
+                        lift_ci = [
+                            ((ci_treatment[0] - ci_control[1]) / control_value) * 100,
+                            ((ci_treatment[1] - ci_control[0]) / control_value) * 100
+                        ]
+                    
+                    # Power calculation
+                    effect = abs(treatment_value - control_value)
+                    power = _power_ztest(len(control), len(treatment), effect)
+                    
+                    metric_result = {
+                        "metric_type": metric_type,
+                        "metric_kind": metric_kind,
+                        "control_n": len(control),
+                        "treatment_n": len(treatment),
+                        "control_value": round(control_value, 6),
+                        "treatment_value": round(treatment_value, 6),
+                        "lift_percent": round(lift_percent, 4),
+                        "confidence_interval": [round(lift_ci[0], 4), round(lift_ci[1], 4)],
+                        "test_statistic": round(test_stat, 4),
+                        "p_value": round(p_value, 6),
+                        "power": round(power, 4),
+                    }
+                else:
+                    metric_kind = "continuous"
+                    test_stat, p_value = _welch_ttest(control, treatment)
+                    
+                    # CI for difference in means
+                    diff = treatment_value - control_value
+                    se_diff = math.sqrt(
+                        np.var(control, ddof=1)/len(control) + 
+                        np.var(treatment, ddof=1)/len(treatment)
+                    )
+                    df = len(control) + len(treatment) - 2
+                    t_crit = stats.t.ppf(0.975, df)
+                    ci_diff = [diff - t_crit*se_diff, diff + t_crit*se_diff]
+                    
+                    # Effect size and power
+                    effect_size = _cohens_d(control, treatment)
+                    power = _power_ttest(len(control), len(treatment), abs(effect_size))
+                    
+                    metric_result = {
+                        "metric_type": metric_type,
+                        "metric_kind": metric_kind,
+                        "control_n": len(control),
+                        "treatment_n": len(treatment),
+                        "control_value": round(control_value, 6),
+                        "treatment_value": round(treatment_value, 6),
+                        "lift_percent": round(lift_percent, 4),
+                        "confidence_interval": [round(ci_diff[0], 4), round(ci_diff[1], 4)],
+                        "test_statistic": round(test_stat, 4),
+                        "p_value": round(p_value, 6),
+                        "effect_size": round(effect_size, 4),
+                        "power": round(power, 4),
+                    }
+                
+                seg_metrics.append(metric_result)
+                all_pvalues.append(p_value)
             
-            # Calculate lift
-            if control_value == 0:
-                lift_percent = 0.0
-            else:
-                lift_percent = ((treatment_value - control_value) / control_value) * 100
-            
-            exp_metrics.append({
-                "metric_type": metric_type,
-                "metric_kind": metric_kind,
-                "control_value": round(control_value, 6),
-                "treatment_value": round(treatment_value, 6),
-                "lift_percent": round(lift_percent, 4),
-                "test_statistic": round(test_stat, 4),
-                "p_value": round(p_value, 6),
-            })
+            if seg_metrics:
+                exp_segments.append({
+                    "country": country,
+                    "device": device,
+                    "metrics": seg_metrics
+                })
         
-        if exp_metrics:
+        if exp_segments:
             experiments.append({
                 "experiment_id": exp_id,
-                "metrics": exp_metrics
+                "segments": exp_segments
             })
     
-    # Apply Bonferroni correction
-    total_tests = sum(len(exp["metrics"]) for exp in experiments)
-    corrected_alpha = 0.05 / total_tests if total_tests > 0 else 0.05
+    # Apply Benjamini-Hochberg FDR correction
+    total_tests = len(all_pvalues)
+    fdr_threshold = 0.0
     
-    # Mark significance
-    for exp in experiments:
-        for metric in exp["metrics"]:
-            metric["significant"] = bool(metric["p_value"] < corrected_alpha)
+    if total_tests > 0:
+        # Sort p-values with their indices
+        sorted_pvals = sorted([(p, i) for i, p in enumerate(all_pvalues)])
+        
+        # Find the largest k such that P(k) <= (k/m) * q
+        for rank, (pval, _) in enumerate(sorted_pvals, 1):
+            threshold = (rank / total_tests) * FDR_ALPHA
+            if pval <= threshold:
+                fdr_threshold = threshold
+        
+        fdr_threshold = round(fdr_threshold, 6)
+        
+        # Mark significance based on FDR threshold
+        for exp in experiments:
+            for seg in exp["segments"]:
+                for metric in seg["metrics"]:
+                    metric["significant"] = bool(metric["p_value"] <= fdr_threshold)
     
     return {
         "total_tests": total_tests,
-        "corrected_alpha": round(corrected_alpha, 6),
+        "fdr_threshold": fdr_threshold,
         "experiments": experiments
     }
 
@@ -243,9 +446,9 @@ def _read_solution(path: Path) -> dict | None:
     except Exception:
         return None
 
-def _compare_results(expected: dict, solution: dict) -> tuple[bool, list]:
+def _compare_results(expected: dict, solution: dict, tolerance: float = 1e-5) -> Tuple[bool, List[dict]]:
     """
-    Compare expected and solution results.
+    Compare expected and solution results with detailed error reporting.
     
     Returns: (is_correct, list_of_differences)
     """
@@ -254,62 +457,131 @@ def _compare_results(expected: dict, solution: dict) -> tuple[bool, list]:
     # Check top-level fields
     if expected["total_tests"] != solution.get("total_tests"):
         differences.append({
+            "level": "top",
             "field": "total_tests",
             "expected": expected["total_tests"],
             "got": solution.get("total_tests")
         })
     
-    if expected["corrected_alpha"] != solution.get("corrected_alpha"):
+    exp_fdr = expected["fdr_threshold"]
+    sol_fdr = solution.get("fdr_threshold")
+    if sol_fdr is None or abs(exp_fdr - sol_fdr) > tolerance:
         differences.append({
-            "field": "corrected_alpha",
-            "expected": expected["corrected_alpha"],
-            "got": solution.get("corrected_alpha")
+            "level": "top",
+            "field": "fdr_threshold",
+            "expected": exp_fdr,
+            "got": sol_fdr
         })
     
-    # Check experiments
+    # Check experiments structure
     exp_expected = {e["experiment_id"]: e for e in expected["experiments"]}
     exp_solution = {e["experiment_id"]: e for e in solution.get("experiments", [])}
     
     if set(exp_expected.keys()) != set(exp_solution.keys()):
         differences.append({
+            "level": "experiments",
             "field": "experiment_ids",
             "expected": sorted(exp_expected.keys()),
             "got": sorted(exp_solution.keys())
         })
         return False, differences
     
-    # Check each experiment's metrics
+    # Check each experiment's segments
     for exp_id in sorted(exp_expected.keys()):
         exp_e = exp_expected[exp_id]
         exp_s = exp_solution[exp_id]
         
-        # Create dictionaries for comparison
-        metrics_e = {m["metric_type"]: m for m in exp_e["metrics"]}
-        metrics_s = {m["metric_type"]: m for m in exp_s.get("metrics", [])}
+        # Create lookup for segments
+        segs_e = {(s["country"], s["device"]): s for s in exp_e["segments"]}
+        segs_s = {(s["country"], s["device"]): s for s in exp_s.get("segments", [])}
         
-        if set(metrics_e.keys()) != set(metrics_s.keys()):
+        if set(segs_e.keys()) != set(segs_s.keys()):
             differences.append({
+                "level": "segments",
                 "experiment_id": exp_id,
-                "field": "metric_types",
-                "expected": sorted(metrics_e.keys()),
-                "got": sorted(metrics_s.keys())
+                "field": "segment_keys",
+                "expected": sorted(segs_e.keys()),
+                "got": sorted(segs_s.keys())
             })
             continue
         
-        # Check each metric
-        for metric_type in sorted(metrics_e.keys()):
-            m_e = metrics_e[metric_type]
-            m_s = metrics_s[metric_type]
+        # Check each segment's metrics
+        for seg_key in sorted(segs_e.keys()):
+            seg_e = segs_e[seg_key]
+            seg_s = segs_s[seg_key]
             
-            for field in ["metric_kind", "control_value", "treatment_value", 
-                         "lift_percent", "test_statistic", "p_value", "significant"]:
-                if m_e[field] != m_s.get(field):
+            metrics_e = {m["metric_type"]: m for m in seg_e["metrics"]}
+            metrics_s = {m["metric_type"]: m for m in seg_s.get("metrics", [])}
+            
+            if set(metrics_e.keys()) != set(metrics_s.keys()):
+                differences.append({
+                    "level": "metrics",
+                    "experiment_id": exp_id,
+                    "segment": seg_key,
+                    "field": "metric_types",
+                    "expected": sorted(metrics_e.keys()),
+                    "got": sorted(metrics_s.keys())
+                })
+                continue
+            
+            # Check each metric's fields
+            for metric_type in sorted(metrics_e.keys()):
+                m_e = metrics_e[metric_type]
+                m_s = metrics_s[metric_type]
+                
+                # Exact match fields
+                exact_fields = ["metric_kind", "control_n", "treatment_n", "significant"]
+                for field in exact_fields:
+                    if m_e[field] != m_s.get(field):
+                        differences.append({
+                            "level": "metric_field",
+                            "experiment_id": exp_id,
+                            "segment": seg_key,
+                            "metric_type": metric_type,
+                            "field": field,
+                            "expected": m_e[field],
+                            "got": m_s.get(field)
+                        })
+                
+                # Numerical fields with tolerance
+                numeric_fields = [
+                    "control_value", "treatment_value", "lift_percent",
+                    "test_statistic", "p_value", "power"
+                ]
+                if m_e["metric_kind"] == "continuous":
+                    numeric_fields.append("effect_size")
+                
+                for field in numeric_fields:
+                    exp_val = m_e[field]
+                    sol_val = m_s.get(field)
+                    
+                    if sol_val is None or abs(exp_val - sol_val) > tolerance:
+                        differences.append({
+                            "level": "metric_field",
+                            "experiment_id": exp_id,
+                            "segment": seg_key,
+                            "metric_type": metric_type,
+                            "field": field,
+                            "expected": exp_val,
+                            "got": sol_val
+                        })
+                
+                # Check confidence interval
+                ci_e = m_e["confidence_interval"]
+                ci_s = m_s.get("confidence_interval", [None, None])
+                
+                if len(ci_s) != 2 or \
+                   ci_s[0] is None or ci_s[1] is None or \
+                   abs(ci_e[0] - ci_s[0]) > tolerance or \
+                   abs(ci_e[1] - ci_s[1]) > tolerance:
                     differences.append({
+                        "level": "metric_field",
                         "experiment_id": exp_id,
+                        "segment": seg_key,
                         "metric_type": metric_type,
-                        "field": field,
-                        "expected": m_e[field],
-                        "got": m_s.get(field)
+                        "field": "confidence_interval",
+                        "expected": ci_e,
+                        "got": ci_s
                     })
     
     return len(differences) == 0, differences
@@ -319,17 +591,25 @@ def grade(transcript: str | None = None) -> GradingResult:
     Main grading entrypoint.
     
     Compares contestant solution (results.json) with expected output.
-    Returns GradingResult with single all_passes subscore (1.0 or 0.0).
+    Returns GradingResult with detailed subscores.
     """
     workdir = Path("/workdir")
     
-    subs = {
-        "all_passes": 0.0,
+    # Initialize subscores
+    subscores = {
+        "structure_valid": 0.0,
+        "segmentation_correct": 0.0,
+        "statistics_correct": 0.0,
+        "fdr_correct": 0.0,
     }
     weights = {
-        "all_passes": 1.0,
+        "structure_valid": 0.2,
+        "segmentation_correct": 0.3,
+        "statistics_correct": 0.3,
+        "fdr_correct": 0.2,
     }
     
+    # Load solution
     sol = _read_solution(workdir / "results.json")
     
     if sol is None:
@@ -337,29 +617,95 @@ def grade(transcript: str | None = None) -> GradingResult:
             feedback = "Missing /workdir/results.json"
         else:
             feedback = "Invalid JSON in /workdir/results.json"
-        return GradingResult(score=0.0, feedback=feedback, subscores=subs, weights=weights)
+        return GradingResult(score=0.0, feedback=feedback, subscores=subscores, weights=weights)
     
     # Check basic structure
     required_keys = {"total_tests", "fdr_threshold", "experiments"}
     if not required_keys.issubset(sol.keys()):
-        feedback = f"Missing required keys. Expected: {required_keys}"
-        return GradingResult(score=0.0, feedback=feedback, subscores=subs, weights=weights)
+        feedback = f"Missing required top-level keys. Expected: {required_keys}, got: {set(sol.keys())}"
+        return GradingResult(score=0.0, feedback=feedback, subscores=subscores, weights=weights)
     
     if not isinstance(sol["experiments"], list):
         feedback = "'experiments' must be a list"
-        return GradingResult(score=0.0, feedback=feedback, subscores=subs, weights=weights)
+        return GradingResult(score=0.0, feedback=feedback, subscores=subscores, weights=weights)
     
-    # Compute expected and compare
-    expected = _compute_expected(workdir)
+    # Structure is valid
+    subscores["structure_valid"] = 1.0
+    
+    # Compute expected results
+    try:
+        expected = _compute_expected(workdir)
+    except Exception as e:
+        feedback = f"Error computing expected results: {str(e)}"
+        return GradingResult(score=0.2, feedback=feedback, subscores=subscores, weights=weights)
+    
+    # Compare results
     is_correct, differences = _compare_results(expected, sol)
     
     if is_correct:
-        subs["all_passes"] = 1.0
-        feedback = "All tests passed! Statistical analysis is correct."
+        # Perfect score
+        subscores["segmentation_correct"] = 1.0
+        subscores["statistics_correct"] = 1.0
+        subscores["fdr_correct"] = 1.0
+        feedback = "✓ All tests passed! Statistical analysis is correct."
     else:
-        feedback = f"Found {len(differences)} difference(s) in the analysis."
-        details = {"differences": differences[:10]}  # Show first 10 differences
-        return GradingResult(score=0.0, feedback=feedback, subscores=subs, 
-                           weights=weights, details=details)
+        # Analyze differences to provide partial credit
+        diff_types = set(d["level"] for d in differences)
+        
+        # Check segmentation
+        seg_errors = [d for d in differences if d["level"] in ["segments", "segment_keys"]]
+        if not seg_errors:
+            subscores["segmentation_correct"] = 1.0
+        
+        # Check FDR
+        fdr_errors = [d for d in differences if d.get("field") == "fdr_threshold"]
+        if not fdr_errors:
+            subscores["fdr_correct"] = 1.0
+        
+        # Check statistics (partial credit based on error count)
+        stat_errors = [d for d in differences if d["level"] == "metric_field"]
+        if not stat_errors:
+            subscores["statistics_correct"] = 1.0
+        else:
+            # Partial credit: reduce by 10% for each type of field error
+            error_fields = set(d["field"] for d in stat_errors)
+            penalty = min(0.1 * len(error_fields), 1.0)
+            subscores["statistics_correct"] = max(0.0, 1.0 - penalty)
+        
+        # Generate feedback
+        feedback = f"Found {len(differences)} difference(s):\n"
+        
+        # Show first few differences
+        for i, diff in enumerate(differences[:5], 1):
+            if diff["level"] == "top":
+                feedback += f"  {i}. Top-level field '{diff['field']}': expected {diff['expected']}, got {diff['got']}\n"
+            elif diff["level"] == "metric_field":
+                feedback += f"  {i}. {diff['experiment_id']}/{diff['segment']}/{diff['metric_type']}.{diff['field']}: expected {diff['expected']}, got {diff['got']}\n"
+            else:
+                feedback += f"  {i}. {diff}\n"
+        
+        if len(differences) > 5:
+            feedback += f"  ... and {len(differences) - 5} more differences\n"
+        
+        details = {"differences": differences[:20], "total_differences": len(differences)}
+        
+        # Calculate total score
+        total_score = sum(subscores[k] * weights[k] for k in subscores)
+        
+        return GradingResult(
+            score=total_score,
+            feedback=feedback.strip(),
+            subscores=subscores,
+            weights=weights,
+            details=details
+        )
     
-    return GradingResult(score=1.0, feedback=feedback, subscores=subs, weights=weights)
+    # Calculate final score
+    total_score = sum(subscores[k] * weights[k] for k in subscores)
+    
+    return GradingResult(
+        score=total_score,
+        feedback=feedback,
+        subscores=subscores,
+        weights=weights
+    )
