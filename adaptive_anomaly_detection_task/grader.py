@@ -2,6 +2,7 @@
 """
 Advanced grader for Adaptive Anomaly Detection task.
 Recomputes expected output with all features and validates against submission.
+Uses binary all_correct scoring: 1.0 if perfect match, 0.0 otherwise.
 """
 import json, csv, os, math, random
 from pathlib import Path
@@ -647,9 +648,10 @@ def read_solution(sol_path: Path) -> Optional[list]:
 def grade(transcript: str | None = None) -> GradingResult:
     """
     Grade by recomputing expected output and comparing with submission.
+    Uses binary all_correct scoring: 1.0 if perfect match, 0.0 otherwise.
     """
-    subscores = {"correctness": 0.0}
-    weights = {"correctness": 1.0}
+    subscores = {"all_correct": 0.0}
+    weights = {"all_correct": 1.0}
     
     # Load stream
     entries = load_stream(STREAM)
@@ -731,22 +733,22 @@ def grade(transcript: str | None = None) -> GradingResult:
         if len(mismatches) >= 50:
             break
     
+    # Binary scoring: all correct or nothing
     if mismatches:
-        accuracy = 1.0 - (len(mismatches) / len(expected_rows))
-        subscores["correctness"] = max(0.0, accuracy)
-        
-        score = sum(subscores[k] * weights[k] for k in subscores)
+        subscores["all_correct"] = 0.0
+        score = 0.0
         
         return GradingResult(
             score=score,
-            feedback=f"Found {len(mismatches)} mismatches. Accuracy: {accuracy:.2%}",
+            feedback=f"Found {len(mismatches)} mismatches. Binary scoring: all must be correct to pass.",
             subscores=subscores,
             weights=weights,
             details={"mismatches": mismatches[:25]}
         )
     
-    subscores["correctness"] = 1.0
-    score = sum(subscores[k] * weights[k] for k in subscores)
+    # Perfect match - award full score
+    subscores["all_correct"] = 1.0
+    score = 1.0
     
     return GradingResult(
         score=score,
