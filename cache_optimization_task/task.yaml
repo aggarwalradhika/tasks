@@ -379,20 +379,12 @@ metadata:
   difficulty: very_hard
   category: optimization_algorithms
   tags:
-    - multi_objective_optimization
-    - replication_strategy
     - resource_allocation
-    - network_optimization
     - np_hard_optimization
     - dependency_graphs
-    - capacity_constraints
-    - bandwidth_management
   estimated_time_minutes: 120
   references:
-    - "Inspired by real-world CDN optimization and cloud placement"
-    - "Related to multi-commodity network flow and facility location"
-    - "Connection to replica placement in distributed systems"
-    - "Multi-objective optimization with competing constraints"
+    - "N/A"
   time_limit: 420              # seconds (7 minutes for complex computation)
   memory_limit: 2048           # MB (more memory for complex algorithms)
   max_agent_timeout_sec: 900   # hard cap for agent execution (15 minutes)
