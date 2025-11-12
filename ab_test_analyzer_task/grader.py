@@ -1,4 +1,4 @@
-# grader.py - CORRECTED VERSION
+# grader.py - CORRECTED VERSION WITH BINARY GRADING
 import csv
 import json
 import bz2
@@ -588,124 +588,83 @@ def _compare_results(expected: dict, solution: dict, tolerance: float = 1e-5) ->
 
 def grade(transcript: str | None = None) -> GradingResult:
     """
-    Main grading entrypoint.
+    Main grading entrypoint with BINARY scoring.
     
-    Compares contestant solution (results.json) with expected output.
-    Returns GradingResult with detailed subscores.
+    Agent must get everything correct to pass (score = 1.0).
+    Any errors result in failure (score = 0.0).
+    
+    Returns GradingResult with detailed feedback on what went wrong.
     """
     workdir = Path("/workdir")
     
-    # Initialize subscores
-    subscores = {
-        "structure_valid": 0.0,
-        "segmentation_correct": 0.0,
-        "statistics_correct": 0.0,
-        "fdr_correct": 0.0,
-    }
-    weights = {
-        "structure_valid": 0.2,
-        "segmentation_correct": 0.3,
-        "statistics_correct": 0.3,
-        "fdr_correct": 0.2,
-    }
+    # Binary grading - single component with full weight
+    weights = {"correctness": 1.0}
+    subscores = {"correctness": 0.0}
     
     # Load solution
     sol = _read_solution(workdir / "results.json")
     
     if sol is None:
         if not (workdir / "results.json").exists():
-            feedback = "Missing /workdir/results.json"
+            feedback = "FAIL: Missing /workdir/results.json"
         else:
-            feedback = "Invalid JSON in /workdir/results.json"
+            feedback = "FAIL: Invalid JSON in /workdir/results.json"
         return GradingResult(score=0.0, feedback=feedback, subscores=subscores, weights=weights)
     
     # Check basic structure
     required_keys = {"total_tests", "fdr_threshold", "experiments"}
     if not required_keys.issubset(sol.keys()):
-        feedback = f"Missing required top-level keys. Expected: {required_keys}, got: {set(sol.keys())}"
+        feedback = f"FAIL: Missing required top-level keys. Expected: {required_keys}, got: {set(sol.keys())}"
         return GradingResult(score=0.0, feedback=feedback, subscores=subscores, weights=weights)
     
     if not isinstance(sol["experiments"], list):
-        feedback = "'experiments' must be a list"
+        feedback = "FAIL: 'experiments' must be a list"
         return GradingResult(score=0.0, feedback=feedback, subscores=subscores, weights=weights)
-    
-    # Structure is valid
-    subscores["structure_valid"] = 1.0
     
     # Compute expected results
     try:
         expected = _compute_expected(workdir)
     except Exception as e:
-        feedback = f"Error computing expected results: {str(e)}"
-        return GradingResult(score=0.2, feedback=feedback, subscores=subscores, weights=weights)
+        feedback = f"FAIL: Error computing expected results: {str(e)}"
+        return GradingResult(score=0.0, feedback=feedback, subscores=subscores, weights=weights)
     
-    # Compare results
+    # Compare results - BINARY GRADING
     is_correct, differences = _compare_results(expected, sol)
     
     if is_correct:
-        # Perfect score
-        subscores["segmentation_correct"] = 1.0
-        subscores["statistics_correct"] = 1.0
-        subscores["fdr_correct"] = 1.0
-        feedback = "✓ All tests passed! Statistical analysis is correct."
+        # PASS: Everything correct
+        subscores["correctness"] = 1.0
+        feedback = "✓ PASS: All tests passed! Statistical analysis is completely correct."
+        return GradingResult(score=1.0, feedback=feedback, subscores=subscores, weights=weights)
     else:
-        # Analyze differences to provide partial credit
-        diff_types = set(d["level"] for d in differences)
+        # FAIL: Any error means failure
+        subscores["correctness"] = 0.0
+        feedback = f"✗ FAIL: Found {len(differences)} error(s). All calculations must be correct to pass.\n\n"
         
-        # Check segmentation
-        seg_errors = [d for d in differences if d["level"] in ["segments", "segment_keys"]]
-        if not seg_errors:
-            subscores["segmentation_correct"] = 1.0
-        
-        # Check FDR
-        fdr_errors = [d for d in differences if d.get("field") == "fdr_threshold"]
-        if not fdr_errors:
-            subscores["fdr_correct"] = 1.0
-        
-        # Check statistics (partial credit based on error count)
-        stat_errors = [d for d in differences if d["level"] == "metric_field"]
-        if not stat_errors:
-            subscores["statistics_correct"] = 1.0
-        else:
-            # Partial credit: reduce by 10% for each type of field error
-            error_fields = set(d["field"] for d in stat_errors)
-            penalty = min(0.1 * len(error_fields), 1.0)
-            subscores["statistics_correct"] = max(0.0, 1.0 - penalty)
-        
-        # Generate feedback
-        feedback = f"Found {len(differences)} difference(s):\n"
-        
-        # Show first few differences
-        for i, diff in enumerate(differences[:5], 1):
+        # Show first 10 differences for debugging
+        for i, diff in enumerate(differences[:10], 1):
             if diff["level"] == "top":
                 feedback += f"  {i}. Top-level field '{diff['field']}': expected {diff['expected']}, got {diff['got']}\n"
+            elif diff["level"] == "experiments":
+                feedback += f"  {i}. Experiment IDs mismatch: expected {diff['expected']}, got {diff['got']}\n"
+            elif diff["level"] == "segments":
+                feedback += f"  {i}. Segment keys for {diff['experiment_id']}: expected {diff['expected']}, got {diff['got']}\n"
+            elif diff["level"] == "metrics":
+                feedback += f"  {i}. Metric types for {diff['experiment_id']}/{diff['segment']}: expected {diff['expected']}, got {diff['got']}\n"
             elif diff["level"] == "metric_field":
                 feedback += f"  {i}. {diff['experiment_id']}/{diff['segment']}/{diff['metric_type']}.{diff['field']}: expected {diff['expected']}, got {diff['got']}\n"
-            else:
-                feedback += f"  {i}. {diff}\n"
         
-        if len(differences) > 5:
-            feedback += f"  ... and {len(differences) - 5} more differences\n"
+        if len(differences) > 10:
+            feedback += f"\n  ... and {len(differences) - 10} more error(s)\n"
         
-        details = {"differences": differences[:20], "total_differences": len(differences)}
+        feedback += "\nHint: Review data processing, deduplication, segmentation, and statistical calculations."
         
-        # Calculate total score
-        total_score = sum(subscores[k] * weights[k] for k in subscores)
+        details = {"differences": differences[:50], "total_differences": len(differences)}
         
         return GradingResult(
-            score=total_score,
+            score=0.0,
             feedback=feedback.strip(),
             subscores=subscores,
             weights=weights,
             details=details
         )
-    
-    # Calculate final score
-    total_score = sum(subscores[k] * weights[k] for k in subscores)
-    
-    return GradingResult(
-        score=total_score,
-        feedback=feedback,
-        subscores=subscores,
-        weights=weights
-    )
