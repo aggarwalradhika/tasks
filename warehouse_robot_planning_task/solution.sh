@@ -56,7 +56,7 @@ def manhattan_distance(pos1, pos2):
 def a_star_path_with_collision_avoidance(start, goal, obstacles, rows, cols, reserved_positions, start_time=0):
     """
     A* pathfinding WITH collision avoidance.
-    reserved_positions: dict of time -> set of reserved positions
+    reserved_positions: dict of time -> set of (robot_id, position) tuples
     Returns: list of positions (path) or None if no path found
     """
     if start == goal:
@@ -67,7 +67,7 @@ def a_star_path_with_collision_avoidance(start, goal, obstacles, rows, cols, res
     came_from = {}
     g_score = {(start, start_time): 0}
     
-    max_time = start_time + 500  # Limit search depth
+    max_time = start_time + 1000  # Increased search depth
     
     while open_set:
         _, time, current = heapq.heappop(open_set)
@@ -102,21 +102,30 @@ def a_star_path_with_collision_avoidance(start, goal, obstacles, rows, cols, res
                 neighbor = (nr, nc)
                 
                 # Check vertex collision (position occupied at next_time)
-                if next_time in reserved_positions and neighbor in reserved_positions[next_time]:
+                occupied = False
+                for robot_id, pos in reserved_positions.get(next_time, set()):
+                    if pos == neighbor:
+                        occupied = True
+                        break
+                
+                if occupied:
                     continue
                 
                 # Check edge collision (swapping positions)
                 if dr != 0 or dc != 0:  # If moving (not waiting)
-                    # Check if another robot is moving from neighbor to current
-                    swap_detected = False
-                    if next_time in reserved_positions and current in reserved_positions[next_time]:
-                        # Someone will be at our current position at next_time
-                        # Check if they're coming from our target (neighbor)
-                        if time in reserved_positions and neighbor in reserved_positions[time]:
-                            swap_detected = True
-                    
-                    if swap_detected:
-                        continue
+                    # Check if another robot is at neighbor at current time and at current at next_time
+                    for robot_id_curr, pos_curr in reserved_positions.get(time, set()):
+                        if pos_curr == neighbor:
+                            # Someone is at neighbor now, check if they'll be at our current position next
+                            for robot_id_next, pos_next in reserved_positions.get(next_time, set()):
+                                if robot_id_next == robot_id_curr and pos_next == current:
+                                    occupied = True
+                                    break
+                        if occupied:
+                            break
+                
+                if occupied:
+                    continue
                 
                 tentative_g = g_score.get((current, time), float('inf')) + 1
                 
@@ -175,7 +184,7 @@ for robot_id in robot_priority:
     current_time = 0
     
     # Reserve starting position
-    reserved_positions[current_time].add(current_pos)
+    reserved_positions[current_time].add((robot_id, current_pos))
     
     assigned_orders = robot_assignments[robot_id]
     
@@ -183,87 +192,127 @@ for robot_id in robot_priority:
         items = orders[order_id]
         
         for item_pos in items:
-            # Check if need charge
+            # Check if need charge before going to item
             dist = manhattan_distance(current_pos, item_pos)
             
-            if dist + 10 > current_battery:
+            if dist + 20 > current_battery:  # Safety margin
                 # Go to nearest station
                 nearest_station = min(charging_stations, 
                                     key=lambda s: manhattan_distance(current_pos, s))
                 
-                path = a_star_path_with_collision_avoidance(
-                    current_pos, nearest_station, obstacles, rows, cols, 
-                    reserved_positions, current_time
-                )
+                # Try multiple times with increasing wait if path blocked
+                path = None
+                wait_attempts = 0
+                max_wait_attempts = 3
+                
+                while path is None and wait_attempts < max_wait_attempts:
+                    if wait_attempts > 0:
+                        print(f"  {robot_id}: Path blocked, waiting {wait_attempts * 10} time units...")
+                        for _ in range(wait_attempts * 10):
+                            current_time += 1
+                            reserved_positions[current_time].add((robot_id, current_pos))
+                    
+                    path = a_star_path_with_collision_avoidance(
+                        current_pos, nearest_station, obstacles, rows, cols, 
+                        reserved_positions, current_time
+                    )
+                    
+                    wait_attempts += 1
                 
                 if path is None:
-                    print(f"  WARNING: No collision-free path to charging station, using direct path")
-                    # Fallback: simple A* without collision avoidance
-                    path = []
-                    # Just move directly (may have collisions)
+                    print(f"  ERROR: {robot_id} cannot find collision-free path to charging station from {current_pos} to {nearest_station}")
+                    # This is a critical failure - we cannot proceed safely
+                    raise Exception(f"Cannot find safe path for {robot_id}")
                 
-                if path:
-                    for pos in path:
-                        current_time += 1
-                        plan.append(f"MOVE {pos[0]} {pos[1]}")
-                        reserved_positions[current_time].add(pos)
-                        current_battery -= 1
-                    current_pos = path[-1] if path else nearest_station
+                # Execute move to charging station
+                for pos in path:
+                    current_time += 1
+                    plan.append(f"MOVE {pos[0]} {pos[1]}")
+                    reserved_positions[current_time].add((robot_id, pos))
+                    current_battery -= 1
+                current_pos = path[-1]
                 
+                # Charge
                 plan.append("CHARGE")
                 battery_used = battery_capacity - current_battery
                 charge_time = int(math.ceil(math.sqrt(battery_used))) if battery_used > 0 else 1
                 for t in range(charge_time):
                     current_time += 1
-                    reserved_positions[current_time].add(current_pos)
+                    reserved_positions[current_time].add((robot_id, current_pos))
                 current_battery = battery_capacity
             
             # Path to item WITH collision avoidance
-            path = a_star_path_with_collision_avoidance(
-                current_pos, item_pos, obstacles, rows, cols,
-                reserved_positions, current_time
-            )
+            path = None
+            wait_attempts = 0
+            max_wait_attempts = 3
             
-            if path is None:
-                print(f"  WARNING: No collision-free path to item, waiting and retrying")
-                # Wait a bit and try again
-                for _ in range(5):
-                    current_time += 1
-                    reserved_positions[current_time].add(current_pos)
+            while path is None and wait_attempts < max_wait_attempts:
+                if wait_attempts > 0:
+                    print(f"  {robot_id}: Path to item blocked, waiting {wait_attempts * 10} time units...")
+                    for _ in range(wait_attempts * 10):
+                        current_time += 1
+                        reserved_positions[current_time].add((robot_id, current_pos))
                 
                 path = a_star_path_with_collision_avoidance(
                     current_pos, item_pos, obstacles, rows, cols,
                     reserved_positions, current_time
                 )
+                
+                wait_attempts += 1
             
-            if path:
-                for pos in path:
-                    current_time += 1
-                    plan.append(f"MOVE {pos[0]} {pos[1]}")
-                    reserved_positions[current_time].add(pos)
-                    current_battery -= 1
-                current_pos = path[-1]
+            if path is None:
+                print(f"  ERROR: {robot_id} cannot find collision-free path to item at {item_pos} from {current_pos}")
+                raise Exception(f"Cannot find safe path for {robot_id}")
+            
+            # Execute move to item
+            for pos in path:
+                current_time += 1
+                plan.append(f"MOVE {pos[0]} {pos[1]}")
+                reserved_positions[current_time].add((robot_id, pos))
+                current_battery -= 1
+            current_pos = path[-1]
+            
+            # Verify we're at the item location
+            if current_pos != item_pos:
+                print(f"  ERROR: {robot_id} not at item location {item_pos}, currently at {current_pos}")
+                raise Exception(f"Robot {robot_id} positioning error")
             
             # Pick at item location
             plan.append(f"PICK {order_id}")
             for t in range(pick_time):
                 current_time += 1
-                reserved_positions[current_time].add(current_pos)
+                reserved_positions[current_time].add((robot_id, current_pos))
     
     # Return to nearest station
     nearest_station = min(charging_stations, 
                          key=lambda s: manhattan_distance(current_pos, s))
     
-    path = a_star_path_with_collision_avoidance(
-        current_pos, nearest_station, obstacles, rows, cols,
-        reserved_positions, current_time
-    )
+    path = None
+    wait_attempts = 0
+    max_wait_attempts = 3
     
-    if path:
-        for pos in path:
-            current_time += 1
-            plan.append(f"MOVE {pos[0]} {pos[1]}")
-            reserved_positions[current_time].add(pos)
+    while path is None and wait_attempts < max_wait_attempts:
+        if wait_attempts > 0:
+            print(f"  {robot_id}: Return path blocked, waiting {wait_attempts * 10} time units...")
+            for _ in range(wait_attempts * 10):
+                current_time += 1
+                reserved_positions[current_time].add((robot_id, current_pos))
+        
+        path = a_star_path_with_collision_avoidance(
+            current_pos, nearest_station, obstacles, rows, cols,
+            reserved_positions, current_time
+        )
+        
+        wait_attempts += 1
+    
+    if path is None:
+        print(f"  ERROR: {robot_id} cannot return to charging station")
+        raise Exception(f"Cannot find safe return path for {robot_id}")
+    
+    for pos in path:
+        current_time += 1
+        plan.append(f"MOVE {pos[0]} {pos[1]}")
+        reserved_positions[current_time].add((robot_id, pos))
     
     plan.append("RETURN")
     all_plans[robot_id] = plan
@@ -282,5 +331,5 @@ with open("/workdir/schedule.txt", "w") as f:
         for cmd in all_plans[robot_id]:
             f.write(f"{cmd}\n")
 
-print("Schedule generated with FULL COLLISION AVOIDANCE")
+print("Schedule generated successfully with full collision avoidance")
 PYCODE
