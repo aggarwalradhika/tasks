@@ -1,0 +1,251 @@
+prompt: |
+  You are working at a major cloud provider on optimizing distributed stream processing systems.
+  
+  ## Your Task
+  
+  Design an optimal deployment plan for a distributed data processing pipeline that minimizes end-to-end latency while satisfying throughput, reliability, and resource constraints.
+  
+  ## Problem Details
+  
+  - You have a pipeline of processing stages: `S1 -> S2 -> S3 -> ... -> Sn`
+  - Each stage must process events in order (S1 before S2, etc.)
+  - You have `m` distributed nodes where you can deploy stages
+  - Each node has:
+    * Capacity: Maximum concurrent events it can process
+    * Reliability: Probability the node stays operational (0.0 to 1.0)
+    * Processing speed: Time to process one event at this node (milliseconds)
+  - Network has latency between node pairs (milliseconds to transfer data)
+  - Each event flows: `input -> S1 -> S2 -> ... -> Sn -> output`
+  - Throughput requirement: System must handle `T` events per second
+  - Reliability requirement: End-to-end reliability must be ≥ `R` (e.g., 0.99)
+  
+  ## Objective
+  
+  Minimize the average end-to-end latency (time from input to output) while ensuring:
+  1. All stages are deployed to nodes
+  2. No node exceeds its capacity
+  3. System throughput meets requirement `T` events/second
+  4. End-to-end reliability meets requirement `R`
+  5. Each stage deployed to at least one node (for redundancy you can deploy to multiple)
+  
+  ## Why This Matters
+  
+  Real-time data processing powers critical applications:
+  - Financial trading (microseconds matter)
+  - Fraud detection (fast detection prevents losses)
+  - Real-time analytics (dashboards, monitoring)
+  - IoT event processing (smart cities, autonomous vehicles)
+  
+  Poor pipeline design leads to:
+  - High latency (slow response times)
+  - Bottlenecks (some nodes overloaded, others idle)
+  - System failures (insufficient redundancy)
+  - Wasted resources (over-provisioning)
+  
+  ## Input Format
+  
+  The file `/workdir/data/pipeline.txt` contains:
+  
+  ```
+  num_stages num_nodes throughput_req reliability_req
+  <stage_id> <processing_complexity>
+  ...
+  <node_id> <capacity> <reliability> <processing_speed>
+  ...
+  [network latency matrix]
+  <from_node> <to_node> <latency_ms>
+  ...
+  ```
+  
+  - First line: number of stages, nodes, required throughput (events/sec), required reliability
+  - Next `num_stages` lines: stage ID and processing complexity (abstract units)
+  - Next `num_nodes` lines: node specs (capacity, reliability, speed)
+  - Network latency section: latency between each node pair (symmetric)
+  
+  Example:
+  ```
+  4 5 100 0.95
+  stage1 10
+  stage2 15
+  stage3 8
+  stage4 12
+  node1 50 0.98 5
+  node2 40 0.99 4
+  node3 60 0.96 6
+  node4 45 0.97 5
+  node5 55 0.98 4
+  
+  node1 node2 10
+  node1 node3 25
+  node1 node4 15
+  node1 node5 20
+  node2 node3 12
+  node2 node4 18
+  node2 node5 8
+  node3 node4 22
+  node3 node5 30
+  node4 node5 14
+  ```
+  
+  This means:
+  - 4 stages, 5 nodes
+  - Must handle 100 events/second
+  - Must achieve 0.95 end-to-end reliability
+  - stage1 has complexity 10, stage2 has 15, etc.
+  - node1: capacity=50 events, reliability=0.98, speed=5ms base processing
+  - Network latency from node1 to node2 is 10ms, etc.
+  
+  ## Latency Calculation
+  
+  For an event flowing through the pipeline:
+  
+  1. Processing time at node: `node_speed * stage_complexity / 10`
+     - Example: stage2 (complexity=15) at node2 (speed=4ms) = 4 * 15 / 10 = 6ms
+  
+  2. Network transfer time: latency between consecutive stage nodes
+     - If stage1 on node1 and stage2 on node3: add 25ms network latency
+     - If consecutive stages on same node: 0ms transfer (local)
+  
+  3. Total latency = sum of all processing times + sum of all network transfers
+  
+  4. Average latency: Expected value considering all paths through redundant stages
+  
+  ## Capacity Calculation
+  
+  Each node must handle its assigned load:
+  - If node processes `k` stages and throughput is `T` events/sec
+  - Node load = sum of (processing time × throughput) for each stage assigned
+  - Must satisfy: node load ≤ node capacity
+  
+  Formula: For each stage `s` on node `n`:
+  ```
+  stage_time = node_speed * stage_complexity / 10  (in milliseconds)
+  stage_load = stage_time * throughput / 1000  (convert to events/sec)
+  ```
+  
+  Total node load = sum of stage_loads for all stages on that node
+  Must be ≤ node capacity
+  
+  ## Reliability Calculation
+  
+  End-to-end reliability = product of stage reliabilities
+  
+  - If stage deployed to single node with reliability `r`: stage reliability = `r`
+  - If stage deployed to multiple nodes (redundancy): stage reliability = 1 - product of (1 - r_i)
+    * Example: stage on node1 (r=0.98) and node2 (r=0.99)
+    * Stage reliability = 1 - (1 - 0.98) × (1 - 0.99) = 1 - 0.02 × 0.01 = 0.9998
+  
+  Pipeline reliability = product of all stage reliabilities
+  
+  ## Output Format
+  
+  You must produce ONE file: `/workdir/deployment.txt`
+  
+  Format:
+  ```
+  <average_latency_ms>
+  <stage_id> <node_id> [<node_id> ...]
+  ...
+  ```
+  
+  - First line: Average end-to-end latency in milliseconds (float)
+  - Each subsequent line: stage deployment (one or more nodes for redundancy)
+  
+  Example:
+  ```
+  47.5
+  stage1 node1 node2
+  stage2 node3
+  stage3 node3
+  stage4 node5
+  ```
+  
+  This means:
+  - Average latency is 47.5ms
+  - stage1 deployed to both node1 and node2 (redundancy)
+  - stage2 and stage3 both on node3 (co-located to avoid network transfer)
+  - stage4 on node5
+  
+  ## Constraints
+  
+  - 3 ≤ num_stages ≤ 8
+  - 3 ≤ num_nodes ≤ 10
+  - 50 ≤ throughput ≤ 500 events/second
+  - 0.90 ≤ reliability requirement ≤ 0.999
+  - 5 ≤ stage complexity ≤ 30
+  - 20 ≤ node capacity ≤ 100 events
+  - 0.90 ≤ node reliability ≤ 0.99
+  - 2 ≤ node processing speed ≤ 10 ms
+  - 5 ≤ network latency ≤ 50 ms
+  - You do NOT have internet access
+  - Python 3 is available
+  
+  ## Validation
+  
+  Your deployment will be validated:
+  1. Format check: deployment.txt is well-formed
+  2. Completeness: All stages deployed to at least one node
+  3. Capacity check: No node exceeds capacity given throughput
+  4. Reliability check: End-to-end reliability ≥ requirement
+  5. Latency verification: Claimed latency matches computed latency
+  6. Near-optimality: Latency ≤ 1.3x sophisticated baseline
+  
+  ## Important Notes
+  
+  1. This is NP-hard: Similar to facility location + assignment problem. Use intelligent heuristics.
+  
+  2. Trade-offs to consider:
+     - Co-locating stages (reduces network latency but increases node load)
+     - Redundancy (improves reliability but increases cost and latency averaging)
+     - Load balancing (avoid bottlenecks)
+     - Fast nodes vs reliable nodes
+  
+  3. Algorithm Design Guidance:
+     - Start with stage assignment (which stages go where)
+     - Consider network topology (minimize transfers between stages)
+     - Balance capacity across nodes
+     - Add redundancy strategically for reliability
+     - Compute actual latency accounting for:
+       * Processing time at each stage
+       * Network transfer between stages
+       * Load-based queueing effects
+  
+  4. Latency Calculation Tips:
+     - Same node for consecutive stages = 0 network latency (good!)
+     - Different nodes = must add network latency (bad)
+     - Redundant deployment: average latency across paths
+  
+  5. Capacity Planning:
+     - Higher throughput = more load per node
+     - Longer processing stages = more load
+     - Multiple stages per node = cumulative load
+  
+  6. Reliability Strategy:
+     - Single point of failure = risky
+     - Redundancy = expensive (latency and capacity)
+     - Prioritize redundancy for critical stages
+     - Combine multiple reliable nodes for ultra-high reliability
+  
+  7. Be deterministic: Break ties consistently for reproducibility.
+  
+  8. Near-optimality tolerance: Your solution must achieve latency within 1.3x (130%) of a sophisticated baseline that uses:
+     - Intelligent stage placement minimizing network hops
+     - Capacity-aware load balancing
+     - Strategic redundancy placement
+     - Graph-based optimization
+
+metadata:
+  difficulty: hard
+  category: optimization_algorithms
+  tags:
+    - resource_allocation
+    - graph_optimization
+    - np_hard_optimization
+  estimated_time_minutes: 90
+  references:
+    - "N/A"
+  time_limit: 300
+  memory_limit: 1024
+  max_agent_timeout_sec: 600
+  expert_time_estimate_min: 40
+  junior_time_estimate_min: 120

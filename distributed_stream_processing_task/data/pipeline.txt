@@ -1,0 +1,28 @@
+5 6 150 0.96
+stage1 12
+stage2 18
+stage3 10
+stage4 20
+stage5 15
+node1 45 0.96 5
+node2 50 0.98 4
+node3 40 0.95 6
+node4 55 0.97 5
+node5 48 0.96 4
+node6 42 0.98 5
+
+node1 node2 8
+node1 node3 20
+node1 node4 12
+node1 node5 25
+node1 node6 15
+node2 node3 10
+node2 node4 18
+node2 node5 14
+node2 node6 9
+node3 node4 30
+node3 node5 22
+node3 node6 28
+node4 node5 16
+node4 node6 20
+node5 node6 12
