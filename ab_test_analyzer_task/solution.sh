@@ -71,17 +71,6 @@ def is_binary_metric(values):
     unique_vals = set(values)
     return unique_vals.issubset({0, 1, 0.0, 1.0})
 
-def wilson_ci(successes, n, alpha=0.05):
-    """Wilson score confidence interval for proportion."""
-    if n == 0:
-        return [0.0, 0.0]
-    p = successes / n
-    z = stats.norm.ppf(1 - alpha/2)
-    denominator = 1 + z**2 / n
-    centre = (p + z**2 / (2*n)) / denominator
-    spread = z * math.sqrt((p*(1-p) + z**2/(4*n)) / n) / denominator
-    return [max(0, centre - spread), min(1, centre + spread)]
-
 def two_proportion_ztest(control, treatment):
     n1, n2 = len(control), len(treatment)
     p1 = np.sum(control) / n1
@@ -93,6 +82,18 @@ def two_proportion_ztest(control, treatment):
     z = (p2 - p1) / se
     p_value = 2 * (1 - stats.norm.cdf(abs(z)))
     return z, p_value
+
+def proportion_diff_ci(p1, n1, p2, n2, alpha=0.05):
+    """
+    Calculate confidence interval for difference in proportions (p2 - p1).
+    Uses standard normal approximation with unpooled standard error.
+    """
+    diff = p2 - p1
+    se = math.sqrt(p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2)
+    z_crit = stats.norm.ppf(1 - alpha/2)
+    ci_lower = diff - z_crit * se
+    ci_upper = diff + z_crit * se
+    return [ci_lower, ci_upper]
 
 def welch_ttest(control, treatment):
     result = stats.ttest_ind(treatment, control, equal_var=False)
@@ -123,7 +124,7 @@ def power_ttest(n1, n2, effect_size, alpha=0.05):
 
 # Load data
 root = Path("/workdir/data/experiments")
-seen = {}  # (exp_id, user_id, metric_type) -> (timestamp, full_record)
+seen = {}  # (exp_id, user_id, variant, metric_type) -> (timestamp, full_record)
 data = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: {"control": [], "treatment": []})))
 
 for p, kind, f in iter_files(root):
@@ -142,15 +143,20 @@ for p, kind, f in iter_files(root):
             except:
                 continue
             
+            # Filter: only control and treatment
             if variant not in ["control", "treatment"]:
                 continue
+            
+            # Filter: valid country and device
             if country not in VALID_COUNTRIES or device not in VALID_DEVICES:
                 continue
+            
+            # Filter: within time window
             if not within_window(timestamp):
                 continue
             
-            # Deduplication: keep LAST occurrence
-            key = (exp_id, user_id, metric_type)
+            # Deduplication: keep LAST occurrence (now includes variant in key)
+            key = (exp_id, user_id, variant, metric_type)
             if key in seen:
                 old_ts, _ = seen[key]
                 try:
@@ -201,16 +207,9 @@ for exp_id in sorted(data.keys()):
                 metric_kind = "binary"
                 test_stat, p_value = two_proportion_ztest(control, treatment)
                 
-                # Wilson CI for lift
-                ci_control = wilson_ci(int(np.sum(control)), len(control))
-                ci_treatment = wilson_ci(int(np.sum(treatment)), len(treatment))
-                if control_value == 0:
-                    lift_ci = [0.0, 0.0]
-                else:
-                    lift_ci = [
-                        ((ci_treatment[0] - ci_control[1]) / control_value) * 100,
-                        ((ci_treatment[1] - ci_control[0]) / control_value) * 100
-                    ]
+                # CI for difference in proportions (not lift)
+                ci_diff = proportion_diff_ci(control_value, len(control), 
+                                            treatment_value, len(treatment))
                 
                 effect = abs(treatment_value - control_value)
                 pwr = power_ztest(len(control), len(treatment), effect)
@@ -223,7 +222,7 @@ for exp_id in sorted(data.keys()):
                     "control_value": round(control_value, 6),
                     "treatment_value": round(treatment_value, 6),
                     "lift_percent": round(((treatment_value - control_value) / control_value * 100) if control_value != 0 else 0.0, 4),
-                    "confidence_interval": [round(lift_ci[0], 4), round(lift_ci[1], 4)],
+                    "confidence_interval": [round(ci_diff[0], 4), round(ci_diff[1], 4)],
                     "test_statistic": round(test_stat, 4),
                     "p_value": round(p_value, 6),
                     "power": round(pwr, 4),

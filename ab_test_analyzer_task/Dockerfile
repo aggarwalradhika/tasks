@@ -19,6 +19,7 @@ RUN python3 -m ensurepip --upgrade && \
 # -------------------- DO NOT CHANGE BELOW ----------------------------
 COPY ./solution.sh /tests/
 COPY ./grader.py /tests/
+COPY ./tests/ground_truth.json /tests/
 COPY ./data /workdir/data
 
 # Make data accessible to 'model' user (tests/ is already root-only)

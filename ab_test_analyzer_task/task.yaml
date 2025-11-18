@@ -21,9 +21,9 @@ prompt: |
     - CSV cells may contain inline comments after '#' - strip these.
 
   Processing requirements:
-    1) Deduplicate by (experiment_id, user_id, metric_type) - keep the LAST occurrence (by timestamp).
-    2) For each experiment_id, analyze ALL metric_types present.
-    3) Only analyze variants named "control" and "treatment" (ignore others).
+    1) Only analyze variants named "control" and "treatment" (ignore others).
+    2) Deduplicate by (experiment_id, user_id, variant, metric_type) - keep the LAST occurrence (by timestamp).
+    3) For each experiment_id, analyze ALL metric_types present.
     4) Experiments must have BOTH control and treatment data to be valid.
     5) Filter to only include data from timestamp range: 
        start = 2024-01-15T00:00:00Z, end = 2024-01-31T23:59:59Z (inclusive)
@@ -37,7 +37,9 @@ prompt: |
       - Calculate conversion rate for each variant: sum(metric_value) / count(users)
       - Perform two-proportion z-test (two-tailed)
       - Calculate: z_statistic, p_value, lift (% change from control to treatment)
-      - Calculate confidence interval (95%) for lift using Wilson score interval
+      - Calculate confidence interval (95%) for the difference in proportions (treatment - control)
+        using standard normal approximation: diff ± 1.96 * SE where
+        SE = sqrt(p1*(1-p1)/n1 + p2*(1-p2)/n2)
     
     For CONTINUOUS metrics (any numeric values):
       - Calculate mean for each variant: sum(metric_value) / count(users)
@@ -72,7 +74,7 @@ prompt: |
     - Lift: 4 decimal places (as percentage, e.g., 15.2500 for 15.25%)
     - p_value: 6 decimal places
     - z_statistic / t_statistic: 4 decimal places
-    - confidence intervals: 4 decimal places
+    - confidence intervals: 4 decimal places (as raw difference, not percentage)
     - effect_size (Cohen's d): 4 decimal places
     - power: 4 decimal places
     - fdr_threshold: 6 decimal places
@@ -97,7 +99,7 @@ prompt: |
                   "control_value": 0.123456,
                   "treatment_value": 0.145678,
                   "lift_percent": 18.0500,
-                  "confidence_interval": [-5.2300, 41.3200],
+                  "confidence_interval": [-0.0523, 0.0987],
                   "test_statistic": 2.3456,
                   "p_value": 0.019234,
                   "power": 0.6234,
@@ -132,8 +134,8 @@ prompt: |
 
   Notes:
     - Use scipy.stats for statistical tests and power analysis
-    - For binary z-test, use pooled proportion for standard error
-    - For confidence intervals on binary metrics, use Wilson score interval method
+    - For binary z-test, use pooled proportion for standard error in the test statistic
+    - For confidence intervals on binary metrics, use unpooled standard error
     - Lift = ((treatment_value - control_value) / control_value) * 100
     - Cohen's d uses pooled standard deviation: sqrt(((n1-1)*s1^2 + (n2-1)*s2^2) / (n1+n2-2))
     - Power calculation should account for actual sample sizes and observed effect
@@ -146,9 +148,8 @@ metadata:
   category: data-science
   tags: [data-science, statistics, hypothesis-testing, a-b-testing, analytics, segmentation, fdr]
   references: "N/A"
-
-time_limit: 600              # seconds (10 minutes)
-memory_limit: 2048           # MB
-max_agent_timeout_sec: 900   # hard cap for agent execution (15 minutes)
-expert_time_estimate_min: 60 # expected time for an expert
-junior_time_estimate_min: 180 # expected time for a junior engineer
+  time_limit: 600
+  memory_limit: 2048
+  max_agent_timeout_sec: 900
+  expert_time_estimate_min: 60
+  junior_time_estimate_min: 180
