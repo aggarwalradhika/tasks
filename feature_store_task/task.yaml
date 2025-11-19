@@ -1,0 +1,323 @@
+prompt: |
+  You are given a single input file at /workdir/data/event_stream.jsonl.
+
+  ## Task Overview
+  Implement a real-time feature store pipeline that computes, caches, and serves features for ML models
+  with point-in-time correctness. The system must handle incremental aggregations, late-arriving data,
+  feature versioning, and maintain online/offline consistency.
+
+  ## Accepted line formats (each line is independent)
+  1) Entity update line (new data arrives):
+     {
+       "stream_id": <int>,                # unique monotonic ID, if missing auto-assigned
+       "type": "entity_update",
+       "entity_type": <str>,              # e.g., "user", "product", "transaction"
+       "entity_id": <str>,                # unique identifier for the entity
+       "timestamp": <int>,                # Unix epoch milliseconds when event occurred
+       "attributes": {
+         "<attr_name>": <float|int|str|bool>,  # event attributes
+         ...
+       }
+     }
+
+  2) Feature request line (query features at point-in-time):
+     {
+       "stream_id": <int>,
+       "type": "feature_request",
+       "entity_type": <str>,
+       "entity_id": <str>,
+       "request_timestamp": <int>,        # time of prediction/request
+       "features": [<str>, ...],          # list of feature names to compute
+       "asof_timestamp": <int, optional>  # point-in-time for features (default: request_timestamp)
+     }
+
+  3) Backfill command (correct historical data):
+     {
+       "stream_id": <int>,
+       "type": "backfill",
+       "entity_type": <str>,
+       "entity_id": <str>,
+       "timestamp": <int>,                # when the correction applies
+       "attributes": {
+         "<attr_name>": <value>,          # corrected values
+         ...
+       }
+     }
+
+  4) Feature definition line (register new feature):
+     {
+       "stream_id": <int>,
+       "type": "feature_definition",
+       "feature_name": <str>,
+       "entity_type": <str>,
+       "aggregation": "sum" | "avg" | "count" | "min" | "max" | "last" | "stddev" | "p50" | "p95",
+       "source_attribute": <str>,         # which attribute to aggregate
+       "window": <str>,                   # "1h", "24h", "7d", "30d", "all_time"
+       "version": <int, optional>         # feature version, default 1
+     }
+
+  5) Watermark update (mark safe point for late data):
+     {
+       "stream_id": <int>,
+       "type": "watermark",
+       "entity_type": <str>,
+       "watermark_timestamp": <int>       # data before this is considered complete
+     }
+
+  6) Cache control command:
+     {
+       "stream_id": <int>,
+       "type": "cache_control",
+       "action": "invalidate" | "clear" | "snapshot",
+       "entity_type": <str, optional>,    # specific entity type or all
+       "entity_id": <str, optional>       # specific entity or all
+     }
+
+  ## Normalization & tolerance rules
+  - Missing/invalid "stream_id" → auto-assign increasing integer (1, 2, 3, ...)
+  - Missing "asof_timestamp" in feature_request → use request_timestamp
+  - Missing "version" in feature_definition → use version 1
+  - Invalid entity_id references → output error row with null features
+  - Malformed lines, blank lines, and lines starting with '//' are ignored
+  - Timestamps are Unix epoch milliseconds, always positive integers
+
+  ## Fixed parameters
+  - max_late_arrival_ms = 3600000        # 1 hour max late data tolerance
+  - cache_ttl_ms = 300000                # 5 minutes cache validity
+  - max_entities_in_memory = 10000       # memory limit for entity states
+  - quantile_error = 0.01                # allowed error for p50, p95
+  - stddev_ddof = 1                      # degrees of freedom for stddev
+  - aggregation_bucket_size_ms = 60000   # 1 minute granularity for time buckets
+
+  ## Window Definitions
+  - "1h": 3600000 ms (rolling 1 hour)
+  - "24h": 86400000 ms (rolling 24 hours)
+  - "7d": 604800000 ms (rolling 7 days)
+  - "30d": 2592000000 ms (rolling 30 days)
+  - "all_time": from first event to current time
+
+  ## Core Algorithms
+
+  ### 1. Incremental Aggregation Engine
+  For efficient window aggregations:
+  
+  Time Bucketing:
+  - Partition time into buckets of aggregation_bucket_size_ms (1 minute)
+  - Store aggregate per bucket: {timestamp_bucket: {sum, count, min, max, values[]}}
+  - For window queries, sum only buckets within window
+  - Expire buckets outside max_window + max_late_arrival
+
+  Aggregation Functions:
+  - sum: Σ values in window
+  - avg: sum / count
+  - count: number of events in window
+  - min: minimum value in window
+  - max: maximum value in window
+  - last: most recent value by timestamp
+  - stddev: sqrt(Σ(x - μ)² / (n - 1))
+  - p50, p95: use t-digest for approximate quantiles
+
+  ### 2. Point-in-Time Correctness
+  Critical for avoiding data leakage:
+  
+  Time Travel Query:
+  - When feature requested with asof_timestamp T:
+    * Only use entity_updates with timestamp ≤ T
+    * Apply watermark: if T < watermark, result is stable
+    * Cache with key: (entity_id, feature_name, asof_timestamp_bucket)
+  
+  Late Data Handling:
+  - Accept updates up to max_late_arrival_ms after watermark
+  - Invalidate affected cache entries when late data arrives
+  - Re-compute features if they were served from cache
+
+  ### 3. Approximate Quantile Computation (t-digest)
+  For p50 and p95 features:
+  
+  Algorithm:
+  - Maintain centroids: [(mean, weight), ...]
+  - Compression parameter δ = 100
+  - When adding value x:
+    * Find nearest centroid
+    * If centroid weight < threshold, merge
+    * Otherwise create new centroid
+  - Quantile query: interpolate between centroids
+  
+  Window Management:
+  - Keep separate t-digest per time bucket
+  - Merge digests for buckets in window
+  - Merge operation: combine centroids and re-compress
+
+  ### 4. Cache Management Strategy
+  
+  Cache Key: (entity_type, entity_id, feature_name, asof_bucket)
+  - asof_bucket = asof_timestamp // cache_ttl_ms
+  
+  Cache Entry: {
+    value: <computed_value>,
+    computed_at: <timestamp>,
+    depends_on: [<update_timestamps>],  # for invalidation
+    stable: <bool>                       # true if past watermark
+  }
+  
+  Invalidation Rules:
+  - Backfill arrives: invalidate all cache entries for entity after backfill timestamp
+  - Late data arrives: invalidate entries in affected time range
+  - Cache_control with "invalidate": remove matching entries
+  - TTL expiry: remove entries older than cache_ttl_ms
+  - Watermark advance: mark old entries as stable
+
+  ### 5. Memory Management
+  
+  Entity State Storage:
+  - Keep only active entities (seen in recent time windows)
+  - LRU eviction when exceeding max_entities_in_memory
+  - Eviction candidates: entities with no cache hits and outside windows
+  
+  Time Bucket Pruning:
+  - For each entity, keep buckets within: max(window_size) + max_late_arrival
+  - Prune buckets older than oldest required window
+  - Checkpoint state every 1000 updates for recovery
+
+  ## Feature Computation Process
+
+  ### On entity_update:
+  1. Parse timestamp and attributes
+  2. Check if within max_late_arrival of current watermark
+  3. Determine affected time buckets
+  4. Update bucket aggregates (sum, count, min, max)
+  5. Update t-digest for quantile features
+  6. Invalidate affected cache entries
+  7. Prune old buckets if memory threshold exceeded
+
+  ### On feature_request:
+  1. Check cache with (entity_id, feature_name, asof_bucket)
+  2. If cache hit and stable (past watermark): return cached value
+  3. If cache hit but unstable: check if depends_on has new updates
+  4. If cache miss or invalidated:
+     a. Look up feature definition
+     b. Compute window bounds: [asof_timestamp - window_size, asof_timestamp]
+     c. Aggregate buckets within window using specified function
+     d. Store in cache with metadata
+     e. Return computed value
+  5. Record cache hit/miss statistics
+
+  ### On backfill:
+  1. Identify affected time buckets
+  2. Re-compute bucket aggregates with correction
+  3. Invalidate cache entries for entity after backfill timestamp
+  4. Mark as backfill event for audit trail
+
+  ### On watermark update:
+  1. Update watermark for entity_type
+  2. Mark cache entries before watermark as stable
+  3. Enable aggressive pruning of old buckets
+
+  ## Output Requirements
+  Write /workdir/sol.csv after processing all stream entries.
+  
+  For each feature_request (type="feature_request"), emit ONE row with:
+  - stream_id: the request's stream_id
+  - entity_type: the entity type
+  - entity_id: the entity identifier
+  - feature_name: name of the feature
+  - feature_value: computed value, rounded to 4 decimals for floats, or "null" if error
+  - cache_hit: "true" if served from cache, "false" if computed
+  - computation_time_ms: time to compute (0 if cache hit)
+  - num_events: number of events used in computation
+  - window_start_ts: start of time window used
+  - window_end_ts: end of time window used
+  - is_stable: "true" if result past watermark (won't change), "false" otherwise
+
+  Important: For requests with multiple features, emit one row per feature in the order listed.
+
+  ## CSV Schema (strict column order)
+  stream_id,entity_type,entity_id,feature_name,feature_value,cache_hit,computation_time_ms,num_events,window_start_ts,window_end_ts,is_stable
+
+  ## Edge Cases & Special Rules
+
+  1. Cold Start: Entity with no historical data:
+     - count features: 0
+     - sum features: 0
+     - avg, min, max, last, stddev, p50, p95: "null"
+     - Mark cache_hit = "false"
+
+  2. Window with Single Event:
+     - avg = value (no division by zero)
+     - stddev = 0.0 (or "null" if ddof=1 and only 1 sample)
+     - p50 = p95 = value
+
+  3. Late Data Arrival:
+     - If update timestamp within max_late_arrival of watermark: accept
+     - If beyond max_late_arrival: ignore update, log warning
+     - Invalidate only affected cache entries (not entire entity)
+
+  4. Feature Definition Versioning:
+     - Multiple versions of same feature can coexist
+     - Feature request uses latest version by default
+     - Version in cache key to allow transition period
+
+  5. Backfill Handling:
+     - Backfills are idempotent: multiple backfills same timestamp → last wins
+     - Must invalidate cache but not watermark status
+     - Re-computation uses corrected data
+
+  6. Unknown Feature Name:
+     - Return row with feature_value = "null"
+     - cache_hit = "false"
+     - num_events = 0
+
+  7. Empty Window (no events in time range):
+     - Return appropriate empty value based on aggregation
+     - Mark is_stable based on watermark
+
+  8. Quantile Computation:
+     - p50 = 50th percentile (median)
+     - p95 = 95th percentile
+     - Use linear interpolation between centroids
+     - For exact ties, use lower value
+
+  9. Cache Invalidation Cascade:
+     - Invalidate entry → remove from cache
+     - Next request will trigger re-computation
+     - Re-computation may hit other cached dependencies
+
+  10. Determinism Requirements:
+      - LRU eviction: use stream_id as tie-breaker (lower evicted first)
+      - t-digest centroid merging: stable sort by mean
+      - Bucket iteration: always in timestamp ascending order
+      - Cache key collisions: use exact timestamp, not bucketed
+
+  ## Performance Constraints
+  - Must process ≥50 events per second
+  - Feature request latency: <100ms for cache hits, <500ms for computations
+  - Memory usage ≤ 512MB
+  - Support up to 1000 concurrent entities
+  - Cache hit rate should be >70% for stable features
+
+  ## Notes
+  - All timestamps are Unix epoch milliseconds
+  - Attribute values can be negative, zero, or positive
+  - Entity IDs are case-sensitive strings
+  - Feature names are case-sensitive
+  - Window boundaries are inclusive: [start, end]
+  - Aggregations ignore null/missing attribute values
+  - Write exactly one row per (request, feature) pair
+  - Rows must be in stream_id order, then feature order as requested
+  - All floating-point outputs rounded to exactly 4 decimal places
+  - Integer outputs (count, num_events) have no decimal places
+  - computation_time_ms is for testing only (set to 0 in solution)
+  - No network access. Deterministic output required.
+
+metadata:
+  difficulty: hard
+  category: data-engineering
+  tags: [streaming, feature-store, time-series, aggregation]
+  references:
+    - "t-digest: Accurate online quantile estimation"
+
+time_limit: 3600
+memory_limit: 512
+max_agent_timeout_sec: 2400
+expert_time_estimate_min: 300
+junior_time_estimate_min: 600

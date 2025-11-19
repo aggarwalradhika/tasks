@@ -1,0 +1,105 @@
+// Initial entity updates to build baseline
+{"stream_id": 1, "type": "entity_update", "entity_type": "user", "entity_id": "user_001", "timestamp": 1000000, "attributes": {"purchase_amount": 50.0, "session_duration": 120, "category": "electronics"}}
+{"stream_id": 2, "type": "entity_update", "entity_type": "user", "entity_id": "user_001", "timestamp": 1060000, "attributes": {"purchase_amount": 75.5, "session_duration": 180, "category": "books"}}
+{"stream_id": 3, "type": "entity_update", "entity_type": "user", "entity_id": "user_001", "timestamp": 1120000, "attributes": {"purchase_amount": 30.0, "session_duration": 90, "category": "electronics"}}
+{"stream_id": 4, "type": "entity_update", "entity_type": "user", "entity_id": "user_002", "timestamp": 1000000, "attributes": {"purchase_amount": 100.0, "session_duration": 240, "category": "clothing"}}
+{"stream_id": 5, "type": "entity_update", "entity_type": "user", "entity_id": "user_002", "timestamp": 1080000, "attributes": {"purchase_amount": 45.0, "session_duration": 150, "category": "electronics"}}
+
+// Register features
+{"stream_id": 6, "type": "feature_definition", "feature_name": "total_spend_1h", "entity_type": "user", "aggregation": "sum", "source_attribute": "purchase_amount", "window": "1h", "version": 1}
+{"stream_id": 7, "type": "feature_definition", "feature_name": "avg_session_1h", "entity_type": "user", "aggregation": "avg", "source_attribute": "session_duration", "window": "1h", "version": 1}
+{"stream_id": 8, "type": "feature_definition", "feature_name": "purchase_count_1h", "entity_type": "user", "aggregation": "count", "source_attribute": "purchase_amount", "window": "1h", "version": 1}
+{"stream_id": 9, "type": "feature_definition", "feature_name": "max_purchase_24h", "entity_type": "user", "aggregation": "max", "source_attribute": "purchase_amount", "window": "24h", "version": 1}
+{"stream_id": 10, "type": "feature_definition", "feature_name": "min_purchase_24h", "entity_type": "user", "aggregation": "min", "source_attribute": "purchase_amount", "window": "24h", "version": 1}
+{"stream_id": 11, "type": "feature_definition", "feature_name": "last_category_1h", "entity_type": "user", "aggregation": "last", "source_attribute": "category", "window": "1h", "version": 1}
+
+// Feature requests - test basic aggregations
+{"stream_id": 12, "type": "feature_request", "entity_type": "user", "entity_id": "user_001", "request_timestamp": 1200000, "features": ["total_spend_1h", "purchase_count_1h"], "asof_timestamp": 1200000}
+{"stream_id": 13, "type": "feature_request", "entity_type": "user", "entity_id": "user_001", "request_timestamp": 1200000, "features": ["avg_session_1h"], "asof_timestamp": 1200000}
+
+// More entity updates
+{"stream_id": 14, "type": "entity_update", "entity_type": "user", "entity_id": "user_001", "timestamp": 1300000, "attributes": {"purchase_amount": 120.0, "session_duration": 300, "category": "clothing"}}
+{"stream_id": 15, "type": "entity_update", "entity_type": "user", "entity_id": "user_001", "timestamp": 1360000, "attributes": {"purchase_amount": 85.0, "session_duration": 200, "category": "books"}}
+
+// Set watermark - makes earlier data stable
+{"stream_id": 16, "type": "watermark", "entity_type": "user", "watermark_timestamp": 1200000}
+
+// Feature request that should hit cache (if previously computed)
+{"stream_id": 17, "type": "feature_request", "entity_type": "user", "entity_id": "user_001", "request_timestamp": 1400000, "features": ["total_spend_1h"], "asof_timestamp": 1200000}
+
+// Register quantile features
+{"stream_id": 18, "type": "feature_definition", "feature_name": "p50_purchase_24h", "entity_type": "user", "aggregation": "p50", "source_attribute": "purchase_amount", "window": "24h", "version": 1}
+{"stream_id": 19, "type": "feature_definition", "feature_name": "p95_purchase_24h", "entity_type": "user", "aggregation": "p95", "source_attribute": "purchase_amount", "window": "24h", "version": 1}
+{"stream_id": 20, "type": "feature_definition", "feature_name": "stddev_session_1h", "entity_type": "user", "aggregation": "stddev", "source_attribute": "session_duration", "window": "1h", "version": 1}
+
+// More updates for quantile testing
+{"stream_id": 21, "type": "entity_update", "entity_type": "user", "entity_id": "user_003", "timestamp": 1400000, "attributes": {"purchase_amount": 10.0, "session_duration": 60, "category": "books"}}
+{"stream_id": 22, "type": "entity_update", "entity_type": "user", "entity_id": "user_003", "timestamp": 1420000, "attributes": {"purchase_amount": 20.0, "session_duration": 90, "category": "books"}}
+{"stream_id": 23, "type": "entity_update", "entity_type": "user", "entity_id": "user_003", "timestamp": 1440000, "attributes": {"purchase_amount": 30.0, "session_duration": 120, "category": "books"}}
+{"stream_id": 24, "type": "entity_update", "entity_type": "user", "entity_id": "user_003", "timestamp": 1460000, "attributes": {"purchase_amount": 40.0, "session_duration": 150, "category": "books"}}
+{"stream_id": 25, "type": "entity_update", "entity_type": "user", "entity_id": "user_003", "timestamp": 1480000, "attributes": {"purchase_amount": 50.0, "session_duration": 180, "category": "books"}}
+
+// Request quantile features
+{"stream_id": 26, "type": "feature_request", "entity_type": "user", "entity_id": "user_003", "request_timestamp": 1500000, "features": ["p50_purchase_24h", "p95_purchase_24h"], "asof_timestamp": 1500000}
+
+// Test point-in-time correctness - request features as of earlier time
+{"stream_id": 27, "type": "feature_request", "entity_type": "user", "entity_id": "user_001", "request_timestamp": 1500000, "features": ["total_spend_1h", "max_purchase_24h"], "asof_timestamp": 1150000}
+
+// Backfill - correct earlier data
+{"stream_id": 28, "type": "backfill", "entity_type": "user", "entity_id": "user_001", "timestamp": 1060000, "attributes": {"purchase_amount": 80.0, "session_duration": 180}}
+
+// Request after backfill - should get updated values
+{"stream_id": 29, "type": "feature_request", "entity_type": "user", "entity_id": "user_001", "request_timestamp": 1600000, "features": ["total_spend_1h"], "asof_timestamp": 1200000}
+
+// Late arrival data
+{"stream_id": 30, "type": "entity_update", "entity_type": "user", "entity_id": "user_002", "timestamp": 1100000, "attributes": {"purchase_amount": 60.0, "session_duration": 160, "category": "books"}}
+
+// Update watermark to make late data acceptable
+{"stream_id": 31, "type": "watermark", "entity_type": "user", "watermark_timestamp": 1500000}
+
+// Test stddev
+{"stream_id": 32, "type": "feature_request", "entity_type": "user", "entity_id": "user_003", "request_timestamp": 1500000, "features": ["stddev_session_1h"], "asof_timestamp": 1500000}
+
+// Cache control - invalidate specific entity
+{"stream_id": 33, "type": "cache_control", "action": "invalidate", "entity_type": "user", "entity_id": "user_001"}
+
+// Request should now miss cache
+{"stream_id": 34, "type": "feature_request", "entity_type": "user", "entity_id": "user_001", "request_timestamp": 1700000, "features": ["total_spend_1h"], "asof_timestamp": 1200000}
+
+// Test edge case: cold start entity
+{"stream_id": 35, "type": "feature_request", "entity_type": "user", "entity_id": "user_999", "request_timestamp": 1700000, "features": ["total_spend_1h", "purchase_count_1h"], "asof_timestamp": 1700000}
+
+// Test edge case: single event in window
+{"stream_id": 36, "type": "entity_update", "entity_type": "user", "entity_id": "user_004", "timestamp": 1800000, "attributes": {"purchase_amount": 99.0, "session_duration": 210, "category": "electronics"}}
+{"stream_id": 37, "type": "feature_request", "entity_type": "user", "entity_id": "user_004", "request_timestamp": 1850000, "features": ["avg_session_1h", "stddev_session_1h"], "asof_timestamp": 1850000}
+
+// Test last aggregation
+{"stream_id": 38, "type": "entity_update", "entity_type": "user", "entity_id": "user_001", "timestamp": 1900000, "attributes": {"purchase_amount": 200.0, "session_duration": 400, "category": "luxury"}}
+{"stream_id": 39, "type": "feature_request", "entity_type": "user", "entity_id": "user_001", "request_timestamp": 1950000, "features": ["last_category_1h"], "asof_timestamp": 1950000}
+
+// Test all_time window
+{"stream_id": 40, "type": "feature_definition", "feature_name": "total_spend_alltime", "entity_type": "user", "aggregation": "sum", "source_attribute": "purchase_amount", "window": "all_time", "version": 1}
+{"stream_id": 41, "type": "feature_request", "entity_type": "user", "entity_id": "user_001", "request_timestamp": 2000000, "features": ["total_spend_alltime"], "asof_timestamp": 2000000}
+
+// Test 7d and 30d windows
+{"stream_id": 42, "type": "feature_definition", "feature_name": "purchase_count_7d", "entity_type": "user", "aggregation": "count", "source_attribute": "purchase_amount", "window": "7d", "version": 1}
+{"stream_id": 43, "type": "feature_definition", "feature_name": "purchase_count_30d", "entity_type": "user", "aggregation": "count", "source_attribute": "purchase_amount", "window": "30d", "version": 1}
+{"stream_id": 44, "type": "feature_request", "entity_type": "user", "entity_id": "user_001", "request_timestamp": 2000000, "features": ["purchase_count_7d", "purchase_count_30d"], "asof_timestamp": 2000000}
+
+// Test unknown feature
+{"stream_id": 45, "type": "feature_request", "entity_type": "user", "entity_id": "user_001", "request_timestamp": 2100000, "features": ["unknown_feature"], "asof_timestamp": 2100000}
+
+// Test multiple features in single request
+{"stream_id": 46, "type": "feature_request", "entity_type": "user", "entity_id": "user_001", "request_timestamp": 2200000, "features": ["total_spend_1h", "avg_session_1h", "purchase_count_1h", "last_category_1h"], "asof_timestamp": 2200000}
+
+// Clear cache for testing
+{"stream_id": 47, "type": "cache_control", "action": "clear"}
+
+// Final requests to verify computation correctness
+{"stream_id": 48, "type": "feature_request", "entity_type": "user", "entity_id": "user_003", "request_timestamp": 2300000, "features": ["total_spend_1h", "p50_purchase_24h"], "asof_timestamp": 1500000}
+{"stream_id": 49, "type": "feature_request", "entity_type": "user", "entity_id": "user_002", "request_timestamp": 2300000, "features": ["max_purchase_24h", "min_purchase_24h"], "asof_timestamp": 1200000}
+
+// Test window boundaries - events exactly at window edge
+{"stream_id": 50, "type": "entity_update", "entity_type": "user", "entity_id": "user_005", "timestamp": 3000000, "attributes": {"purchase_amount": 111.0, "session_duration": 111, "category": "test"}}
+{"stream_id": 51, "type": "entity_update", "entity_type": "user", "entity_id": "user_005", "timestamp": 6600000, "attributes": {"purchase_amount": 222.0, "session_duration": 222, "category": "test"}}
+{"stream_id": 52, "type": "feature_request", "entity_type": "user", "entity_id": "user_005", "request_timestamp": 6600000, "features": ["total_spend_1h"], "asof_timestamp": 6600000}
