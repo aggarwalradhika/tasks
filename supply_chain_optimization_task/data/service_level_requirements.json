@@ -1,0 +1,14 @@
+{
+  "category_A": {
+    "target_fill_rate": 0.95,
+    "stockout_penalty_multiplier": 3.0
+  },
+  "category_B": {
+    "target_fill_rate": 0.9,
+    "stockout_penalty_multiplier": 2.0
+  },
+  "category_C": {
+    "target_fill_rate": 0.85,
+    "stockout_penalty_multiplier": 1.5
+  }
+}

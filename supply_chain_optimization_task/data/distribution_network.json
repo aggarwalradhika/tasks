@@ -1,0 +1,120 @@
+{
+  "central_warehouse": {
+    "id": "CW_01",
+    "volume_capacity_cubic_ft": 500000,
+    "weight_capacity_lbs": 2000000,
+    "holding_cost_rate_annual": 0.18
+  },
+  "distribution_centers": [
+    {
+      "dc_id": "DC_01",
+      "region": "Northeast",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "volume_capacity_cubic_ft": 56750,
+      "weight_capacity_lbs": 212021,
+      "holding_cost_rate_annual": 0.24,
+      "fixed_order_cost": 200
+    },
+    {
+      "dc_id": "DC_02",
+      "region": "Southeast",
+      "latitude": 33.749,
+      "longitude": -84.388,
+      "volume_capacity_cubic_ft": 45560,
+      "weight_capacity_lbs": 236356,
+      "holding_cost_rate_annual": 0.19,
+      "fixed_order_cost": 200
+    },
+    {
+      "dc_id": "DC_03",
+      "region": "Midwest",
+      "latitude": 41.8781,
+      "longitude": -87.6298,
+      "volume_capacity_cubic_ft": 56890,
+      "weight_capacity_lbs": 237012,
+      "holding_cost_rate_annual": 0.22,
+      "fixed_order_cost": 200
+    },
+    {
+      "dc_id": "DC_04",
+      "region": "Southwest",
+      "latitude": 29.7604,
+      "longitude": -95.3698,
+      "volume_capacity_cubic_ft": 50983,
+      "weight_capacity_lbs": 162240,
+      "holding_cost_rate_annual": 0.24,
+      "fixed_order_cost": 200
+    },
+    {
+      "dc_id": "DC_05",
+      "region": "West",
+      "latitude": 34.0522,
+      "longitude": -118.2437,
+      "volume_capacity_cubic_ft": 47696,
+      "weight_capacity_lbs": 238184,
+      "holding_cost_rate_annual": 0.2,
+      "fixed_order_cost": 200
+    },
+    {
+      "dc_id": "DC_06",
+      "region": "Northwest",
+      "latitude": 47.6062,
+      "longitude": -122.3321,
+      "volume_capacity_cubic_ft": 46525,
+      "weight_capacity_lbs": 169313,
+      "holding_cost_rate_annual": 0.18,
+      "fixed_order_cost": 200
+    },
+    {
+      "dc_id": "DC_07",
+      "region": "Mountain",
+      "latitude": 39.7392,
+      "longitude": -104.9903,
+      "volume_capacity_cubic_ft": 48023,
+      "weight_capacity_lbs": 212277,
+      "holding_cost_rate_annual": 0.22,
+      "fixed_order_cost": 200
+    },
+    {
+      "dc_id": "DC_08",
+      "region": "Central",
+      "latitude": 39.0997,
+      "longitude": -94.5786,
+      "volume_capacity_cubic_ft": 42386,
+      "weight_capacity_lbs": 209692,
+      "holding_cost_rate_annual": 0.21,
+      "fixed_order_cost": 200
+    }
+  ],
+  "distances_miles": {
+    "DC_01_DC_02": 745.9,
+    "DC_01_DC_03": 711.1,
+    "DC_01_DC_04": 1417.6,
+    "DC_01_DC_05": 2445.7,
+    "DC_01_DC_06": 2402.1,
+    "DC_01_DC_07": 1627.5,
+    "DC_01_DC_08": 1093.6,
+    "DC_02_DC_03": 588.8,
+    "DC_02_DC_04": 701.1,
+    "DC_02_DC_05": 1932.8,
+    "DC_02_DC_06": 2178.5,
+    "DC_02_DC_07": 1210.1,
+    "DC_02_DC_08": 675.9,
+    "DC_03_DC_04": 941.9,
+    "DC_03_DC_05": 1742.4,
+    "DC_03_DC_06": 1733.0,
+    "DC_03_DC_07": 918.3,
+    "DC_03_DC_08": 412.4,
+    "DC_04_DC_05": 1371.0,
+    "DC_04_DC_06": 1889.4,
+    "DC_04_DC_07": 878.5,
+    "DC_04_DC_08": 646.9,
+    "DC_05_DC_06": 960.3,
+    "DC_05_DC_07": 829.9,
+    "DC_05_DC_08": 1354.4,
+    "DC_06_DC_07": 1019.6,
+    "DC_06_DC_08": 1502.9,
+    "DC_07_DC_08": 557.2
+  }
+}

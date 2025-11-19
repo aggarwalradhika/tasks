@@ -1,0 +1,557 @@
+prompt: |
+  You are the head of supply chain analytics at a major retail company managing inventory across multiple distribution centers.
+
+  ## Your Task
+
+  Design an optimal inventory management strategy by:
+  1. Forecasting demand for 40 products across 8 distribution centers over a 12-week horizon
+  2. Determining optimal inventory policies (safety stock, reorder points) that minimize total costs
+  3. Configuring the distribution network to handle stockouts through transshipment and substitution
+
+  ## Problem Overview
+
+  You manage a multi-echelon distribution network:
+  - 40 products across 3 categories (A: high-value 20%, B: medium 30%, C: low-value 50%)
+  - 8 regional distribution centers (DCs) plus 1 central warehouse
+  - 104 weeks of historical demand data
+  - Must forecast weeks 105-116 (12-week horizon)
+  - Products have different characteristics: perishable vs. durable, substitutable vs. unique
+  - Suppliers have minimum order quantities (MOQ) and variable lead times
+  - DCs have capacity constraints (volume and weight)
+
+  ## Part 1: Demand Forecasting
+
+  Forecast weekly demand for each product-DC combination for weeks 105-116.
+
+  ### Input Data
+
+  File: `/workdir/data/historical_demand.csv`
+  ```csv
+    product_id,dc_id,week,units_sold,stockouts,promotion_active,promotion_discount,temperature,is_holiday,economic_index
+    PROD_001,DC_01,1,245,0,False,0.0,72,False,100.5
+    ...
+  ```
+
+  Additional context files:
+  - `/workdir/data/product_catalog.json` - Product attributes (category, cost, volume, weight, shelf_life, substitutes)
+  - `/workdir/data/demand_drivers.csv` - External factors (week, season, economic_indicator, marketing_spend)
+
+  ### Forecasting Requirements
+
+  Your forecast must account for:
+  1. Seasonality: Many products have strong seasonal patterns
+  2. Trends: Some products are growing/declining
+  3. Promotions: 2-5× demand spike during promotion weeks (indicated in historical data)
+  4. Cannibalization: When a product stocks out, demand shifts to substitutes
+  5. External factors: Weather, holidays, economic conditions
+  6. Spatial correlation: Nearby DCs have correlated demand patterns
+
+  ### Forecast Accuracy Metric
+
+  Your forecasts will be evaluated using WMAPE (Weighted Mean Absolute Percentage Error):
+  ```
+    WMAPE = Σ(|actual - forecast| × product_value) / Σ(actual × product_value)
+  ```
+
+  Where product_value is the unit cost of each product.
+
+  Accuracy Requirements:
+  - WMAPE < 15%: Excellent (full forecast score)
+  - WMAPE 15-25%: Acceptable (0.6 forecast score)
+  - WMAPE > 25%: Poor (0.0 forecast score)
+
+  ## Part 2: Inventory Optimization
+
+  Based on your forecasts, determine optimal inventory policies for each product-DC combination.
+
+  ### Objective: Minimize Total Cost
+  ```
+    Total_Cost = 
+      α₁ × Holding_Cost +           # Weekly inventory holding cost
+      α₂ × Ordering_Cost +           # Fixed + variable ordering costs
+      α₃ × Stockout_Penalty +        # Lost sales + customer dissatisfaction
+      α₄ × Transportation_Cost +     # Emergency transshipment between DCs
+      α₅ × Obsolescence_Cost         # Expired perishable inventory
+  ```
+
+  Cost weights: α₁=1.0, α₂=5.0, α₃=50.0, α₄=3.0, α₅=20.0
+
+  ### Cost Components (Detailed Formulas)
+
+  1. Holding Cost
+  ```
+    Holding_Cost = Σ(average_inventory × holding_cost_rate × product_cost)
+  ```
+  - holding_cost_rate varies by DC (0.15-0.25 per year, converted to weekly)
+  - average_inventory = (safety_stock + order_quantity/2)
+
+  2. Ordering Cost
+  ```
+    Ordering_Cost = Σ(num_orders × fixed_order_cost) + Σ(order_quantity × variable_cost_per_unit)
+  ```
+  - fixed_order_cost = $200 per order
+  - num_orders = forecasted_demand / order_quantity over 12 weeks
+
+  3. Stockout Penalty
+  ```
+    Stockout_Penalty = Σ(stockout_units × product_cost × penalty_multiplier)
+  ```
+  - penalty_multiplier: 3.0 for category A, 2.0 for B, 1.5 for C
+  - Stockouts occur when demand exceeds (inventory + incoming_orders)
+
+  4. Transportation Cost (Transshipment)
+  ```
+    Transportation_Cost = Σ(transship_quantity × distance × cost_per_mile × product_weight)
+  ```
+  - cost_per_mile = $0.05 per pound-mile
+  - Only triggered when a DC stocks out and borrows from another DC
+
+  5. Obsolescence Cost
+  ```
+    Obsolescence_Cost = Σ(expired_units × product_cost) for perishable products
+  ```
+  - Products expire if inventory_age > shelf_life
+  - Only applies to 20% of products (marked as perishable)
+
+  ### Inventory Policy Variables
+
+  For each product-DC combination, you must determine:
+
+  1. Reorder Point (ROP): When to place an order
+  ```
+      ROP = expected_demand_during_lead_time + safety_stock
+  ```
+
+  2. Order Quantity (Q): How much to order
+  ```
+      Q = max(EOQ, MOQ)
+      where EOQ = √((2 × demand × fixed_cost) / holding_cost)
+  ```
+
+  3. Safety Stock (SS): Buffer against uncertainty
+  ```
+      SS = z_score(service_level) × σ_demand × √(lead_time)
+  ```
+     - z_score: 1.645 for 95%, 1.28 for 90%, 0.84 for 80%
+
+  ## Hard Constraints (MUST Satisfy)
+
+  Your solution MUST satisfy ALL these constraints or receive 0.0 score:
+
+  ### 1. Service Level Constraints
+  ```
+    Fill_Rate ≥ Target_SLA for each product category
+  ```
+  - Category A products: Fill Rate ≥ 95%
+  - Category B products: Fill Rate ≥ 90%
+  - Category C products: Fill Rate ≥ 85%
+  
+  Fill_Rate = units_fulfilled / units_demanded
+
+  ### 2. Capacity Constraints
+  ```
+    Σ(inventory_i × volume_i) ≤ DC_volume_capacity
+    Σ(inventory_i × weight_i) ≤ DC_weight_capacity
+  ```
+  For each DC at any point in time.
+
+  ### 3. MOQ (Minimum Order Quantity) Constraints
+  ```
+    order_quantity ≥ supplier_MOQ for each product
+  ```
+  Or order_quantity = 0 (don't order).
+
+  ### 4. Shelf Life Constraints (Perishable Products)
+  ```
+    average_inventory_turnover ≤ shelf_life
+  ```
+  Where inventory_turnover = average_inventory / average_weekly_demand
+
+  ### 5. Lead Time Coverage
+  ```
+    safety_stock ≥ max_lead_time × forecast_σ
+  ```
+  Safety stock must cover maximum lead time variability.
+
+  ### 6. Budget Constraint
+  ```
+    Σ(average_inventory × product_cost) ≤ working_capital_budget
+  ```
+  Total inventory value cannot exceed $5,000,000.
+
+  ## Network Effects
+
+  ### Transshipment Rules
+  When a DC stocks out, it can request inventory from nearby DCs:
+  - Eligible if distance < 200 miles
+  - Costs transportation_cost (see formula above)
+  - Reduces stockout penalty but adds transportation cost
+  - Donor DC must have inventory > safety_stock
+
+  ### Substitution Matrix
+  When a product stocks out, some demand shifts to substitutes:
+  - Substitution rates provided in product_catalog.json
+  - Example: If PROD_001 stocks out, 40% of demand goes to PROD_002
+  - This increases demand (and potential stockouts) for substitute products
+
+  ## Data Files Specification
+
+  ### 1. historical_demand.csv
+  104 weeks × 40 products × 8 DCs = 33,280 rows
+
+  Columns:
+  - `product_id`: PROD_001 to PROD_040
+  - `dc_id`: DC_01 to DC_08
+  - `week`: 1 to 104
+  - `units_sold`: Actual units sold (integer)
+  - `stockouts`: Number of stockout days that week (0-7)
+  - `promotion_active`: Boolean
+  - `promotion_discount`: 0.0 to 0.5 (fraction)
+  - `temperature`: Average temperature that week (°F)
+  - `is_holiday`: Boolean (week contains major holiday)
+  - `economic_index`: 80-120 (100 = baseline)
+
+  ### 2. product_catalog.json
+  ```json
+    {
+      "products": [
+        {
+          "product_id": "PROD_001",
+          "category": "A",
+          "unit_cost": 45.50,
+          "volume_cubic_ft": 2.3,
+          "weight_lbs": 5.2,
+          "is_perishable": true,
+          "shelf_life_weeks": 8,
+          "supplier_moq": 500,
+          "base_lead_time_weeks": 2,
+          "lead_time_std_dev": 0.5,
+          "substitutes": ["PROD_002", "PROD_003"],
+          "substitution_rate": 0.40
+        },
+        ...
+      ]
+    }
+  ```
+
+  ### 3. distribution_network.json
+  ```json
+    {
+      "central_warehouse": {
+        "id": "CW_01",
+        "volume_capacity_cubic_ft": 500000,
+        "weight_capacity_lbs": 2000000,
+        "holding_cost_rate_annual": 0.18
+      },
+      "distribution_centers": [
+        {
+          "dc_id": "DC_01",
+          "region": "Northeast",
+          "latitude": 40.7128,
+          "longitude": -74.0060,
+          "volume_capacity_cubic_ft": 50000,
+          "weight_capacity_lbs": 200000,
+          "holding_cost_rate_annual": 0.22,
+          "fixed_order_cost": 200
+        },
+        ...
+      ],
+      "distances_miles": {
+        "DC_01_DC_02": 120,
+        "DC_01_DC_03": 450,
+        ...
+      }
+    }
+  ```
+
+  ### 4. demand_drivers.csv
+  ```csv
+    week,season,economic_indicator,marketing_spend,weather_pattern
+    1,Winter,98.5,50000,Cold
+    ...
+  ```
+
+  ### 5. service_level_requirements.json
+  ```json
+    {
+      "category_A": {
+        "target_fill_rate": 0.95,
+        "stockout_penalty_multiplier": 3.0
+      },
+      "category_B": {
+        "target_fill_rate": 0.90,
+        "stockout_penalty_multiplier": 2.0
+      },
+      "category_C": {
+        "target_fill_rate": 0.85,
+        "stockout_penalty_multiplier": 1.5
+      }
+    }
+  ```
+
+  ## Output Files (What You Must Produce)
+
+  ### 1. /workdir/demand_forecast.csv
+
+  Must contain forecasts for weeks 105-116 for all product-DC combinations:
+  ```csv
+    product_id,dc_id,week,forecasted_demand,prediction_interval_lower,prediction_interval_upper
+    PROD_001,DC_01,105,245.3,215.0,280.0
+    PROD_001,DC_01,106,238.1,210.0,270.0
+    ...
+  ```
+
+  Requirements:
+  - 40 products × 8 DCs × 12 weeks = 3,840 rows
+  - `forecasted_demand`: Your point forecast (can be decimal)
+  - `prediction_interval_lower`: 10th percentile (for uncertainty estimation)
+  - `prediction_interval_upper`: 90th percentile (for uncertainty estimation)
+  - Intervals are used for safety stock calculations
+
+  ### 2. /workdir/inventory_policy.json
+
+  Complete inventory policy for the entire network:
+  ```json
+    {
+      "policies": [
+        {
+          "product_id": "PROD_001",
+          "dc_id": "DC_01",
+          "reorder_point": 850,
+          "order_quantity": 2000,
+          "safety_stock": 380,
+          "expected_service_level": 0.96,
+          "average_inventory": 1380,
+          "orders_per_12_weeks": 6
+        },
+        ...
+      ],
+      "network_config": {
+        "transshipment_enabled": true,
+        "transshipment_pairs": [
+          {"from": "DC_01", "to": "DC_02", "products": ["PROD_001", "PROD_005"]}
+        ],
+        "substitution_enabled": true
+      },
+      "cost_breakdown": {
+        "holding_cost": 145230,
+        "ordering_cost": 38400,
+        "stockout_penalty": 12800,
+        "transportation_cost": 5600,
+        "obsolescence_cost": 2100
+      },
+      "service_levels_achieved": {
+        "category_A": 0.967,
+        "category_B": 0.923,
+        "category_C": 0.891
+      },
+      "constraint_satisfaction": {
+        "service_levels_met": true,
+        "capacity_constraints_met": true,
+        "moq_constraints_met": true,
+        "shelf_life_met": true,
+        "lead_time_coverage_met": true,
+        "budget_met": true
+      },
+      "total_cost": 204130
+    }
+  ```
+
+  ### 3. /workdir/ans.txt
+
+  Single integer: your total cost rounded to nearest integer.
+  ```
+    204130
+  ```
+
+  ## Grading Criteria
+
+  Your solution receives a weighted score:
+  ```
+    Final_Score = 0.4 × Forecast_Score + 0.6 × Optimization_Score
+  ```
+
+  ### Forecast Score (40% of grade)
+
+  Based on WMAPE on hidden test set (actual demand for weeks 105-116):
+
+  - WMAPE < 15%: Forecast_Score = 1.0
+  - WMAPE 15-25%: Forecast_Score = 0.6
+  - WMAPE > 25%: Forecast_Score = 0.0
+
+  ### Optimization Score (60% of grade)
+
+  Binary scoring: 1.0 if ALL checks pass, 0.0 otherwise:
+
+  1. ✓ All 6 hard constraints satisfied
+  2. ✓ inventory_policy.json has all required fields
+  3. ✓ Cost computation matches claimed cost (±1% tolerance)
+  4. ✓ Service levels meet requirements for all categories
+  5. ✓ Total cost within 1.25× of sophisticated baseline solution
+  6. ✓ Simulation runs successfully for 12 weeks without violations
+
+  Baseline Calculation: The grader runs a sophisticated solution using:
+  - Exponential smoothing with trend and seasonality for forecasting
+  - Newsvendor model for safety stock calculation
+  - EOQ-based order quantities with MOQ adjustments
+  - Heuristic transshipment rules
+
+  Your solution must be within 125% of this baseline cost.
+
+  ## Algorithm Design Guidance
+
+  ### Forecasting Strategy
+
+  Feature Engineering (derivable from data):
+  ```python
+    features = [
+        # Lagged demand
+        'demand_lag_1', 'demand_lag_2', 'demand_lag_4', 'demand_lag_12',
+        
+        # Rolling statistics
+        'rolling_mean_4', 'rolling_mean_12', 'rolling_std_4',
+        
+        # Seasonality
+        'week_of_year', 'month', 'quarter',
+        
+        # Promotions
+        'promotion_active', 'promotion_discount', 'weeks_since_promotion',
+        
+        # External factors
+        'temperature', 'is_holiday', 'economic_index',
+        
+        # Cross-effects
+        'substitute_demand', 'cannibalization_impact',
+        
+        # Spatial
+        'nearby_dc_demand_avg', 'regional_demand_total'
+    ]
+  ```
+
+  Model Selection (justified by problem structure):
+  - Gradient Boosting (XGBoost/LightGBM) for complex interactions
+  - Separate models by product category (different patterns)
+  - Cross-validation on weeks 90-104 (last 15 weeks)
+  - Quantile regression for prediction intervals
+
+  ### Optimization Strategy
+
+  Step 1: Safety Stock Calculation
+  ```python
+    # Derived from service level requirements
+    z_scores = {
+        'A': 1.645,  # 95% service level
+        'B': 1.282,  # 90% service level
+        'C': 0.842   # 85% service level
+    }
+
+    safety_stock = z_scores[category] × forecast_std × sqrt(lead_time)
+  ```
+
+  Step 2: Order Quantity Optimization
+  ```python
+    # Economic Order Quantity (EOQ) formula
+    EOQ = sqrt((2 × annual_demand × fixed_order_cost) / 
+              (holding_cost_rate × unit_cost))
+    
+    # Adjust for MOQ constraint
+    order_quantity = max(EOQ, supplier_MOQ)
+    
+    # Round to practical quantities
+    order_quantity = round_to_case_size(order_quantity)
+  ```
+
+  Step 3: Constraint Enforcement
+  ```python
+    # Iteratively adjust until all constraints satisfied
+    while not all_constraints_met():
+        if capacity_exceeded(dc):
+            # Reduce safety stock for low-value products
+            reduce_inventory(dc, category='C')
+        
+        if service_level_violated(product):
+            # Increase safety stock
+            increase_safety_stock(product)
+        
+        if budget_exceeded():
+            # Reduce order quantities (more frequent smaller orders)
+            adjust_order_frequency()
+  ```
+
+  Step 4: Network Optimization
+  ```python
+    # Configure transshipment based on proximity and costs
+    for dc_pair in nearby_dcs(max_distance=200):
+        if transshipment_cost < stockout_penalty:
+            enable_transshipment(dc_pair)
+  ```
+
+  ## Common Pitfalls
+
+  1. ❌ Ignoring forecast uncertainty: Using point forecasts without prediction intervals leads to inadequate safety stock
+  2. ❌ Treating products independently: Missing substitution and cannibalization effects
+  3. ❌ Violating MOQ constraints: Orders below MOQ are infeasible
+  4. ❌ Over-optimizing cost: Violating service level constraints to reduce costs
+  5. ❌ Not simulating: Computing costs analytically without simulating demand realization
+  6. ❌ Ignoring shelf life: Excessive inventory for perishables leads to obsolescence
+  7. ❌ Poor capacity planning: Violating volume or weight constraints during peak demand
+  8. ❌ Static policies: Not adjusting reorder points based on forecast changes
+
+  ## Validation Checklist
+
+  Before submitting, verify:
+  ```python
+    # 1. Forecast file completeness
+    assert len(forecast_df) == 40 * 8 * 12  # All products, DCs, weeks
+    
+    # 2. All constraints programmatically checked
+    for category in ['A', 'B', 'C']:
+        assert achieved_fill_rate[category] >= target_fill_rate[category]
+    
+    for dc in distribution_centers:
+        assert total_volume(dc) <= dc.volume_capacity
+        assert total_weight(dc) <= dc.weight_capacity
+    
+    # 3. Cost computation matches
+    computed_cost = simulate_12_weeks(policies, forecasts)
+    assert abs(computed_cost - claimed_cost) < 0.01 * computed_cost
+    
+    # 4. MOQ satisfaction
+    for policy in policies:
+        assert policy.order_quantity == 0 or policy.order_quantity >= moq
+  ```
+
+  ## Success Criteria Summary
+
+  Pass (Score ≥ 0.7):
+  - Forecast WMAPE < 25%
+  - All hard constraints satisfied
+  - Cost within 1.25× of baseline
+  - Simulation runs successfully
+
+  Excellent (Score ≥ 0.9):
+  - Forecast WMAPE < 15%
+  - All hard constraints satisfied with margin
+  - Cost within 1.10× of baseline
+  - Efficient algorithm (< 5 minutes runtime)
+
+  ## Important Notes
+
+  - You have Python 3 with numpy, pandas, scipy, scikit-learn available
+  - No internet access
+  - Time limit: 10 minutes for execution
+  - Memory limit: 4GB
+  - The grader will run a 12-week simulation with actual demand (hidden from you) to compute real costs
+  - Forecast accuracy is measured on weeks 105-116 which you don't have access to
+
+metadata:
+  difficulty: very_hard
+  category: data_science
+  tags:
+    - time_series_forecasting
+    - supply_chain
+  time_limit: 600              # 10 minutes
+  memory_limit: 4096           # 4GB
+  max_agent_timeout_sec: 900
+  expert_time_estimate_min: 90
+  junior_time_estimate_min: 240
