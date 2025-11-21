@@ -1,0 +1,139 @@
+// Define partitions
+{"stream_id": 1, "type": "partition_definition", "partition_id": "p1", "key_range_start": "a", "key_range_end": "m", "replica_nodes": ["node1", "node2", "node3"], "replication_factor": 3}
+{"stream_id": 2, "type": "partition_definition", "partition_id": "p2", "key_range_start": "m", "key_range_end": "z", "replica_nodes": ["node2", "node3", "node4"], "replication_factor": 3}
+
+// Simple successful transaction - single partition
+{"stream_id": 3, "type": "txn_begin", "txn_id": "txn001", "coordinator_id": "node1", "isolation_level": "serializable", "timestamp": 1000}
+{"stream_id": 4, "type": "txn_operation", "txn_id": "txn001", "operation": "write", "partition_id": "p1", "key": "account1", "value": {"balance": 1000}, "timestamp": 1001}
+{"stream_id": 5, "type": "txn_operation", "txn_id": "txn001", "operation": "read", "partition_id": "p1", "key": "account1", "timestamp": 1002}
+{"stream_id": 6, "type": "txn_commit", "txn_id": "txn001", "timestamp": 1003}
+
+// Transaction spanning multiple partitions (distributed 2PC)
+{"stream_id": 7, "type": "txn_begin", "txn_id": "txn002", "coordinator_id": "node1", "isolation_level": "serializable", "timestamp": 2000}
+{"stream_id": 8, "type": "txn_operation", "txn_id": "txn002", "operation": "read", "partition_id": "p1", "key": "account1", "timestamp": 2001}
+{"stream_id": 9, "type": "txn_operation", "txn_id": "txn002", "operation": "write", "partition_id": "p1", "key": "account1", "value": {"balance": 900}, "timestamp": 2002}
+{"stream_id": 10, "type": "txn_operation", "txn_id": "txn002", "operation": "write", "partition_id": "p2", "key": "account2", "value": {"balance": 100}, "timestamp": 2003}
+{"stream_id": 11, "type": "txn_commit", "txn_id": "txn002", "timestamp": 2004}
+
+// Conflicting concurrent transactions (deadlock scenario)
+{"stream_id": 12, "type": "txn_begin", "txn_id": "txn003", "coordinator_id": "node1", "isolation_level": "serializable", "timestamp": 3000}
+{"stream_id": 13, "type": "txn_begin", "txn_id": "txn004", "coordinator_id": "node2", "isolation_level": "serializable", "timestamp": 3001}
+{"stream_id": 14, "type": "txn_operation", "txn_id": "txn003", "operation": "write", "partition_id": "p1", "key": "item1", "value": {"stock": 10}, "timestamp": 3002}
+{"stream_id": 15, "type": "txn_operation", "txn_id": "txn004", "operation": "write", "partition_id": "p1", "key": "item2", "value": {"stock": 20}, "timestamp": 3003}
+{"stream_id": 16, "type": "txn_operation", "txn_id": "txn003", "operation": "write", "partition_id": "p1", "key": "item2", "value": {"stock": 15}, "timestamp": 3004}
+{"stream_id": 17, "type": "txn_operation", "txn_id": "txn004", "operation": "write", "partition_id": "p1", "key": "item1", "value": {"stock": 5}, "timestamp": 3005}
+// Deadlock: txn003 holds item1, wants item2; txn004 holds item2, wants item1
+// Abort younger transaction (txn004)
+{"stream_id": 18, "type": "txn_commit", "txn_id": "txn003", "timestamp": 3006}
+{"stream_id": 19, "type": "txn_commit", "txn_id": "txn004", "timestamp": 3007}
+
+// Coordinator failure during 2PC - requires Paxos consensus
+{"stream_id": 20, "type": "txn_begin", "txn_id": "txn005", "coordinator_id": "node1", "isolation_level": "serializable", "timestamp": 4000}
+{"stream_id": 21, "type": "txn_operation", "txn_id": "txn005", "operation": "write", "partition_id": "p1", "key": "critical_data", "value": {"status": "updating"}, "timestamp": 4001}
+{"stream_id": 22, "type": "txn_operation", "txn_id": "txn005", "operation": "write", "partition_id": "p2", "key": "sync_marker", "value": {"updated": true}, "timestamp": 4002}
+// Coordinator fails after PREPARE but before COMMIT decision
+{"stream_id": 23, "type": "node_failure", "node_id": "node1", "failure_type": "crash", "timestamp": 4003}
+// New coordinator elected via Paxos
+{"stream_id": 24, "type": "consensus_proposal", "proposal_id": "prop1", "proposer_id": "node2", "round": 1, "value": {"new_coordinator": "node2", "txn_id": "txn005", "decision": "commit"}, "timestamp": 4004}
+{"stream_id": 25, "type": "consensus_vote", "proposal_id": "prop1", "voter_id": "node2", "vote": "promise", "promised_round": 1, "timestamp": 4005}
+{"stream_id": 26, "type": "consensus_vote", "proposal_id": "prop1", "voter_id": "node3", "vote": "promise", "promised_round": 1, "timestamp": 4006}
+{"stream_id": 27, "type": "consensus_vote", "proposal_id": "prop1", "voter_id": "node4", "vote": "accept", "timestamp": 4007}
+{"stream_id": 28, "type": "consensus_vote", "proposal_id": "prop1", "voter_id": "node2", "vote": "accept", "timestamp": 4008}
+{"stream_id": 29, "type": "consensus_vote", "proposal_id": "prop1", "voter_id": "node3", "vote": "accept", "timestamp": 4009}
+// Quorum reached, txn005 commits under new coordinator
+{"stream_id": 30, "type": "txn_commit", "txn_id": "txn005", "timestamp": 4010}
+
+// Snapshot isolation - write conflict detection
+{"stream_id": 31, "type": "txn_begin", "txn_id": "txn006", "coordinator_id": "node2", "isolation_level": "snapshot", "timestamp": 5000}
+{"stream_id": 32, "type": "txn_begin", "txn_id": "txn007", "coordinator_id": "node3", "isolation_level": "snapshot", "timestamp": 5001}
+{"stream_id": 33, "type": "txn_operation", "txn_id": "txn006", "operation": "read", "partition_id": "p1", "key": "product_price", "timestamp": 5002}
+{"stream_id": 34, "type": "txn_operation", "txn_id": "txn007", "operation": "read", "partition_id": "p1", "key": "product_price", "timestamp": 5003}
+{"stream_id": 35, "type": "txn_operation", "txn_id": "txn006", "operation": "write", "partition_id": "p1", "key": "product_price", "value": {"price": 99.99}, "timestamp": 5004}
+{"stream_id": 36, "type": "txn_operation", "txn_id": "txn007", "operation": "write", "partition_id": "p1", "key": "product_price", "value": {"price": 89.99}, "timestamp": 5005}
+{"stream_id": 37, "type": "txn_commit", "txn_id": "txn006", "timestamp": 5006}
+// txn007 should abort due to write conflict (first-committer-wins)
+{"stream_id": 38, "type": "txn_commit", "txn_id": "txn007", "timestamp": 5007}
+
+// Read committed isolation - non-repeatable read allowed
+{"stream_id": 39, "type": "txn_begin", "txn_id": "txn008", "coordinator_id": "node2", "isolation_level": "read_committed", "timestamp": 6000}
+{"stream_id": 40, "type": "txn_operation", "txn_id": "txn008", "operation": "read", "partition_id": "p1", "key": "counter", "timestamp": 6001}
+// Another transaction modifies counter
+{"stream_id": 41, "type": "txn_begin", "txn_id": "txn009", "coordinator_id": "node3", "isolation_level": "read_committed", "timestamp": 6002}
+{"stream_id": 42, "type": "txn_operation", "txn_id": "txn009", "operation": "write", "partition_id": "p1", "key": "counter", "value": {"count": 100}, "timestamp": 6003}
+{"stream_id": 43, "type": "txn_commit", "txn_id": "txn009", "timestamp": 6004}
+// txn008 reads again - sees new value (non-repeatable read)
+{"stream_id": 44, "type": "txn_operation", "txn_id": "txn008", "operation": "read", "partition_id": "p1", "key": "counter", "timestamp": 6005}
+{"stream_id": 45, "type": "txn_commit", "txn_id": "txn008", "timestamp": 6006}
+
+// Serializable - phantom prevention with predicate locks
+{"stream_id": 46, "type": "txn_begin", "txn_id": "txn010", "coordinator_id": "node1", "isolation_level": "serializable", "timestamp": 7000}
+{"stream_id": 47, "type": "txn_operation", "txn_id": "txn010", "operation": "read", "partition_id": "p1", "key": "users", "predicate": "age > 25", "timestamp": 7001}
+// Another transaction tries to insert matching row
+{"stream_id": 48, "type": "txn_begin", "txn_id": "txn011", "coordinator_id": "node2", "isolation_level": "serializable", "timestamp": 7002}
+{"stream_id": 49, "type": "txn_operation", "txn_id": "txn011", "operation": "write", "partition_id": "p1", "key": "user_new", "value": {"age": 30}, "timestamp": 7003}
+// Should block due to predicate lock
+{"stream_id": 50, "type": "txn_commit", "txn_id": "txn010", "timestamp": 7004}
+{"stream_id": 51, "type": "txn_commit", "txn_id": "txn011", "timestamp": 7005}
+
+// Participant failure during 2PC
+{"stream_id": 52, "type": "txn_begin", "txn_id": "txn012", "coordinator_id": "node1", "isolation_level": "serializable", "timestamp": 8000}
+{"stream_id": 53, "type": "txn_operation", "txn_id": "txn012", "operation": "write", "partition_id": "p1", "key": "data1", "value": {"val": 1}, "timestamp": 8001}
+{"stream_id": 54, "type": "txn_operation", "txn_id": "txn012", "operation": "write", "partition_id": "p2", "key": "data2", "value": {"val": 2}, "timestamp": 8002}
+// Participant node fails before voting
+{"stream_id": 55, "type": "node_failure", "node_id": "node3", "failure_type": "crash", "timestamp": 8003}
+// Coordinator times out waiting for vote, aborts
+{"stream_id": 56, "type": "txn_commit", "txn_id": "txn012", "timestamp": 8004}
+
+// Checkpoint and recovery
+{"stream_id": 57, "type": "checkpoint", "checkpoint_id": "ckpt1", "action": "save", "scope": "global"}
+{"stream_id": 58, "type": "txn_begin", "txn_id": "txn013", "coordinator_id": "node1", "isolation_level": "serializable", "timestamp": 9000}
+{"stream_id": 59, "type": "txn_operation", "txn_id": "txn013", "operation": "write", "partition_id": "p1", "key": "persistent", "value": {"state": "saved"}, "timestamp": 9001}
+{"stream_id": 60, "type": "node_failure", "node_id": "node1", "failure_type": "crash", "timestamp": 9002}
+// Restore from checkpoint
+{"stream_id": 61, "type": "checkpoint", "checkpoint_id": "ckpt1", "action": "restore", "scope": "global"}
+{"stream_id": 62, "type": "node_recovery", "node_id": "node1", "timestamp": 9003}
+// Transaction must be recovered and completed
+{"stream_id": 63, "type": "txn_commit", "txn_id": "txn013", "timestamp": 9004}
+
+// Empty transaction (no operations)
+{"stream_id": 64, "type": "txn_begin", "txn_id": "txn014", "coordinator_id": "node2", "isolation_level": "serializable", "timestamp": 10000}
+{"stream_id": 65, "type": "txn_commit", "txn_id": "txn014", "timestamp": 10001}
+
+// Explicit abort
+{"stream_id": 66, "type": "txn_begin", "txn_id": "txn015", "coordinator_id": "node3", "isolation_level": "serializable", "timestamp": 11000}
+{"stream_id": 67, "type": "txn_operation", "txn_id": "txn015", "operation": "write", "partition_id": "p1", "key": "temp_data", "value": {"val": "test"}, "timestamp": 11001}
+{"stream_id": 68, "type": "txn_abort", "txn_id": "txn015", "reason": "user_cancelled", "timestamp": 11002}
+
+// Network partition - split brain prevention
+{"stream_id": 69, "type": "txn_begin", "txn_id": "txn016", "coordinator_id": "node1", "isolation_level": "serializable", "timestamp": 12000}
+{"stream_id": 70, "type": "txn_operation", "txn_id": "txn016", "operation": "write", "partition_id": "p1", "key": "split_test", "value": {"val": 1}, "timestamp": 12001}
+{"stream_id": 71, "type": "node_failure", "node_id": "node2", "failure_type": "partition", "duration_ms": 3000, "timestamp": 12002}
+{"stream_id": 72, "type": "node_failure", "node_id": "node3", "failure_type": "partition", "duration_ms": 3000, "timestamp": 12003}
+// node1 cannot reach quorum, transaction must abort or block
+{"stream_id": 73, "type": "txn_commit", "txn_id": "txn016", "timestamp": 12004}
+{"stream_id": 74, "type": "node_recovery", "node_id": "node2", "timestamp": 15003}
+{"stream_id": 75, "type": "node_recovery", "node_id": "node3", "timestamp": 15004}
+
+// Multiple rounds of Paxos (competing proposers)
+{"stream_id": 76, "type": "txn_begin", "txn_id": "txn017", "coordinator_id": "node1", "isolation_level": "serializable", "timestamp": 13000}
+{"stream_id": 77, "type": "txn_operation", "txn_id": "txn017", "operation": "write", "partition_id": "p1", "key": "contested", "value": {"val": "a"}, "timestamp": 13001}
+{"stream_id": 78, "type": "node_failure", "node_id": "node1", "failure_type": "crash", "timestamp": 13002}
+// Multiple nodes try to become coordinator
+{"stream_id": 79, "type": "consensus_proposal", "proposal_id": "prop2", "proposer_id": "node2", "round": 1, "value": {"new_coordinator": "node2"}, "timestamp": 13003}
+{"stream_id": 80, "type": "consensus_proposal", "proposal_id": "prop3", "proposer_id": "node3", "round": 1, "value": {"new_coordinator": "node3"}, "timestamp": 13004}
+// Round 1 conflicts, node3 retries with higher round
+{"stream_id": 81, "type": "consensus_proposal", "proposal_id": "prop4", "proposer_id": "node3", "round": 2, "value": {"new_coordinator": "node3"}, "timestamp": 13005}
+{"stream_id": 82, "type": "consensus_vote", "proposal_id": "prop4", "voter_id": "node2", "vote": "promise", "promised_round": 2, "timestamp": 13006}
+{"stream_id": 83, "type": "consensus_vote", "proposal_id": "prop4", "voter_id": "node3", "vote": "promise", "promised_round": 2, "timestamp": 13007}
+{"stream_id": 84, "type": "consensus_vote", "proposal_id": "prop4", "voter_id": "node4", "vote": "promise", "promised_round": 2, "timestamp": 13008}
+{"stream_id": 85, "type": "consensus_vote", "proposal_id": "prop4", "voter_id": "node2", "vote": "accept", "timestamp": 13009}
+{"stream_id": 86, "type": "consensus_vote", "proposal_id": "prop4", "voter_id": "node3", "vote": "accept", "timestamp": 13010}
+{"stream_id": 87, "type": "txn_commit", "txn_id": "txn017", "timestamp": 13011}
+
+// Lock timeout
+{"stream_id": 88, "type": "txn_begin", "txn_id": "txn018", "coordinator_id": "node2", "isolation_level": "serializable", "timestamp": 14000}
+{"stream_id": 89, "type": "txn_operation", "txn_id": "txn018", "operation": "write", "partition_id": "p1", "key": "locked_item", "value": {"val": 1}, "timestamp": 14001}
+// Transaction holds lock too long (simulated by advancing time)
+{"stream_id": 90, "type": "txn_operation", "txn_id": "txn018", "operation": "read", "partition_id": "p2", "key": "other", "timestamp": 24002}
+// Lock timeout exceeded, should abort
+{"stream_id": 91, "type": "txn_commit", "txn_id": "txn018", "timestamp": 24003}
