@@ -1,240 +1,72 @@
 prompt: |
-  You are given a single input file at /workdir/data/transaction_log.jsonl.
-
   ## Task Overview
-  Implement a distributed transaction coordinator that ensures ACID properties across multiple
-  partitioned data stores using Two-Phase Commit (2PC) protocol with Paxos-based consensus for
-  fault tolerance. The system must handle concurrent transactions, network partitions, node
-  failures, and maintain strong consistency guarantees.
+  Implement a distributed transaction coordinator using Two-Phase Commit (2PC) with Paxos consensus for fault tolerance. Process a transaction log and output transaction results.
 
-  ## Accepted line formats (each line is independent)
-  1) Transaction begin line:
-     {
-       "stream_id": <int>,                # unique monotonic ID, if missing auto-assigned
-       "type": "txn_begin",
-       "txn_id": <str>,                   # unique transaction identifier
-       "coordinator_id": <str>,           # which node coordinates this txn
-       "isolation_level": "serializable" | "snapshot" | "read_committed",
-       "timestamp": <int>                 # logical timestamp (Lamport clock)
-     }
+  ## Input File
+  `/workdir/data/transaction_log.jsonl` - JSONL file with transaction events
 
-  2) Transaction operation line:
-     {
-       "stream_id": <int>,
-       "type": "txn_operation",
-       "txn_id": <str>,
-       "operation": "read" | "write" | "delete",
-       "partition_id": <str>,             # which partition this operates on
-       "key": <str>,                      # data key
-       "value": <any, optional>,          # for write operations
-       "predicate": <str, optional>,      # for read operations (e.g., "age > 25")
-       "timestamp": <int>
-     }
+  ## Event Types
+  1. partition_definition: Define data partitions
+     - `partition_id`, `key_range_start`, `key_range_end`, `replica_nodes`, `replication_factor`
 
-  3) Transaction commit request:
-     {
-       "stream_id": <int>,
-       "type": "txn_commit",
-       "txn_id": <str>,
-       "timestamp": <int>
-     }
+  2. txn_begin: Start transaction
+     - `txn_id`, `coordinator_id`, `isolation_level` (serializable|snapshot|read_committed), `timestamp`
 
-  4) Transaction abort request:
-     {
-       "stream_id": <int>,
-       "type": "txn_abort",
-       "txn_id": <str>,
-       "reason": <str, optional>,         # why aborting
-       "timestamp": <int>
-     }
+  3. txn_operation: Transaction operation
+     - `txn_id`, `operation` (read|write|delete), `partition_id`, `key`, `value`, `predicate`, `timestamp`
 
-  5) Node failure event:
-     {
-       "stream_id": <int>,
-       "type": "node_failure",
-       "node_id": <str>,                  # which node failed
-       "failure_type": "crash" | "partition" | "slow",
-       "duration_ms": <int, optional>,    # for temporary failures
-       "timestamp": <int>
-     }
+  4. txn_commit: Commit request - triggers 2PC protocol
+     - `txn_id`, `timestamp`
 
-  6) Node recovery event:
-     {
-       "stream_id": <int>,
-       "type": "node_recovery",
-       "node_id": <str>,
-       "timestamp": <int>
-     }
+  5. txn_abort: Explicit abort
+     - `txn_id`, `reason`, `timestamp`
 
-  7) Consensus proposal (Paxos):
-     {
-       "stream_id": <int>,
-       "type": "consensus_proposal",
-       "proposal_id": <str>,
-       "proposer_id": <str>,
-       "round": <int>,                    # Paxos round number
-       "value": <any>,                    # proposed value (e.g., commit decision)
-       "timestamp": <int>
-     }
+  6. node_failure: Node crashes or partitions
+     - `node_id`, `failure_type` (crash|partition|slow), `duration_ms`, `timestamp`
 
-  8) Consensus vote:
-     {
-       "stream_id": <int>,
-       "type": "consensus_vote",
-       "proposal_id": <str>,
-       "voter_id": <str>,
-       "vote": "promise" | "accept" | "reject",
-       "promised_round": <int, optional>, # highest round promised
-       "timestamp": <int>
-     }
+  7. node_recovery: Node recovers
+     - `node_id`, `timestamp`
 
-  9) Checkpoint command:
-     {
-       "stream_id": <int>,
-       "type": "checkpoint",
-       "checkpoint_id": <str>,
-       "action": "save" | "restore",
-       "scope": "global" | "node",        # checkpoint all state or single node
-       "node_id": <str, optional>         # for node-level checkpoints
-     }
+  8. consensus_proposal: Paxos proposal (Phase 1a)
+     - `proposal_id`, `proposer_id`, `round`, `value`, `timestamp`
 
-  10) Partition definition:
-      {
-        "stream_id": <int>,
-        "type": "partition_definition",
-        "partition_id": <str>,
-        "key_range_start": <str>,        # inclusive
-        "key_range_end": <str>,          # exclusive
-        "replica_nodes": [<str>, ...],   # which nodes hold replicas
-        "replication_factor": <int>
-      }
+  9. consensus_vote: Paxos vote (Phase 1b/2b)
+     - `proposal_id`, `voter_id`, `vote` (promise|accept|reject), `promised_round`, `timestamp`
 
-  ## Normalization & tolerance rules
-  - Missing/invalid "stream_id" → auto-assign increasing integer (1, 2, 3, ...)
-  - Missing "timestamp" → use previous timestamp + 1
-  - Invalid txn_id references → treated as error, transaction fails
-  - Malformed lines, blank lines, and lines starting with '//' are ignored
-  - Node failures during 2PC → coordinator must handle according to protocol
-  - Conflicting operations → detect using lock table and isolation level rules
+  10. checkpoint: Save/restore state
+      - `checkpoint_id`, `action` (save|restore), `scope`, `node_id`
 
-  ## Fixed parameters
-  - paxos_quorum_size = majority (⌈n/2⌉ + 1 where n = replica count)
-  - max_2pc_timeout_ms = 5000           # timeout for prepare/commit phases
-  - lock_timeout_ms = 10000             # max time to hold locks
-  - deadlock_detection_interval_ms = 1000
-  - max_concurrent_txns = 1000
-  - snapshot_isolation_gc_interval = 100  # clean old versions
-  - consensus_round_timeout_ms = 2000
-  - max_paxos_rounds = 10
-
-  ## Core Algorithms
-
-  ### 1. Two-Phase Commit (2PC) Protocol
+  ## Core Algorithm: Two-Phase Commit (2PC)
   
-  Phase 1: Prepare
-  ```
-  Coordinator:
-    1. Send PREPARE to all participating partitions
-    2. Wait for votes (YES/NO) with timeout
-    3. If all YES and no timeout → proceed to commit
-    4. If any NO or timeout → abort
+  Phase 1 - PREPARE:
+  - Coordinator sends PREPARE to all participant partitions
+  - Each participant: check quorum availability, acquire locks, vote YES/NO
+  - If any NO or timeout → abort transaction
   
-  Participant:
-    1. Receive PREPARE
-    2. Acquire locks, validate constraints
-    3. Write PREPARE log entry (durable)
-    4. Vote YES if can commit, NO otherwise
-  ```
-
-  Phase 2: Commit/Abort
-  ```
-  Coordinator:
-    1. Write COMMIT/ABORT decision to log (durable)
-    2. Send decision to all participants
-    3. Wait for acknowledgments
-    4. Write COMPLETED to log
+  Phase 2 - COMMIT/ABORT:
+  - Coordinator logs decision, sends to all participants
+  - Participants apply changes and release locks
   
-  Participant:
-    1. Receive COMMIT/ABORT
-    2. Apply or rollback changes
-    3. Release locks
-    4. Send ACK to coordinator
-  ```
+  Coordinator Failure: Use Paxos to elect new coordinator and agree on decision
 
-  Failure Handling:
-  - Coordinator fails after PREPARE → participants block (use Paxos to elect new coordinator)
-  - Coordinator fails after COMMIT decision → new coordinator reads log, completes
-  - Participant fails after voting YES → must commit on recovery
-  - Participant fails after voting NO → transaction already aborted
-
-  ### 2. Paxos Consensus for Coordinator Election
+  ## Isolation Levels
   
-  When coordinator fails, use Paxos to agree on:
-  1. Which node becomes new coordinator
-  2. What the commit decision should be (if in doubt)
-
-  Paxos Roles:
-  - Proposer: Proposes values (new coordinator, commit decision)
-  - Acceptor: Votes on proposals
-  - Learner: Learns the chosen value
-
-  Paxos Algorithm (Multi-Paxos variant):
-  ```
-  Phase 1a: PREPARE(round_n)
-    Proposer → All Acceptors
-    "I propose round n"
-  
-  Phase 1b: PROMISE(round_n, accepted_value)
-    Acceptors → Proposer
-    "I promise not to accept any round < n"
-    "I previously accepted value X in round m < n"
-  
-  Phase 2a: ACCEPT(round_n, value)
-    Proposer → All Acceptors
-    If majority promised:
-      - If any acceptor had value, use highest round value
-      - Otherwise, use proposer's value
-  
-  Phase 2b: ACCEPTED(round_n, value)
-    Acceptors → Learners
-    If majority accepted same value → chosen!
-  ```
-
-  Invariants:
-  - Once value chosen, cannot change
-  - Only one value can be chosen per instance
-  - Learner learns only chosen values
-
-  ### 3. Concurrency Control & Isolation Levels
-
-  Lock Types:
-  - Shared Lock (S): Multiple readers allowed
-  - Exclusive Lock (X): Single writer, no readers
-  - Update Lock (U): Upgrade to exclusive later
-  - Predicate Lock (P): Lock range for phantom prevention
-
-  Isolation Level Implementation:
-
   SERIALIZABLE:
-  - Acquire predicate locks for range queries
+  - Acquire shared locks for reads, exclusive locks for writes
   - Hold all locks until commit (strict 2PL)
-  - Prevent phantoms with next-key locking
-  - Detect conflicts: read-write, write-write
-
+  - Acquire predicate locks for range queries (phantom prevention)
+  
   SNAPSHOT:
   - Multi-version concurrency control (MVCC)
-  - Each transaction sees snapshot at start time
-  - First-committer-wins for write conflicts
+  - Transaction sees snapshot at begin_timestamp
+  - First-committer-wins: detect write-write conflicts at commit time
   - No read locks needed
-  - Track: begin_ts, commit_ts for each version
-
+  
   READ_COMMITTED:
-  - Acquire write locks, hold until commit
-  - Acquire read locks, release immediately after read
-  - May see non-repeatable reads
-  - Simpler deadlock profile
+  - Acquire write locks (hold until commit)
+  - Acquire read locks (release immediately)
 
-  Lock Compatibility Matrix:
+  ## Lock Compatibility
   ```
        | S | X | U
     ---+---+---+---
@@ -243,193 +75,105 @@ prompt: |
      U | ✓ | ✗ | ✗
   ```
 
-  ### 4. Deadlock Detection (Wait-For Graph)
-  
-  Build directed graph:
-  - Nodes: Active transactions
-  - Edges: T1 → T2 if T1 waits for lock held by T2
+  ## Deadlock Detection
+  - Build wait-for graph (T1 → T2 if T1 waits for lock held by T2)
+  - If cycle detected: abort younger transaction (by begin_timestamp)
+  - Lock timeout: `lock_timeout_ms = 10000`
 
-  Detection:
-  - Run cycle detection every deadlock_detection_interval_ms
-  - If cycle found: abort youngest transaction (by timestamp)
-  - Victim selection: minimize work lost
+  ## Paxos Consensus (for coordinator election)
+  - Used when coordinator fails during 2PC
+  - Requires quorum: ⌈n/2⌉ + 1 where n = total nodes
+  - Simplified: choose first available node as new coordinator
+  - Set `consensus_rounds = 1` for transaction
 
-  Implementation:
-  ```python
-  def detect_deadlock():
-      graph = build_wait_for_graph()
-      cycles = find_cycles_dfs(graph)
-      if cycles:
-          victim = select_victim(cycles)  # youngest txn
-          abort_transaction(victim)
+  ## Output Format
+  Write `/workdir/sol.csv` with ONE row per transaction (sorted by txn_id):
+
+  Columns:
+  ```
+  txn_id,status,coordinator_id,participants,num_operations,isolation_level,
+  commit_timestamp,abort_reason,locks_acquired,conflicts_detected,
+  prepare_votes,consensus_rounds,recovery_needed,execution_time_ms,snapshot_version
   ```
 
-  ### 5. Write-Ahead Logging (WAL)
+  Field Details:
+  - `status`: committed | aborted | in_progress
+  - `coordinator_id`: node coordinating this transaction
+  - `participants`: comma-separated partition IDs (e.g., "p1,p2")
+  - `num_operations`: count of operations
+  - `isolation_level`: serializable | snapshot | read_committed
+  - `commit_timestamp`: timestamp when committed (or null)
+  - `abort_reason`: reason for abort (or null)
+  - `locks_acquired`: comma-separated locks "partition:key:type" (empty after commit/abort)
+  - `conflicts_detected`: comma-separated conflicting txn_ids
+  - `prepare_votes`: "partition:YES" or "partition:NO" (e.g., "p1:YES,p2:NO")
+  - `consensus_rounds`: Paxos rounds for coordinator election (0 if none)
+  - `recovery_needed`: true if transaction recovered after coordinator failure
+  - `execution_time_ms`: commit_time - begin_time
+  - `snapshot_version`: snapshot timestamp for snapshot isolation (or null)
+
+  ## Key Rules
   
-  Every state change must be logged durably before taking effect.
+  2PC Prepare Phase:
+  - Check partition quorum: need ⌈replication_factor/2⌉ + 1 reachable replicas
+  - For snapshot isolation: check write-write conflicts (first-committer-wins)
+  - Acquire locks based on operation type and isolation level
+  - Vote YES if all checks pass, NO otherwise
 
-  Log Entry Types:
-  - BEGIN(txn_id, timestamp)
-  - PREPARE(txn_id, partition_id, locks, old_values)
-  - COMMIT(txn_id)
-  - ABORT(txn_id)
-  - CHECKPOINT(state_snapshot)
+  2PC Commit Phase:
+  - Apply writes to partitions (MVCC: keep multiple versions)
+  - Release all locks
+  - Set status = committed, record commit_timestamp
 
-  Recovery:
+  Coordinator Failure:
+  - If coordinator fails: run Paxos to elect new coordinator
+  - New coordinator inherits transaction, sets `recovery_needed = true`
+  - Increment `consensus_rounds`
+  - If can't reach quorum: abort with "coordinator_failed_no_quorum"
+
+  Participant Failure:
+  - If partition can't reach quorum during prepare: abort with "partition_unreachable"
+
+  Write Conflicts (Snapshot Isolation):
+  - Check if any committed write to same key occurred after snapshot_version
+  - If yes: abort with "write_conflict", record conflicting txn_id
+
+  Deadlocks:
+  - Detect cycles in wait-for graph
+  - Abort younger transaction with "deadlock_victim"
+
+  Lock Timeouts:
+  - If transaction holds locks > 10000ms: abort with "lock_timeout"
+
+  Empty Transaction:
+  - No operations: commit immediately without 2PC
+
+  ## Special Cases
+  - Blank lines and lines starting with '//' are ignored
+  - Missing `stream_id`: auto-assign sequentially
+  - Missing `timestamp`: use previous + 1
+  - Locks are released during commit, so `locks_acquired` is empty in output
+  - Format null values as "null", booleans as "true"/"false"
+  - Empty lists as empty string ""
+
+  ## Example
   ```
-  On restart:
-    1. Scan log from last checkpoint
-    2. Rebuild transaction state
-    3. For transactions in PREPARED state:
-       - Use Paxos to decide commit/abort
-       - Complete 2PC
-    4. For transactions with COMMIT but no COMPLETED:
-       - Re-send commit to participants
+  // Partition definition
+  {"type": "partition_definition", "partition_id": "p1", "replica_nodes": ["node1","node2","node3"]}
+
+  // Simple transaction
+  {"type": "txn_begin", "txn_id": "txn001", "coordinator_id": "node1", "isolation_level": "serializable", "timestamp": 1000}
+  {"type": "txn_operation", "txn_id": "txn001", "operation": "write", "partition_id": "p1", "key": "acc1", "value": {"balance": 100}, "timestamp": 1001}
+  {"type": "txn_commit", "txn_id": "txn001", "timestamp": 1002}
+
+  // Output CSV:
+  txn001,committed,node1,p1,1,serializable,1002,null,,,p1:YES,0,false,2,null
   ```
-
-  ### 6. Partition Management & Replication
-  
-  Each partition has multiple replicas for fault tolerance.
-
-  Replica Roles:
-  - Leader: Handles writes, coordinates 2PC participant
-  - Follower: Receives replicated writes, can serve reads
-
-  Replication Protocol:
-  - Synchronous: Write to majority before ACK (strong consistency)
-  - Leader election: Use Paxos when leader fails
-
-  Partition Assignment:
-  - Hash-based: partition = hash(key) % num_partitions
-  - Range-based: key_range_start <= key < key_range_end
-
-  ## Output Requirements
-  Write /workdir/sol.csv after processing all log entries.
-  
-  For each transaction (txn_begin + operations + commit/abort), emit ONE row:
-  - txn_id: transaction identifier
-  - status: "committed" | "aborted" | "blocked" | "in_progress"
-  - coordinator_id: which node coordinated
-  - participants: comma-separated partition IDs involved (e.g., "p1,p2,p3")
-  - num_operations: count of read/write/delete operations
-  - isolation_level: serializable, snapshot, or read_committed
-  - commit_timestamp: logical timestamp when committed (or null if aborted)
-  - abort_reason: why aborted (or null if committed)
-  - locks_acquired: comma-separated lock descriptions (e.g., "p1:key1:X,p2:key5:S")
-  - conflicts_detected: comma-separated conflicting txn IDs (or empty)
-  - prepare_votes: vote results from 2PC prepare phase (e.g., "p1:YES,p2:YES,p3:NO")
-  - consensus_rounds: number of Paxos rounds needed (0 if no coordinator failure)
-  - recovery_needed: "true" if transaction was recovered after failure, "false" otherwise
-  - execution_time_ms: time from begin to commit/abort
-  - snapshot_version: for snapshot isolation, the snapshot timestamp (or null)
-
-  ## CSV Schema (strict column order)
-  txn_id,status,coordinator_id,participants,num_operations,isolation_level,commit_timestamp,abort_reason,locks_acquired,conflicts_detected,prepare_votes,consensus_rounds,recovery_needed,execution_time_ms,snapshot_version
-
-  ## Edge Cases & Special Rules
-
-  1. Coordinator Failure During 2PC:
-     - If before COMMIT decision logged: new coordinator can abort safely
-     - If after COMMIT decision logged: new coordinator must commit
-     - Use Paxos to elect new coordinator and agree on decision
-
-  2. Participant Failure:
-     - If failed before voting: coordinator times out, aborts transaction
-     - If failed after voting YES: participant must commit on recovery
-     - If failed after voting NO: transaction already aborted
-
-  3. Network Partition:
-     - Split-brain prevention: require quorum for all decisions
-     - Minority partition cannot commit transactions
-     - Transactions spanning partition: abort
-
-  4. Deadlock:
-     - Detect using wait-for graph
-     - Abort youngest transaction
-     - Allow retries (not required to implement)
-
-  5. Write-Write Conflicts (Snapshot Isolation):
-     - First committer wins
-     - Later transaction aborts with "write_conflict"
-     - Check at commit time, not during execution
-
-  6. Phantom Reads (Serializable only):
-     - Prevent with predicate locks
-     - Lock key ranges, not just individual keys
-     - Example: "SELECT WHERE age > 25" locks range [26, ∞)
-
-  7. Read-Your-Writes:
-     - Transaction must see its own writes
-     - Maintain transaction-local write buffer
-     - Merge with snapshot for reads
-
-  8. Concurrent Transactions on Same Key:
-     - Serialize by isolation level rules
-     - Use lock table to enforce
-     - Example (Serializable):
-       * T1 reads key "x" → acquires S lock
-       * T2 tries to write "x" → blocks waiting for X lock
-       * T1 commits → releases S lock
-       * T2 acquires X lock → proceeds
-
-  9. Paxos Round Conflicts:
-     - If two proposers compete: higher round wins
-     - Acceptor rejects lower rounds
-     - Proposer must retry with higher round
-
-  10. Transaction Timeout:
-      - If transaction exceeds lock_timeout_ms: abort
-      - If 2PC prepare exceeds max_2pc_timeout_ms: abort
-      - Clean up locks and state
-
-  11. Recovery After Checkpoint:
-      - Restore state from checkpoint
-      - Replay log entries after checkpoint
-      - Complete in-doubt transactions
-
-  12. Empty Transaction:
-      - Transaction with no operations: commit immediately
-      - No 2PC needed (no participants)
-      - Write COMMIT log entry
-
-  ## Determinism Requirements
-  - Paxos proposal IDs: use (round, proposer_id) tuple, lexicographic order
-  - Deadlock victim selection: always choose youngest by begin_timestamp
-  - Tie-breaking for timestamps: use txn_id lexicographic order
-  - Lock acquisition order: sort by (partition_id, key) to prevent deadlock
-  - Partition assignment: deterministic hash function (CRC32)
-  - Log replay: strictly in timestamp order
-
-  ## Performance Constraints
-  - Must handle ≥100 transactions per second
-  - 2PC latency: <50ms for local partitions, <500ms with failures
-  - Paxos consensus: <100ms for quorum reachable
-  - Deadlock detection: <10ms per cycle
-  - Memory usage: ≤1GB for 1000 concurrent transactions
-  - Lock table size: O(num_keys * num_active_txns)
-
-  ## Notes
-  - All timestamps are logical (Lamport clocks), not wall-clock time
-  - Each node maintains its own log (simulated in single process)
-  - Partitions are simulated, but coordinator must handle them correctly
-  - Network delays are simulated via failure events
-  - Must maintain linearizability for committed transactions
-  - Write exactly one row per transaction, in txn_id lexicographic order
-  - All outputs must be deterministic given the input log
-  - Comma-separated fields must not contain spaces
-  - Use "null" for missing values
-  - Empty lists represented as empty string ""
-  - Timestamps in milliseconds, all non-negative integers
-  - No network access. Deterministic output required.
 
 metadata:
   difficulty: expert
   category: distributed-systems
-  tags: [distributed-transactions, 2pc, paxos, consensus, concurrency-control, acid]
-  references:
-    - "Gray & Reuter: Transaction Processing - Concepts and Techniques"
-    - "Lamport: The Part-Time Parliament (Paxos)"
-    - "Bernstein et al: Concurrency Control and Recovery in Database Systems"
+  tags: [distributed-transactions, 2pc, paxos, concurrency-control]
 
 time_limit: 7200
 memory_limit: 1024
