@@ -42,8 +42,10 @@ WINDOWS = {
     "all_time": float('inf')
 }
 
+# paths - read from /workdir/data
+DATADIR = Path("/workdir/data")
 WORKDIR = Path("/workdir")
-STREAM = WORKDIR / "data" / "event_stream.jsonl"
+STREAM = DATADIR / "event_stream.jsonl"
 SOL = WORKDIR / "sol.csv"
 
 COLS = ["stream_id", "entity_type", "entity_id", "feature_name", "feature_value", 

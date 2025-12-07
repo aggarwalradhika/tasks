@@ -313,8 +313,6 @@ metadata:
   difficulty: hard
   category: data-engineering
   tags: [streaming, feature-store, time-series, aggregation]
-  references:
-    - "t-digest: Accurate online quantile estimation"
 
 time_limit: 3600
 memory_limit: 512
